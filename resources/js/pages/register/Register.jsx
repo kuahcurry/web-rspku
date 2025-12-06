@@ -69,10 +69,44 @@ function Register() {
     }
   };
 
-  const handleRegister = (e) => {
+  const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleRegister = async (e) => {
     e.preventDefault();
-    // TODO: replace with real register flow then redirect
-    navigate('/login');
+    setErrors({});
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch('/api/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        // Registration successful
+        alert('Registrasi berhasil! Silakan login.');
+        navigate('/login');
+      } else {
+        // Handle validation errors
+        if (data.errors) {
+          setErrors(data.errors);
+        } else {
+          alert(data.message || 'Registrasi gagal. Silakan coba lagi.');
+        }
+      }
+    } catch (error) {
+      console.error('Registration error:', error);
+      alert('Terjadi kesalahan. Silakan coba lagi.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -108,7 +142,10 @@ function Register() {
                   value={formData.nik}
                   onChange={handleChange}
                   required
-                  minLength={18}
+                  minLength={16}
+                  maxLength={16}
+                  error={errors.nik?.[0]}
+                  disabled={isSubmitting}
                 />
 
                 <Input
@@ -119,6 +156,9 @@ function Register() {
                   value={formData.nip}
                   onChange={handleChange}
                   required
+                  maxLength={18}
+                  error={errors.nip?.[0]}
+                  disabled={isSubmitting}
                 />
               </Form.Row>
 
@@ -130,7 +170,9 @@ function Register() {
                 value={formData.name}
                 onChange={handleChange}
                 required
-                minLength={8}
+                minLength={3}
+                error={errors.name?.[0]}
+                disabled={isSubmitting}
               />
 
               <Form.Row columns={2}>
@@ -142,6 +184,8 @@ function Register() {
                   value={formData.email}
                   onChange={handleChange}
                   required
+                  error={errors.email?.[0]}
+                  disabled={isSubmitting}
                 />
 
                 <Input
@@ -153,6 +197,8 @@ function Register() {
                   onChange={handleChange}
                   pattern="[0-9]{10,13}"
                   required
+                  error={errors.phone?.[0]}
+                  disabled={isSubmitting}
                 />
               </Form.Row>
               
@@ -166,7 +212,8 @@ function Register() {
                   value={formData.province}
                   onChange={handleChange}
                   required
-                  disabled={loading || provinces.length === 0}
+                  disabled={loading || provinces.length === 0 || isSubmitting}
+                  error={errors.province?.[0]}
                 />
 
                 <Input
@@ -178,7 +225,8 @@ function Register() {
                   value={formData.regency}
                   onChange={handleChange}
                   required
-                  disabled={!formData.province || regencies.length === 0}
+                  disabled={!formData.province || regencies.length === 0 || isSubmitting}
+                  error={errors.regency?.[0]}
                 />
               </Form.Row>
 
@@ -192,7 +240,8 @@ function Register() {
                   value={formData.district}
                   onChange={handleChange}
                   required
-                  disabled={!formData.regency || districts.length === 0}
+                  disabled={!formData.regency || districts.length === 0 || isSubmitting}
+                  error={errors.district?.[0]}
                 />
 
                 <Input
@@ -204,7 +253,8 @@ function Register() {
                   value={formData.village}
                   onChange={handleChange}
                   required
-                  disabled={!formData.district || villages.length === 0}
+                  disabled={!formData.district || villages.length === 0 || isSubmitting}
+                  error={errors.village?.[0]}
                 />
               </Form.Row>
 
@@ -217,6 +267,8 @@ function Register() {
                 onChange={handleChange}
                 variant='filled'
                 required
+                error={errors.address?.[0]}
+                disabled={isSubmitting}
               />
 
               <Input
@@ -228,6 +280,8 @@ function Register() {
                 onChange={handleChange}
                 required
                 minLength={8}
+                error={errors.password?.[0]}
+                disabled={isSubmitting}
               />
 
               <Input
@@ -239,11 +293,20 @@ function Register() {
                 onChange={handleChange}
                 required
                 minLength={8}
+                error={errors.confirmPassword?.[0]}
+                disabled={isSubmitting}
               />
             </Form>
 
-            <Button type="submit" variant="success" size="large" fullWidth>
-                Daftar
+            <Button 
+              type="submit" 
+              variant="success" 
+              size="large" 
+              fullWidth
+              disabled={isSubmitting}
+              onClick={handleRegister}
+            >
+                {isSubmitting ? 'Mendaftar...' : 'Daftar'}
             </Button>
 
             <div className="login-link">
