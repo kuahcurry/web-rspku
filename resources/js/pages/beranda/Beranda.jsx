@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import MainLayout from '../../layout/main/MainLayout';
 import Card from '../../components/card/Card';
 import Button from '../../components/button/Button';
@@ -9,11 +10,69 @@ import {
   MdGavel,
   MdTrendingUp
 } from 'react-icons/md';
+import { getUser, isAuthenticated } from '../../utils/auth';
 import './Beranda.css';
 
 const Beranda = () => {
+  const navigate = useNavigate();
   const [avatarError, setAvatarError] = useState(false);
+  const [userData, setUserData] = useState(null);
+  const [loading, setLoading] = useState(true);
   const avatarUrl = 'https://i.pravatar.cc/160?img=64';
+
+  useEffect(() => {
+    // Check authentication
+    if (!isAuthenticated()) {
+      navigate('/login');
+      return;
+    }
+
+    // Get user data from localStorage
+    const user = getUser();
+    if (user) {
+      setUserData(user);
+    }
+    setLoading(false);
+  }, [navigate]);
+
+  // Calculate age from date of birth (if available)
+  const calculateAge = (dateOfBirth) => {
+    if (!dateOfBirth) return 'N/A';
+    const today = new Date();
+    const birthDate = new Date(dateOfBirth);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    return age;
+  };
+
+  // Calculate work duration (if available)
+  const calculateWorkDuration = (startDate) => {
+    if (!startDate) return 'N/A';
+    const today = new Date();
+    const start = new Date(startDate);
+    const years = today.getFullYear() - start.getFullYear();
+    const months = today.getMonth() - start.getMonth();
+    const totalMonths = years * 12 + months;
+    const displayYears = Math.floor(totalMonths / 12);
+    const displayMonths = totalMonths % 12;
+    return `${displayYears} Tahun ${displayMonths} Bulan`;
+  };
+
+  if (loading) {
+    return (
+      <MainLayout 
+        title="Beranda" 
+        subtitle="Ringkasan informasi profil, progress pengisian, dan data terbaru Anda."
+      >
+        <div style={{ textAlign: 'center', padding: '2rem' }}>
+          <p>Memuat data...</p>
+        </div>
+      </MainLayout>
+    );
+  }
 
   return (
     <MainLayout 
@@ -35,25 +94,27 @@ const Beranda = () => {
                 {!avatarError ? (
                   <img
                     src={avatarUrl}
-                    alt="Ns. Siti Nurhaliza, S.Kep"
+                    alt={userData?.name || 'User'}
                     onError={() => setAvatarError(true)}
                   />
                 ) : null}
               </div>
               <div className="profile-info">
-                <h2 className="profile-name">Ns. Siti Nurhaliza, S.Kep</h2>
-                <p className="profile-nip">NIP: 198501152010012001 | NIK: 3304015501850001</p>
+                <h2 className="profile-name">{userData?.name || 'Nama Tidak Tersedia'}</h2>
+                <p className="profile-nip">
+                  NIP: {userData?.nip || 'N/A'} | NIK: {userData?.nik || 'N/A'}
+                </p>
                 <div className="profile-badges">
                   <Card glass padding="small">
-                    <p>Perawat Pelaksana</p>
+                    <p>{userData?.position || 'Jabatan Tidak Tersedia'}</p>
                   </Card>
                   <Card glass padding="small">
-                    <p>Status: Pegawai Tetap</p>
+                    <p>Status: {userData?.employment_status || 'Belum Diisi'}</p>
                   </Card>
                 </div>
               </div>
             </div>
-            <Button variant="inverse" size="medium">
+            <Button variant="inverse" size="medium" onClick={() => navigate('/profil')}>
               Lihat Profil Lengkap
             </Button>
           </div>
@@ -61,19 +122,19 @@ const Beranda = () => {
           <div className="profile-stats">
             <Card glass padding="compact">
               <p>Domisili</p>
-              <h1>Kebumen, Jawa Tengah</h1>
+              <h1>{userData?.regency && userData?.province ? `${userData.regency}, ${userData.province}` : 'Belum Diisi'}</h1>
             </Card>
             <Card glass padding="compact">
               <p>Umur</p>
-              <h1>39 Tahun</h1>
+              <h1>{userData?.date_of_birth ? `${calculateAge(userData.date_of_birth)} Tahun` : 'Belum Diisi'}</h1>
             </Card>
             <Card glass padding="compact">
               <p>Lama Bekerja</p>
-              <h1>14 Tahun 2 Bulan</h1>
+              <h1>{userData?.start_work_date ? calculateWorkDuration(userData.start_work_date) : 'Belum Diisi'}</h1>
             </Card>
             <Card glass padding="compact">
               <p>Unit Kerja</p>
-              <h1>Instalasi Gawat Darurat</h1>
+              <h1>{userData?.work_unit || 'Belum Diisi'}</h1>
             </Card>
           </div>
         </div>

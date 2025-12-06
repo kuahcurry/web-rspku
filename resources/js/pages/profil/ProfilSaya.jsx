@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import MainLayout from '../../layout/main/MainLayout';
 import Button from '../../components/button/Button';
 import Input from '../../components/input/Input';
@@ -6,36 +7,87 @@ import Form from '../../components/form/Form';
 import { useIndonesiaRegion } from '../../hooks/useIndonesiaRegion';
 import { buildRegionStateUpdate } from '../../utils/regionForm';
 import { MdPerson, MdCameraAlt } from 'react-icons/md';
+import { getUser, authenticatedFetch, isAuthenticated } from '../../utils/auth';
 import './ProfilSaya.css';
 
 const ProfileSaya = () => {
+  const navigate = useNavigate();
   const [avatarError, setAvatarError] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState('https://i.pravatar.cc/300?img=64');
   const [isEditing, setIsEditing] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const { provinces, regencies, districts, villages, fetchRegencies, fetchDistricts, fetchVillages } =
     useIndonesiaRegion();
 
   const [formData, setFormData] = useState({
-    namaLengkap: 'Admin RS PKU',
-    nik: '052277538147',
+    namaLengkap: '',
+    nik: '',
     nip: '',
-    tempatLahir: 'Jakarta',
-    tanggalLahir: '1995-05-15',
-    jenisKelamin: 'Laki-laki',
-    agama: 'Islam',
-    nomorTelepon: '08123456789',
-    email: 'admin@rspku.com',
-    alamatDetail: 'Jl. Raya PKU No. 123, Jakarta Selatan',
+    tempatLahir: '',
+    tanggalLahir: '',
+    jenisKelamin: '',
+    agama: '',
+    nomorTelepon: '',
+    email: '',
+    alamatDetail: '',
     kelurahanId: '',
     kecamatanId: '',
     kabupatenId: '',
     provinsiId: '',
-    statusKepegawaian: 'Tetap',
-    jabatan: 'Perawat Pelaksana',
-    unitKerja: 'IGD',
-    tanggalMulaiBekerja: '2010-01-15'
+    statusKepegawaian: '',
+    jabatan: '',
+    unitKerja: '',
+    tanggalMulaiBekerja: ''
   });
+
+  useEffect(() => {
+    // Check authentication
+    if (!isAuthenticated()) {
+      navigate('/login');
+      return;
+    }
+
+    // Fetch user profile data
+    const fetchProfile = async () => {
+      try {
+        const response = await authenticatedFetch('/api/me');
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          const user = data.data;
+          setFormData({
+            namaLengkap: user.name || '',
+            nik: user.nik || '',
+            nip: user.nip || '',
+            tempatLahir: user.place_of_birth || '',
+            tanggalLahir: user.date_of_birth || '',
+            jenisKelamin: user.gender || '',
+            agama: user.religion || '',
+            nomorTelepon: user.phone || '',
+            email: user.email || '',
+            alamatDetail: user.address || '',
+            kelurahanId: user.village || '',
+            kecamatanId: user.district || '',
+            kabupatenId: user.regency || '',
+            provinsiId: user.province || '',
+            statusKepegawaian: user.employment_status || '',
+            jabatan: user.position || '',
+            unitKerja: user.work_unit || '',
+            tanggalMulaiBekerja: user.start_work_date || ''
+          });
+        } else {
+          console.error('Failed to fetch profile:', data);
+        }
+      } catch (error) {
+        console.error('Error fetching profile:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProfile();
+  }, [navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -77,6 +129,19 @@ const ProfileSaya = () => {
     console.log('Reset perubahan');
     setIsEditing(false);
   };
+
+  if (loading) {
+    return (
+      <MainLayout
+        title="Profil Saya"
+        subtitle="Data pribadi dan kepegawaian yang diperlukan untuk melengkapi informasi tenaga kesehatan."
+      >
+        <div style={{ textAlign: 'center', padding: '2rem' }}>
+          <p>Memuat profil...</p>
+        </div>
+      </MainLayout>
+    );
+  }
 
   return (
     <MainLayout
