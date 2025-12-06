@@ -7,27 +7,65 @@ import './Login.css';
 
 function Login() {
   const navigate = useNavigate();
-  const [nip, setNip] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [formData, setFormData] = useState({
+    email: '',
+    password: ''
+  });
+  const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleLogin = (e) => {
-    e.preventDefault();
-    // Hardcoded credentials for now
-    const validNip = '123456789012345678';
-    const validPassword = 'password123';
-
-    if (nip === validNip && password === validPassword) {
-      setError('');
-      navigate('/beranda');
-    } else {
-      setError('NIK atau kata sandi salah (gunakan NIK 123456789012345678 & password123)');
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value
+    });
+    // Clear error for this field when user starts typing
+    if (errors[name]) {
+      setErrors({ ...errors, [name]: null });
     }
   };
 
-  const handleNipChange = (e) => {
-    const digitsOnly = e.target.value.replace(/\D/g, '');
-    setNip(digitsOnly);
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setErrors({});
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch('/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        // Store JWT token and user data in localStorage
+        localStorage.setItem('access_token', data.data.access_token);
+        localStorage.setItem('token_type', data.data.token_type);
+        localStorage.setItem('user', JSON.stringify(data.data.user));
+        localStorage.setItem('token_expires_at', Date.now() + (data.data.expires_in * 1000));
+
+        // Redirect to dashboard
+        navigate('/beranda');
+      } else {
+        // Handle errors
+        if (data.errors) {
+          setErrors(data.errors);
+        } else {
+          setErrors({ general: data.message || 'Login gagal. Silakan coba lagi.' });
+        }
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      setErrors({ general: 'Terjadi kesalahan. Silakan coba lagi.' });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -45,33 +83,44 @@ function Login() {
                 <h1>Selamat Datang</h1>
               </div>
               <Input
-                label="NIK"
-                type="text"
-                placeholder="Masukkan NIK"
-                value={nip}
-                onChange={handleNipChange}
+                label="Email"
+                type="email"
+                name="email"
+                placeholder="Masukkan Email"
+                value={formData.email}
+                onChange={handleChange}
                 required
-                minLength={18}
+                error={errors.email?.[0]}
+                disabled={isSubmitting}
               />
 
               <Input
                 label="Kata Sandi"
                 type="password"
+                name="password"
                 placeholder="Masukkan Kata Sandi"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                value={formData.password}
+                onChange={handleChange}
                 required
                 minLength={8}
+                error={errors.password?.[0]}
+                disabled={isSubmitting}
               />
 
-              {error && <p className="login-error">{error}</p>}
+              {errors.general && <p className="login-error">{errors.general}</p>}
 
               <div className="forgot-password">
                 <a href="/forgot-password">Lupa Password?</a>
               </div>
 
-              <Button type="submit" variant="success" size="large" fullWidth>
-                Login
+              <Button 
+                type="submit" 
+                variant="success" 
+                size="large" 
+                fullWidth
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? 'Masuk...' : 'Login'}
               </Button>
 
               <div className="register-link">

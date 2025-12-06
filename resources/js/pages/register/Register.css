@@ -117,34 +117,6 @@
   overflow-y: auto;
 }
 
-.register-form::-webkit-scrollbar {
-  width: 6px;
-}
-
-.register-form::-webkit-scrollbar-track {
-  background: var(--primary-main);
-}
-
-.register-form::-webkit-scrollbar-thumb {
-  background: var(--primary-main);
-}
-
-.register-form::-webkit-scrollbar-thumb:hover {
-  background: var(--primary-main);
-}
-
-.register-content::-webkit-scrollbar-track {
-  background: var(--primary-main);
-}
-
-.register-content::-webkit-scrollbar-thumb {
-  background: var(--primary-main);
-}
-
-.register-content::-webkit-scrollbar-thumb:hover {
-  background: var(--primary-main);
-}
-
 .register-header {
   position: relative;
   text-align: center;
