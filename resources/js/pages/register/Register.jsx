@@ -78,13 +78,27 @@ function Register() {
     setIsSubmitting(true);
 
     try {
+      // Convert IDs to names before submitting
+      const provinceName = provinces.find(p => p.value === formData.province)?.label || formData.province;
+      const regencyName = regencies.find(r => r.value === formData.regency)?.label || formData.regency;
+      const districtName = districts.find(d => d.value === formData.district)?.label || formData.district;
+      const villageName = villages.find(v => v.value === formData.village)?.label || formData.village;
+
+      const submitData = {
+        ...formData,
+        province: provinceName,
+        regency: regencyName,
+        district: districtName,
+        village: villageName,
+      };
+
       const response = await fetch('/api/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(submitData),
       });
 
       const data = await response.json();
