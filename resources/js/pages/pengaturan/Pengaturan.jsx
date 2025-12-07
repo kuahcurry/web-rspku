@@ -20,6 +20,8 @@ const Pengaturan = () => {
   const [avatarUrl, setAvatarUrl] = useState('https://i.pravatar.cc/300?img=64');
   const [activeTab, setActiveTab] = useState('profile'); // 'profile' or 'account'
   const [initialDataLoaded, setInitialDataLoaded] = useState(false);
+  const [profileErrors, setProfileErrors] = useState({});
+  const [accountErrors, setAccountErrors] = useState({});
   const isRegionId = (value) => !!value && /^\d+$/.test(String(value));
 
   const { provinces, regencies, districts, villages, fetchRegencies, fetchDistricts, fetchVillages } =
@@ -114,10 +116,21 @@ const Pengaturan = () => {
 
   const handleProfileChange = (e) => {
     const { name, value } = e.target;
+    let processedValue = value;
+
+    // Force numeric-only inputs for identity and phone fields with sensible length caps
+    if (name === 'nik') {
+      processedValue = value.replace(/\D/g, '').slice(0, 16);
+    } else if (name === 'nip') {
+      processedValue = value.replace(/\D/g, '').slice(0, 18);
+    } else if (name === 'phone') {
+      processedValue = value.replace(/\D/g, '').slice(0, 15);
+    }
+
     setProfileData((prev) =>
       buildRegionStateUpdate({
         name,
-        value,
+        value: processedValue,
         state: prev,
         provinces,
         regencies,
@@ -127,21 +140,27 @@ const Pengaturan = () => {
     );
 
     if (name === 'provinsiId') {
-      fetchRegencies(value).catch(() => {});
+      fetchRegencies(processedValue).catch(() => {});
     }
     if (name === 'kabupatenId') {
-      fetchDistricts(value).catch(() => {});
+      fetchDistricts(processedValue).catch(() => {});
     }
     if (name === 'kecamatanId') {
-      fetchVillages(value).catch(() => {});
+      fetchVillages(processedValue).catch(() => {});
     }
   };
 
   const handleAccountChange = (e) => {
     const { name, value } = e.target;
+    let processedValue = value;
+
+    if (name === 'phone') {
+      processedValue = value.replace(/\D/g, '').slice(0, 15);
+    }
+
     setAccountData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: processedValue
     }));
   };
 
@@ -163,6 +182,7 @@ const Pengaturan = () => {
 
   const handleProfileSubmit = async (e) => {
     e.preventDefault();
+    setProfileErrors({});
     
     try {
       const payload = {
@@ -196,23 +216,27 @@ const Pengaturan = () => {
       const data = await response.json();
 
       if (response.ok && data.success) {
-        alert('Profil berhasil diperbarui!');
         refreshUser(); // Refresh user context
         navigate('/profil');
       } else {
-        alert(data.message || 'Gagal memperbarui profil');
+        if (data.errors) {
+          setProfileErrors(data.errors);
+        } else {
+          setProfileErrors({ general: data.message || 'Gagal memperbarui profil' });
+        }
       }
     } catch (error) {
       console.error('Error updating profile:', error);
-      alert('Terjadi kesalahan saat memperbarui profil');
+      setProfileErrors({ general: 'Terjadi kesalahan saat memperbarui profil' });
     }
   };
 
   const handleAccountSubmit = async (e) => {
     e.preventDefault();
-    
+    setAccountErrors({});
+
     if (accountData.password && accountData.password !== accountData.confirmPassword) {
-      alert('Password dan konfirmasi password tidak cocok!');
+      setAccountErrors({ confirmPassword: 'Konfirmasi password tidak cocok.' });
       return;
     }
 
@@ -236,7 +260,6 @@ const Pengaturan = () => {
       const data = await response.json();
 
       if (response.ok && data.success) {
-        alert('Akun berhasil diperbarui!');
         refreshUser(); // Refresh user context
         setAccountData(prev => ({
           ...prev,
@@ -244,11 +267,15 @@ const Pengaturan = () => {
           confirmPassword: ''
         }));
       } else {
-        alert(data.message || 'Gagal memperbarui akun');
+        if (data.errors) {
+          setAccountErrors(data.errors);
+        } else {
+          setAccountErrors({ general: data.message || 'Gagal memperbarui akun' });
+        }
       }
     } catch (error) {
       console.error('Error updating account:', error);
-      alert('Terjadi kesalahan saat memperbarui akun');
+      setAccountErrors({ general: 'Terjadi kesalahan saat memperbarui akun' });
     }
   };
 
@@ -338,19 +365,27 @@ const Pengaturan = () => {
                   <Input
                     label="NIK"
                     name="nik"
+                    type="text"
                     value={profileData.nik}
                     onChange={handleProfileChange}
+                    inputMode="numeric"
+                    pattern="[0-9]{16}"
                     maxLength={16}
                     placeholder="Masukkan NIK (16 digit)"
                     required
+                    error={Array.isArray(profileErrors.nik) ? profileErrors.nik[0] : profileErrors.nik}
                   />
                   <Input
                     label="NIP"
                     name="nip"
+                    type="text"
                     value={profileData.nip}
                     onChange={handleProfileChange}
+                    inputMode="numeric"
+                    pattern="[0-9]*"
                     maxLength={18}
                     placeholder="Masukkan NIP (18 digit, opsional)"
+                    error={Array.isArray(profileErrors.nip) ? profileErrors.nip[0] : profileErrors.nip}
                   />
                 </Form.Row>
 
@@ -362,6 +397,7 @@ const Pengaturan = () => {
                     onChange={handleProfileChange}
                     placeholder="Masukkan nama sesuai KTP"
                     required
+                    error={Array.isArray(profileErrors.name) ? profileErrors.name[0] : profileErrors.name}
                   />
                   <Input
                     label="Nomor Telepon"
@@ -369,7 +405,11 @@ const Pengaturan = () => {
                     type="tel"
                     value={profileData.phone}
                     onChange={handleProfileChange}
+                    inputMode="tel"
+                    pattern="[0-9]{10,15}"
+                    maxLength={15}
                     placeholder="Contoh: 081234567890"
+                    error={Array.isArray(profileErrors.phone) ? profileErrors.phone[0] : profileErrors.phone}
                   />
                 </Form.Row>
 
@@ -382,6 +422,7 @@ const Pengaturan = () => {
                     onChange={handleProfileChange}
                     placeholder="Pilih tanggal lahir"
                     required
+                    error={Array.isArray(profileErrors.birthDate) ? profileErrors.birthDate[0] : profileErrors.birthDate}
                   />
                   <Input
                     label="Tempat Lahir"
@@ -390,6 +431,7 @@ const Pengaturan = () => {
                     onChange={handleProfileChange}
                     placeholder="Masukkan tempat lahir"
                     required
+                    error={Array.isArray(profileErrors.birthPlace) ? profileErrors.birthPlace[0] : profileErrors.birthPlace}
                   />
                 </Form.Row>
 
@@ -406,6 +448,7 @@ const Pengaturan = () => {
                     ]}
                     placeholder="Pilih jenis kelamin"
                     required
+                    error={Array.isArray(profileErrors.gender) ? profileErrors.gender[0] : profileErrors.gender}
                   />
                   <Input
                     label="Agama"
@@ -424,6 +467,7 @@ const Pengaturan = () => {
                     ]}
                     placeholder="Pilih agama"
                     required
+                    error={Array.isArray(profileErrors.religion) ? profileErrors.religion[0] : profileErrors.religion}
                   />
                 </Form.Row>
 
@@ -438,6 +482,7 @@ const Pengaturan = () => {
                     options={provinces}
                     placeholder="Pilih Provinsi"
                     required
+                    error={Array.isArray(profileErrors.provinsiId) ? profileErrors.provinsiId[0] : profileErrors.provinsiId}
                   />
                   <Input
                     label="Kabupaten/Kota"
@@ -448,6 +493,7 @@ const Pengaturan = () => {
                     options={regencies}
                     placeholder="Pilih Kabupaten/Kota"
                     required
+                    error={Array.isArray(profileErrors.kabupatenId) ? profileErrors.kabupatenId[0] : profileErrors.kabupatenId}
                   />
                 </Form.Row>
 
@@ -461,6 +507,7 @@ const Pengaturan = () => {
                     options={districts}
                     placeholder="Pilih Kecamatan"
                     required
+                    error={Array.isArray(profileErrors.kecamatanId) ? profileErrors.kecamatanId[0] : profileErrors.kecamatanId}
                   />
                   <Input
                     label="Kelurahan/Desa"
@@ -471,6 +518,7 @@ const Pengaturan = () => {
                     options={villages}
                     placeholder="Pilih Kelurahan/Desa"
                     required
+                    error={Array.isArray(profileErrors.kelurahanId) ? profileErrors.kelurahanId[0] : profileErrors.kelurahanId}
                   />
                 </Form.Row>
 
@@ -484,6 +532,7 @@ const Pengaturan = () => {
                     placeholder="Masukkan alamat detail (jalan, nomor rumah, RT/RW)"
                     rows={3}
                     required
+                    error={Array.isArray(profileErrors.address) ? profileErrors.address[0] : profileErrors.address}
                   />
                 </Form.Row>
 
@@ -492,10 +541,22 @@ const Pengaturan = () => {
                   <Input
                     label="Status Kepegawaian"
                     name="statusKepegawaian"
+                    type='select'
                     value={profileData.statusKepegawaian}
                     onChange={handleProfileChange}
-                    placeholder="Masukkan status kepegawaian"
+                    options={[
+                      { value: 'Karyawan Tetap', label: 'Karyawan Tetap' },
+                      { value: 'Karyawan Kontrak', label: 'Karyawan Kontrak' },
+                      { value: 'Tenaga Honorer/Sukarelawan', label: 'Tenaga Honorer/Sukarelawan' },
+                      { value: 'Perawat Praktik Mandiri', label: 'Perawat Praktik Mandiri' }
+                    ]}
+                    placeholder="Pilih status kepegawaian"
                     required
+                    error={
+                      Array.isArray(profileErrors.statusKepegawaian)
+                        ? profileErrors.statusKepegawaian[0]
+                        : profileErrors.statusKepegawaian
+                    }
                   />
                   <Input
                     label="Jabatan"
@@ -504,6 +565,7 @@ const Pengaturan = () => {
                     onChange={handleProfileChange}
                     placeholder="Masukkan jabatan"
                     required
+                    error={Array.isArray(profileErrors.jabatan) ? profileErrors.jabatan[0] : profileErrors.jabatan}
                   />
                 </Form.Row>
 
@@ -515,6 +577,7 @@ const Pengaturan = () => {
                     onChange={handleProfileChange}
                     placeholder="Masukkan unit kerja"
                     required
+                    error={Array.isArray(profileErrors.unitKerja) ? profileErrors.unitKerja[0] : profileErrors.unitKerja}
                   />
                   <Input
                     label="Tanggal Mulai Bekerja"
@@ -524,10 +587,21 @@ const Pengaturan = () => {
                     onChange={handleProfileChange}
                     placeholder="Masukkan tanggal mulai bekerja"
                     required
+                    error={
+                      Array.isArray(profileErrors.tanggalMulaiBekerja)
+                        ? profileErrors.tanggalMulaiBekerja[0]
+                        : profileErrors.tanggalMulaiBekerja
+                    }
                   />
                 </Form.Row>
               </div>
             </div>
+
+            {profileErrors.general && (
+              <div className={styles['form-error']}>
+                {Array.isArray(profileErrors.general) ? profileErrors.general[0] : profileErrors.general}
+              </div>
+            )}
 
             <div className={styles['settings-actions']}>
               <Button variant="danger" size="medium" type="button" onClick={() => navigate('/profil')}>
@@ -544,49 +618,69 @@ const Pengaturan = () => {
         {activeTab === 'account' && (
           <Form onSubmit={handleAccountSubmit} className={styles['settings-form']}>
             <div className={styles['settings-body']}>
-              <div className={styles['form-section']}>
-                <h3 className={styles['form-section-title']}>Informasi Akun</h3>
-                <Form.Row columns={1}>
-                  <Input
-                    label="Email"
-                    name="email"
-                    type="email"
-                    value={accountData.email}
-                    onChange={handleAccountChange}
-                    placeholder="email@example.com"
-                    required
-                  />
-                </Form.Row>
+              <div className={styles['account-grid']}>
+                <div className={styles['form-section']}>
+                  <h3 className={styles['form-section-title']}>Informasi Akun</h3>
+                  <p className={styles['form-section-description']}>
+                    Ubah email yang terhubung dengan akun Anda.
+                  </p>
+                  <Form.Row columns={1}>
+                    <Input
+                      label="Email"
+                      name="email"
+                      type="email"
+                      value={accountData.email}
+                      onChange={handleAccountChange}
+                      placeholder="email@example.com"
+                      required
+                      error={Array.isArray(accountErrors.email) ? accountErrors.email[0] : accountErrors.email}
+                    />
+                  </Form.Row>
+                </div>
 
-                <h3 className={styles['form-section-title']}>Ubah Password</h3>
-                <p className={styles['form-section-description']}>
-                  Kosongkan jika tidak ingin mengubah password
-                </p>
-                <Form.Row columns={1}>
-                  <Input
-                    label="Password Baru"
-                    name="password"
-                    type="password"
-                    value={accountData.password}
-                    onChange={handleAccountChange}
-                    placeholder="Minimal 8 karakter"
-                    minLength={8}
-                  />
-                </Form.Row>
+                <div className={`${styles['form-section']} ${styles['password-panel']}`}>
+                  <h3 className={styles['form-section-title']}>Ubah Password</h3>
+                  <p className={styles['form-section-description']}>
+                    Kosongkan jika tidak ingin mengubah password
+                  </p>
+                  <Form.Row columns={1}>
+                    <Input
+                      label="Password Baru"
+                      name="password"
+                      type="password"
+                      value={accountData.password}
+                      onChange={handleAccountChange}
+                      placeholder="Minimal 8 karakter"
+                      minLength={8}
+                      error={Array.isArray(accountErrors.password) ? accountErrors.password[0] : accountErrors.password}
+                    />
+                  </Form.Row>
 
-                <Form.Row columns={1}>
-                  <Input
-                    label="Konfirmasi Password"
-                    name="confirmPassword"
-                    type="password"
-                    value={accountData.confirmPassword}
-                    onChange={handleAccountChange}
-                    placeholder="Ketik ulang password baru"
-                    minLength={8}
-                  />
-                </Form.Row>
+                  <Form.Row columns={1}>
+                    <Input
+                      label="Konfirmasi Password"
+                      name="confirmPassword"
+                      type="password"
+                      value={accountData.confirmPassword}
+                      onChange={handleAccountChange}
+                      placeholder="Ketik ulang password baru"
+                      minLength={8}
+                      error={
+                        Array.isArray(accountErrors.confirmPassword)
+                          ? accountErrors.confirmPassword[0]
+                          : accountErrors.confirmPassword
+                      }
+                    />
+                  </Form.Row>
+                </div>
               </div>
             </div>
+
+            {accountErrors.general && (
+              <div className={styles['form-error']}>
+                {Array.isArray(accountErrors.general) ? accountErrors.general[0] : accountErrors.general}
+              </div>
+            )}
 
             <div className={styles['settings-actions']}>
               <Button variant="danger" size="medium" type="button" onClick={() => navigate('/profil')}>

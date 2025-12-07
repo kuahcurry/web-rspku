@@ -68,19 +68,20 @@ function Login() {
         localStorage.setItem('user', JSON.stringify(data.data.user));
         localStorage.setItem('token_expires_at', Date.now() + (data.data.expires_in * 1000));
 
-        // Redirect to dashboard
         navigate('/beranda');
       } else {
         // Handle errors
         if (data.errors) {
           setErrors(data.errors);
         } else {
-          setErrors({ general: data.message || 'Login gagal. Silakan coba lagi.' });
+          const errorMessage = data.message || 'Login gagal. Silakan coba lagi.';
+          setErrors({ general: errorMessage });
         }
       }
     } catch (error) {
       console.error('Login error:', error);
-      setErrors({ general: 'Terjadi kesalahan. Silakan coba lagi.' });
+      const errorMessage = 'Terjadi kesalahan koneksi. Silakan coba lagi.';
+      setErrors({ general: errorMessage });
     } finally {
       setIsSubmitting(false);
     }
@@ -127,7 +128,7 @@ function Login() {
                 disabled={isSubmitting}
               />
 
-              {errors.general && <p className={styles['login-error']}>{errors.general}</p>}
+              {errors.general && <div className={styles['login-error']}>{errors.general}</div>}
 
               <div className={styles['forgot-password']}>
                 <a href="/forgot-password">Lupa Password?</a>

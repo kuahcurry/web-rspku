@@ -135,9 +135,11 @@
 }
 
 .login-error {
-  color: var(--error-red);
-  margin: 0.5rem 0 0.75rem 0;
-  font-weight: 600;
+  margin: 0.5rem 0 0 0;
+  color: var(--error-light);
+  font-weight: 500;
+  font-size: 0.95rem;
+  line-height: 1.5;
 }
 
 .login-container .login-footer {
