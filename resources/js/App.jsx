@@ -5,6 +5,7 @@ import Profil from "./pages/profil/ProfilSaya";
 import Pengaturan from "./pages/pengaturan/Pengaturan";
 import Dokumen from "./pages/dokumen/DokumenLegalitas";
 import Pendidikan from "./pages/pendidikan/RiwayatPendidikan"; 
+import Penugasan from "./pages/penugasan/Penugasan";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { UserProvider } from "./contexts/UserContext";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
@@ -54,6 +55,14 @@ function App() {
           element={
             <ProtectedRoute>
               <Pendidikan />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/penugasan"
+          element={
+            <ProtectedRoute>
+              <Penugasan />
             </ProtectedRoute>
           }
         />

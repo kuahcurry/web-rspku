@@ -1,0 +1,252 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.pageHeader {
+  margin-bottom: 1rem;
+}
+
+.pageTitle {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--heading-main);
+  margin: 0 0 0.35rem 0;
+  letter-spacing: -0.02em;
+}
+
+.pageSubtitle {
+  font-size: 1rem;
+  color: var(--text-main);
+  margin: 0;
+}
+
+.cardShell {
+  background: var(--bg-main);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.08);
+  padding: 2rem 1.75rem;
+  border: 1px solid var(--border-grey);
+}
+
+.headerRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--border-grey);
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--heading-main);
+}
+
+.sectionSubtitle {
+  margin: 0.3rem 0 0 0;
+  color: var(--text-secondary);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem 0 0.5rem 0;
+}
+
+.itemCard {
+  background: var(--soft-grey) !important;
+  border-radius: 16px;
+  border: none;
+  box-shadow: none;
+}
+
+.itemCard :global(.card-body) {
+  padding: 0;
+}
+
+.itemBody {
+  padding: 1.25rem 1.5rem;
+}
+
+.itemHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.itemTitle {
+  margin: 0;
+  font-size: 1.3rem;
+  color: var(--heading-main);
+}
+
+.statusBadge {
+  padding: 0.4rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  border: 1px solid transparent;
+}
+
+.statusAktif {
+  background: #e8fff2;
+  color: #1f9a5c;
+  border-color: #b6edcd;
+}
+
+.statusSelesai {
+  background: #f2f2f2;
+  color: #6b7280;
+  border-color: #e0e0e0;
+}
+
+.itemGrid {
+  display: grid;
+  grid-template-columns: 1.1fr 1.1fr 1fr;
+  gap: 1rem;
+  align-items: center;
+}
+
+.metaBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.metaLabel {
+  margin: 0;
+  color: #7a7a7a;
+  font-size: 0.9rem;
+}
+
+.metaValue {
+  margin: 0;
+  font-weight: 600;
+  color: var(--heading-main);
+}
+
+.fileBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.fileAction {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.fileLink {
+  color: var(--primary-main);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.fileLink:hover {
+  text-decoration: underline;
+}
+
+.modalContent {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.metaRow {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.75rem 1rem;
+}
+
+.metaStatus {
+  display: flex;
+  align-items: center;
+}
+
+.filePreview {
+  border: 1px dashed var(--border-grey);
+  border-radius: var(--radius-lg);
+  padding: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  background: color-mix(in srgb, var(--primary-main) 6%, transparent);
+}
+
+.fileInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.modalForm {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.formRow {
+  gap: 1rem;
+}
+
+.modalActions {
+  gap: 0.75rem;
+}
+
+@media (max-width: 960px) {
+  .itemGrid {
+    grid-template-columns: 1fr;
+    align-items: flex-start;
+  }
+
+  .itemHead {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 640px) {
+  .pageTitle {
+    font-size: 2rem;
+  }
+
+  .cardShell {
+    padding: 1.5rem 1.25rem;
+  }
+
+  .sectionTitle {
+    font-size: 1.25rem;
+  }
+
+  .itemTitle {
+    font-size: 1.15rem;
+  }
+
+  .headerRow {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .filePreview {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .modalActions {
+    flex-direction: column;
+  }
+
+  .modalActions :global(button) {
+    width: 100%;
+  }
+}
