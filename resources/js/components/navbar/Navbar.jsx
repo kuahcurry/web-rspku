@@ -8,12 +8,17 @@ import {
   MdKeyboardArrowDown,
   MdSettings
 } from 'react-icons/md';
+import { useUser } from '../../contexts/UserContext';
 import './Navbar.css';
 
 const Navbar = ({ onMenuToggle, sidebarOpen }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [avatarError, setAvatarError] = useState(false);
+  const { user } = useUser();
   const avatarUrl = 'https://i.pravatar.cc/100?img=3';
+
+  const userName = user?.name || 'Nama Lengkap';
+  const userRole = user?.jabatan || 'Belum ada jabatan!';
 
   return (
     <nav className="top-navbar">
@@ -37,8 +42,8 @@ const Navbar = ({ onMenuToggle, sidebarOpen }) => {
               )}
             </div>
             <div className="user-info">
-              <span className="user-name">Nama Lengkap</span>
-              <span className="user-role">Role</span>
+              <span className="user-name">{userName}</span>
+              <span className="user-role">{userRole}</span>
             </div>
             <MdKeyboardArrowDown className={`dropdown-icon ${dropdownOpen ? 'open' : ''}`} size={20} />
           </div>

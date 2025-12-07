@@ -44,3 +44,16 @@ export const getVillages = async (districtId) => {
   const data = await response.json();
   return data.map(mapOption);
 };
+
+// Get district name by ID
+export const getDistrictById = async (regencyId, districtId) => {
+  if (!regencyId || !districtId) return null;
+  try {
+    const districts = await getDistricts(regencyId);
+    const district = districts.find(d => d.value === districtId);
+    return district ? district.label : null;
+  } catch (error) {
+    console.error('Error fetching district:', error);
+    return null;
+  }
+};

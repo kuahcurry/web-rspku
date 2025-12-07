@@ -3,14 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import MainLayout from '../../layout/main/MainLayout';
 import Button from '../../components/button/Button';
 import { FaEdit } from 'react-icons/fa';
-import { authenticatedFetch, isAuthenticated } from '../../utils/auth';
+import { useUser } from '../../contexts/UserContext';
+import { isAuthenticated } from '../../utils/auth';
 import styles from './ProfilSaya.module.css';
 
 const ProfileSaya = () => {
   const navigate = useNavigate();
+  const { user, loading: userLoading } = useUser();
   const [avatarError, setAvatarError] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState('https://i.pravatar.cc/300?img=64');
-  const [loading, setLoading] = useState(true);
 
   const [formData, setFormData] = useState({
     namaLengkap: '',
@@ -40,48 +41,32 @@ const ProfileSaya = () => {
       return;
     }
 
-    // Fetch user profile data
-    const fetchProfile = async () => {
-      try {
-        const response = await authenticatedFetch('/api/me');
-        const data = await response.json();
+    // Update form data when user data is loaded
+    if (user) {
+      setFormData({
+        namaLengkap: user.name || '',
+        nik: user.nik || '',
+        nip: user.nip || '',
+        tempatLahir: user.tempat || '',
+        tanggalLahir: user.tanggal_lahir || '',
+        jenisKelamin: user.jenis_kelamin || '',
+        agama: user.agama || '',
+        nomorTelepon: user.phone || '',
+        email: user.email || '',
+        alamatDetail: user.address || '',
+        kelurahanId: user.village || '',
+        kecamatanId: user.district || '',
+        kabupatenId: user.regency || '',
+        provinsiId: user.province || '',
+        statusKepegawaian: user.status_kepegawaian || '',
+        jabatan: user.jabatan || '',
+        unitKerja: user.unit_kerja || '',
+        tanggalMulaiBekerja: user.tanggal_mulai_kerja || ''
+      });
+    }
+  }, [navigate, user]);
 
-        if (response.ok && data.success) {
-          const user = data.data;
-          setFormData({
-            namaLengkap: user.name || '',
-            nik: user.nik || '',
-            nip: user.nip || '',
-            tempatLahir: user.place_of_birth || '',
-            tanggalLahir: user.date_of_birth || '',
-            jenisKelamin: user.gender || '',
-            agama: user.religion || '',
-            nomorTelepon: user.phone || '',
-            email: user.email || '',
-            alamatDetail: user.address || '',
-            kelurahanId: user.village || '',
-            kecamatanId: user.district || '',
-            kabupatenId: user.regency || '',
-            provinsiId: user.province || '',
-            statusKepegawaian: user.employment_status || '',
-            jabatan: user.position || '',
-            unitKerja: user.work_unit || '',
-            tanggalMulaiBekerja: user.start_work_date || ''
-          });
-        } else {
-          console.error('Failed to fetch profile:', data);
-        }
-      } catch (error) {
-        console.error('Error fetching profile:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProfile();
-  }, [navigate]);
-
-  if (loading) {
+  if (userLoading) {
     return (
       <MainLayout
         title="Profil Saya"
