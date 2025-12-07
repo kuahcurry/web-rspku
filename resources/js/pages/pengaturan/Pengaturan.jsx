@@ -9,15 +9,17 @@ import Tabs from '../../components/tabs/Tabs';
 import { useIndonesiaRegion } from '../../hooks/useIndonesiaRegion';
 import { buildRegionStateUpdate } from '../../utils/regionForm';
 import { MdPerson, MdCameraAlt, MdLock, MdSave } from 'react-icons/md';
+import { useUser } from '../../contexts/UserContext';
 import { authenticatedFetch, isAuthenticated } from '../../utils/auth';
 import styles from './Pengaturan.module.css';
 
 const Pengaturan = () => {
   const navigate = useNavigate();
+  const { user, loading: userLoading, refreshUser } = useUser();
   const [avatarError, setAvatarError] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState('https://i.pravatar.cc/300?img=64');
-  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('profile'); // 'profile' or 'account'
+  const [initialDataLoaded, setInitialDataLoaded] = useState(false);
   const isRegionId = (value) => !!value && /^\d+$/.test(String(value));
 
   const { provinces, regencies, districts, villages, fetchRegencies, fetchDistricts, fetchVillages } =
@@ -30,13 +32,18 @@ const Pengaturan = () => {
     name: '',
     birthDate: '',
     birthPlace: '',
+    gender: '',
     religion: '',
     phone: '',
     provinsiId: '',
     kabupatenId: '',
     kecamatanId: '',
     kelurahanId: '',
-    address: ''
+    address: '',
+    statusKepegawaian: '',
+    jabatan: '',
+    unitKerja: '',
+    tanggalMulaiBekerja: ''
   });
 
   const [accountData, setAccountData] = useState({
@@ -53,63 +60,57 @@ const Pengaturan = () => {
       return;
     }
 
-    // Fetch user data
-    const fetchUserData = async () => {
-      try {
-        const response = await authenticatedFetch('/api/me');
-        const data = await response.json();
-
-        if (response.ok && data.success) {
-          const user = data.data;
-          setProfileData({
-            fotoProfil: null,
-            nip: user.nip || '',
-            nik: user.nik || '',
-            name: user.name || '',
-            birthDate: user.date_of_birth || '',
-            birthPlace: user.place_of_birth || '',
-            religion: user.religion || '',
-            phone: user.phone || '',
-            provinsiId: user.province || '',
-            kabupatenId: user.regency || '',
-            kecamatanId: user.district || '',
-            kelurahanId: user.village || '',
-            address: user.address || ''
-          });
-
-          setAccountData({
-            email: user.email || '',
-            phone: user.phone || '',
-            password: '',
-            confirmPassword: ''
-          });
-
-          // Prefetch cascading regions without blocking initial render
-          const preloadRegions = [];
-          if (isRegionId(user.province)) {
-            preloadRegions.push(fetchRegencies(user.province));
-          }
-          if (isRegionId(user.regency)) {
-            preloadRegions.push(fetchDistricts(user.regency));
-          }
-          if (isRegionId(user.district)) {
-            preloadRegions.push(fetchVillages(user.district));
-          }
-          if (preloadRegions.length) {
-            Promise.allSettled(preloadRegions).catch(() => {});
-          }
-        } else {
-          console.error('Failed to fetch user data:', data);
+    // Only load initial data once when user data first becomes available
+    if (user && !initialDataLoaded) {
+      // Load cascading regions first, then set form data
+      const loadInitialData = async () => {
+        // Load regions sequentially to avoid race conditions
+        // Each fetch resets downstream data, so we must load in order
+        if (isRegionId(user.province)) {
+          await fetchRegencies(user.province);
         }
-      } catch (error) {
-        console.error('Error fetching user data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+        if (isRegionId(user.regency)) {
+          await fetchDistricts(user.regency);
+        }
+        if (isRegionId(user.district)) {
+          await fetchVillages(user.district);
+        }
 
-    fetchUserData();
-  }, [navigate, fetchRegencies, fetchDistricts, fetchVillages]);
+        // Now set the form data after regions are loaded
+        setProfileData({
+          fotoProfil: null,
+          nip: user.nip || '',
+          nik: user.nik || '',
+          name: user.name || '',
+          birthDate: user.tanggal_lahir || '',
+          birthPlace: user.tempat || '',
+          gender: user.jenis_kelamin || '',
+          religion: user.agama || '',
+          phone: user.phone || '',
+          provinsiId: user.province || '',
+          kabupatenId: user.regency || '',
+          kecamatanId: user.district || '',
+          kelurahanId: user.village || '',
+          address: user.address || '',
+          statusKepegawaian: user.status_kepegawaian || '',
+          jabatan: user.jabatan || '',
+          unitKerja: user.unit_kerja || '',
+          tanggalMulaiBekerja: user.tanggal_mulai_kerja || ''
+        });
+
+        setAccountData({
+          email: user.email || '',
+          phone: user.phone || '',
+          password: '',
+          confirmPassword: ''
+        });
+
+        setInitialDataLoaded(true);
+      };
+
+      loadInitialData();
+    }
+  }, [navigate, user, initialDataLoaded, fetchRegencies, fetchDistricts, fetchVillages]);
 
   const handleProfileChange = (e) => {
     const { name, value } = e.target;
@@ -160,23 +161,98 @@ const Pengaturan = () => {
     }
   };
 
-  const handleProfileSubmit = async () => {
-    console.log('Simpan profil:', profileData);
-    // TODO: Implement API call to update profile
-    alert('Profil berhasil diperbarui!');
+  const handleProfileSubmit = async (e) => {
+    e.preventDefault();
+    
+    try {
+      const payload = {
+        nip: profileData.nip,
+        nik: profileData.nik,
+        name: profileData.name,
+        phone: profileData.phone,
+        jenis_kelamin: profileData.gender,
+        agama: profileData.religion,
+        tempat: profileData.birthPlace,
+        tanggal_lahir: profileData.birthDate,
+        province: profileData.provinsiId,
+        regency: profileData.kabupatenId,
+        district: profileData.kecamatanId,
+        village: profileData.kelurahanId,
+        address: profileData.address,
+        status_kepegawaian: profileData.statusKepegawaian,
+        jabatan: profileData.jabatan,
+        unit_kerja: profileData.unitKerja,
+        tanggal_mulai_kerja: profileData.tanggalMulaiBekerja,
+      };
+
+      const response = await authenticatedFetch('/api/profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        alert('Profil berhasil diperbarui!');
+        refreshUser(); // Refresh user context
+        navigate('/profil');
+      } else {
+        alert(data.message || 'Gagal memperbarui profil');
+      }
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      alert('Terjadi kesalahan saat memperbarui profil');
+    }
   };
 
-  const handleAccountSubmit = async () => {
+  const handleAccountSubmit = async (e) => {
+    e.preventDefault();
+    
     if (accountData.password && accountData.password !== accountData.confirmPassword) {
       alert('Password dan konfirmasi password tidak cocok!');
       return;
     }
-    console.log('Simpan akun:', accountData);
-    // TODO: Implement API call to update account
-    alert('Akun berhasil diperbarui!');
+
+    try {
+      const payload = {
+        email: accountData.email,
+      };
+
+      if (accountData.password) {
+        payload.password = accountData.password;
+      }
+
+      const response = await authenticatedFetch('/api/account', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        alert('Akun berhasil diperbarui!');
+        refreshUser(); // Refresh user context
+        setAccountData(prev => ({
+          ...prev,
+          password: '',
+          confirmPassword: ''
+        }));
+      } else {
+        alert(data.message || 'Gagal memperbarui akun');
+      }
+    } catch (error) {
+      console.error('Error updating account:', error);
+      alert('Terjadi kesalahan saat memperbarui akun');
+    }
   };
 
-  if (loading) {
+  if (userLoading) {
     return (
       <MainLayout title="Pengaturan" subtitle="Kelola profil dan akun Anda">
         <div className={styles['skeleton-page']}>
@@ -291,8 +367,8 @@ const Pengaturan = () => {
                     label="Nomor Telepon"
                     name="phone"
                     type="tel"
-                    value={accountData.phone}
-                    onChange={handleAccountChange}
+                    value={profileData.phone}
+                    onChange={handleProfileChange}
                     placeholder="Contoh: 081234567890"
                   />
                 </Form.Row>
@@ -423,7 +499,7 @@ const Pengaturan = () => {
                   />
                   <Input
                     label="Jabatan"
-                    name="jabatanId"
+                    name="jabatan"
                     value={profileData.jabatan}
                     onChange={handleProfileChange}
                     placeholder="Masukkan jabatan"
