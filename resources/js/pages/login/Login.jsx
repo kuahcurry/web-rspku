@@ -9,7 +9,7 @@ import styles from './Login.module.css';
 function Login() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    email: '',
+    nik: '',
     password: ''
   });
   const [errors, setErrors] = useState({});
@@ -17,10 +17,25 @@ function Login() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value
-    });
+    
+    // Special handling for NIK input - only numeric and max 16 digits
+    if (name === 'nik') {
+      // Remove any non-numeric characters
+      const numericValue = value.replace(/\D/g, '');
+      // Limit to 16 digits
+      const limitedValue = numericValue.slice(0, 16);
+      
+      setFormData({
+        ...formData,
+        [name]: limitedValue
+      });
+    } else {
+      setFormData({
+        ...formData,
+        [name]: value
+      });
+    }
+    
     // Clear error for this field when user starts typing
     if (errors[name]) {
       setErrors({ ...errors, [name]: null });
@@ -86,14 +101,16 @@ function Login() {
                 <h1>Selamat Datang</h1>
               </div>
               <Input
-                label="Email"
-                type="email"
-                name="email"
-                placeholder="Masukkan Email"
-                value={formData.email}
+                label="NIK"
+                type="text"
+                name="nik"
+                placeholder="Masukkan NIK (16 digit)"
+                value={formData.nik}
                 onChange={handleChange}
                 required
-                error={errors.email?.[0]}
+                pattern="[0-9]{16}"
+                maxLength={16}
+                error={errors.nik?.[0]}
                 disabled={isSubmitting}
               />
 
