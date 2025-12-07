@@ -44,9 +44,13 @@ const Navbar = ({ onMenuToggle, sidebarOpen }) => {
           </div>
           {dropdownOpen && (
             <div className="user-dropdown">
+              <Link to="/profil" className="dropdown-item" onClick={() => setDropdownOpen(false)}>
+                <MdPerson size={18} />
+                <span>Profil Saya</span>
+              </Link>
               <Link to="/pengaturan" className="dropdown-item" onClick={() => setDropdownOpen(false)}>
                 <MdSettings size={18} />
-                <span>Ganti Password</span>
+                <span>Pengaturan</span>
               </Link>
               <div className="dropdown-divider"></div>
               <Link to="/login" className="dropdown-item logout" onClick={() => setDropdownOpen(false)}>

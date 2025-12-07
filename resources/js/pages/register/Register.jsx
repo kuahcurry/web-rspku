@@ -4,7 +4,7 @@ import Form from '../../components/form/Form';
 import Input from '../../components/input/Input';
 import Button from '../../components/button/Button';
 import { useIndonesiaRegion } from '../../hooks/useIndonesiaRegion';
-import './Register.css';
+import styles from './Register.module.css';
 
 function Register() {
   const navigate = useNavigate();
@@ -124,29 +124,29 @@ function Register() {
   };
 
   return (
-    <div className="register-page">
-      <div className="register-container">
+    <div className={styles['register-page']}>
+      <div className={styles['register-container']}>
         {/* Left Side Image with Logo */}
-        <div className="left-panel">
-          <div className="logo-container">
-            <img src="favicon.ico" alt="Logo Muhammadiyah" className="logo" />
+        <div className={styles['left-panel']}>
+          <div className={styles['logo-container']}>
+            <img src="favicon.ico" alt="Logo Muhammadiyah" className={styles.logo} />
           </div>
-          <div className="building-image"></div>
+          <div className={styles['building-image']}></div>
         </div>
 
         {/* Decorative Circles */}
-        <div className="circle circle-2"></div>
-        <div className="circle circle-1"></div>
-        <div className="circle circle-3"></div>
+        <div className={`${styles.circle} ${styles['circle-2']}`}></div>
+        <div className={`${styles.circle} ${styles['circle-1']}`}></div>
+        <div className={`${styles.circle} ${styles['circle-3']}`}></div>
 
         {/* Register Card */}
-        <div className="register-card">
-          <div className="register-content">
-            <div className="register-header">
+        <div className={styles['register-card']}>
+          <div className={styles['register-content']}>
+            <div className={styles['register-header']}>
               <h1>Daftar Akun</h1>
             </div>
             
-            <Form onSubmit={handleRegister} className="register-form">
+            <Form onSubmit={handleRegister} className={styles['register-form']}>
               <Form.Row columns={2}>
                 <Input
                   label="NIK"
@@ -323,11 +323,11 @@ function Register() {
                 {isSubmitting ? 'Mendaftar...' : 'Daftar'}
             </Button>
 
-            <div className="login-link">
+            <div className={styles['login-link']}>
               <a href="/login">Sudah Punya Akun?</a>
             </div>
 
-            <div className="register-footer">
+            <div className={styles['register-footer']}>
               <p>Petugas Rumah Sakit</p>
               <p>PKU Muhammadiyah Gombong</p>
             </div>
