@@ -5,6 +5,8 @@ import Button from '../../components/button/Button';
 import { FaEdit } from 'react-icons/fa';
 import { useUser } from '../../contexts/UserContext';
 import { isAuthenticated } from '../../utils/auth';
+import { getProvinceNameById, getRegencyNameById, getDistrictNameById, getVillageNameById } from '../../services/indonesiaRegion';
+import { formatDateToIndonesian } from '../../utils/dateFormatter';
 import styles from './ProfilSaya.module.css';
 
 const ProfileSaya = () => {
@@ -12,6 +14,12 @@ const ProfileSaya = () => {
   const { user, loading: userLoading } = useUser();
   const [avatarError, setAvatarError] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState('https://i.pravatar.cc/300?img=64');
+  const [regionNames, setRegionNames] = useState({
+    province: '',
+    regency: '',
+    district: '',
+    village: ''
+  });
 
   const [formData, setFormData] = useState({
     namaLengkap: '',
@@ -63,8 +71,34 @@ const ProfileSaya = () => {
         unitKerja: user.unit_kerja || '',
         tanggalMulaiBekerja: user.tanggal_mulai_kerja || ''
       });
+
+      // Fetch region names
+      fetchRegionNames(user);
     }
   }, [navigate, user]);
+
+  // Fetch region names from IDs
+  const fetchRegionNames = async (userData) => {
+    if (!userData) return;
+
+    try {
+      const [provinceName, regencyName, districtName, villageName] = await Promise.all([
+        userData.province ? getProvinceNameById(userData.province) : null,
+        userData.province && userData.regency ? getRegencyNameById(userData.province, userData.regency) : null,
+        userData.regency && userData.district ? getDistrictNameById(userData.regency, userData.district) : null,
+        userData.district && userData.village ? getVillageNameById(userData.district, userData.village) : null
+      ]);
+
+      setRegionNames({
+        province: provinceName || '',
+        regency: regencyName || '',
+        district: districtName || '',
+        village: villageName || ''
+      });
+    } catch (error) {
+      console.error('Error fetching region names:', error);
+    }
+  };
 
   if (userLoading) {
     return (
@@ -153,7 +187,7 @@ const ProfileSaya = () => {
                 <span className={styles['info-label']}>Tempat, Tanggal Lahir</span>
                 <span className={styles['info-value']}>
                   {formData.tempatLahir && formData.tanggalLahir 
-                    ? `${formData.tempatLahir}, ${formData.tanggalLahir}` 
+                    ? `${formData.tempatLahir}, ${formatDateToIndonesian(formData.tanggalLahir)}` 
                     : '-'}
                 </span>
               </div>
@@ -167,7 +201,11 @@ const ProfileSaya = () => {
               </div>
               <div className={`${styles['info-item']} ${styles['full-width']}`}>
                 <span className={styles['info-label']}>Alamat</span>
-                <span className={styles['info-value']}>{formData.alamatDetail && formData.kelurahanId && formData.kecamatanId && formData.kabupatenId && formData.provinsiId ? `${formData.alamatDetail}, ${formData.kelurahanId}, ${formData.kecamatanId}, ${formData.kabupatenId}, ${formData.provinsiId}` : '-'}</span>
+                <span className={styles['info-value']}>
+                  {formData.alamatDetail && (regionNames.village || regionNames.district || regionNames.regency || regionNames.province)
+                    ? `${formData.alamatDetail}${regionNames.village ? ', ' + regionNames.village : ''}${regionNames.district ? ', ' + regionNames.district : ''}${regionNames.regency ? ', ' + regionNames.regency : ''}${regionNames.province ? ', ' + regionNames.province : ''}`
+                    : (formData.alamatDetail || '-')}
+                </span>
               </div>
             </div>
         </div>
@@ -196,7 +234,7 @@ const ProfileSaya = () => {
               </div>
               <div className={styles['info-item']}>
                 <span className={styles['info-label']}>Tanggal Mulai Bekerja</span>
-                <span className={styles['info-value']}>{formData.tanggalMulaiBekerja || '-'}</span>
+                <span className={styles['info-value']}>{formData.tanggalMulaiBekerja ? formatDateToIndonesian(formData.tanggalMulaiBekerja) : '-'}</span>
               </div>
             </div>
           </div>

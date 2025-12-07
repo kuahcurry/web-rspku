@@ -134,20 +134,24 @@ export const authenticatedFetch = async (url, options = {}) => {
     throw new Error('Not authenticated');
   }
   
-  const defaultOptions = {
-    headers: {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-      'Authorization': authHeader,
-    },
+  // Check if body is FormData to avoid setting Content-Type
+  const isFormData = options.body instanceof FormData;
+  
+  const defaultHeaders = {
+    'Accept': 'application/json',
+    'Authorization': authHeader,
   };
   
+  // Only add Content-Type for non-FormData requests
+  if (!isFormData) {
+    defaultHeaders['Content-Type'] = 'application/json';
+  }
+  
   const mergedOptions = {
-    ...defaultOptions,
     ...options,
     headers: {
-      ...defaultOptions.headers,
-      ...options.headers,
+      ...defaultHeaders,
+      ...(options.headers || {}),
     },
   };
   
