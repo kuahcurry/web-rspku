@@ -232,6 +232,7 @@ const DokumenLegalitas = () => {
     );
   }
 
+
   return (
     <MainLayout>
         <div className={styles['dokumen-header']}>
@@ -402,51 +403,58 @@ const DokumenLegalitas = () => {
           size="large"
           padding="normal"
         >
-          <div className={styles['modal-content']}>
-            <div className={styles['doc-info-header']}>
+          <div className={styles.modalContent}>
+            <div className={styles.metaRow}>
               <div>
-                <p className={styles['doc-name']}>
-                  {selectedDoc?.file_path ? selectedDoc.file_path.split('/').pop() : 'File belum tersedia'}
+                <p className={styles.metaLabel}>Nomor Dokumen</p>
+                <p className={styles.metaValue}>{selectedDoc?.nomor_sk || '-'}</p>
+              </div>
+              <div>
+                <p className={styles.metaLabel}>Tanggal Mulai</p>
+                <p className={styles.metaValue}>
+                  {selectedDoc?.tanggal_mulai ? formatDateToIndonesian(selectedDoc.tanggal_mulai) : '-'}
                 </p>
-                <p className={styles['doc-meta']}>{selectedDoc?.nomor_sk || 'Nomor belum tersedia'}</p>
-                <p className={styles['doc-meta']}>
-                  Berlaku: {selectedDoc?.tanggal_mulai ? formatDateToIndonesian(selectedDoc.tanggal_mulai) : '-'} - {selectedDoc?.tanggal_berlaku ? formatDateToIndonesian(selectedDoc.tanggal_berlaku) : '-'}
+              </div>
+              <div>
+                <p className={styles.metaLabel}>Berlaku Sampai</p>
+                <p className={styles.metaValue}>
+                  {selectedDoc?.tanggal_berlaku ? formatDateToIndonesian(selectedDoc.tanggal_berlaku) : '-'}
                 </p>
               </div>
             </div>
             {loadingPdf && (
-              <div className={styles['pdf-viewer']}>
+              <div className={styles.pdfFrameWrapper}>
                 <p style={{ textAlign: 'center', padding: '2rem' }}>Memuat dokumen...</p>
               </div>
             )}
             {!loadingPdf && pdfUrl && (
-              <div className={styles['pdf-viewer']}>
+              <div className={styles.pdfFrameWrapper}>
                 <iframe
                   src={pdfUrl}
-                  className={styles['pdf-frame']}
+                  className={styles.pdfFrame}
                   title="PDF Viewer"
                 />
               </div>
             )}
             {!loadingPdf && !pdfUrl && selectedDoc && (
-              <div className={styles['pdf-viewer']}>
+              <div className={styles.pdfFrameWrapper}>
                 <p style={{ textAlign: 'center', padding: '2rem' }}>Gagal memuat dokumen</p>
               </div>
             )}
-          </div>
-          <div className={styles['modal-actions']}>
-            <Button variant="danger" onClick={() => setShowViewModal(false)}>
-              Tutup
-            </Button>
-            <Button
-              variant="primary"
-              icon={<MdDownload />}
-              iconPosition="left"
-              onClick={() => selectedDoc && handleDownload(selectedDoc)}
-              disabled={!selectedDoc?.id || loadingPdf}
-            >
-              Download
-            </Button>
+            <div className={styles.modalActions}>
+              <Button variant="danger" onClick={() => setShowViewModal(false)}>
+                Tutup
+              </Button>
+              <Button
+                variant="primary"
+                icon={<MdDownload />}
+                iconPosition="left"
+                onClick={() => selectedDoc && handleDownload(selectedDoc)}
+                disabled={!selectedDoc?.id || loadingPdf}
+              >
+                Download
+              </Button>
+            </div>
           </div>
         </Modal>
     </MainLayout>

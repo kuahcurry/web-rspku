@@ -15,19 +15,25 @@ const legalDocs = [
   {
     id: 'surat-keterangan',
     title: 'Surat Keterangan',
-    expires: '31/12/2025',
+    number: 'SK/2024/001',
+    startDate: '1/1/2024',
+    endDate: '31/12/2025',
     status: 'Aktif'
   },
   {
     id: 'str',
     title: 'STR (Surat Tanda Registrasi)',
-    expires: '15/02/2025',
+    number: 'STR/2023/456',
+    startDate: '1/1/2024',
+    endDate: '15/02/2025',
     status: 'Segera Habis'
   },
   {
     id: 'sip',
     title: 'SIP (Surat Izin Praktek)',
-    expires: '31/12/2023',
+    number: 'SIP/2024/789',
+    startDate: '1/1/2022',
+    endDate: '31/12/2023',
     status: 'Sudah Habis'
   }
 ];
@@ -279,18 +285,33 @@ const Beranda = () => {
           {legalDocs.length === 0 ? (
             <p>Belum ada data dokumen legalitas.</p>
           ) : (
-            <div className={styles['documents-grid']}>
+            <div className={styles['legal-grid']}>
               {legalDocs.map((doc) => (
-                <Card key={doc.id} variant="secondary" padding="normal">
-                  <div className={styles['documents-item-content']}>
-                    <div>
-                      <p className={styles['documents-subtitle']}>{doc.title}</p>
-                      <span className={styles['documents-main']}>Berlaku sampai {doc.expires}</span>
-                    </div>
-                    <div className={styles['status-button-wrapper']}>
-                      <Button variant={getStatusVariant(doc.status)} size="small" disabled>
-                        {doc.status}
-                      </Button>
+                <Card
+                  key={doc.id}
+                  variant="secondary"
+                  padding="normal"
+                  title={doc.title}
+                  subtitle={doc.number}
+                  headerAction={
+                    <Button variant={getStatusVariant(doc.status)} size="small" disabled>
+                      {doc.status}
+                    </Button>
+                  }
+                  className={styles['legal-card']}
+                >
+                  <div className={styles['legal-content']}>
+                    <div className={styles['legal-info']}>
+                      <div className={styles['legal-dates']}>
+                        <div className={styles['info-block']}>
+                          <span className={styles['info-label']}>Tanggal Mulai</span>
+                          <span className={styles['info-value']}>{doc.startDate}</span>
+                        </div>
+                        <div className={styles['info-block']}>
+                          <span className={styles['info-label']}>Berlaku Sampai</span>
+                          <span className={styles['info-value']}>{doc.endDate}</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </Card>
@@ -496,6 +517,3 @@ const Beranda = () => {
 };
 
 export default Beranda;
-
-
-

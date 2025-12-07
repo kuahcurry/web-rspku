@@ -153,7 +153,7 @@ const ProfileSaya = () => {
               <p className={styles['profile-header-nik']}>
                 {formData.nik ? `NIK: ${formData.nik}` : 'NIK belum tersedia'}
               </p>
-              <p className={styles['profile-header-nik']}>
+              <p className={styles['profile-header-nip']}>
                 {formData.nip ? `NIP: ${formData.nip}` : 'NIP belum tersedia'}
               </p>
             </div>

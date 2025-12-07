@@ -299,6 +299,69 @@
   color: var(--text-secondary); 
 }
 
+/* Legal docs mimic Dokumen page */
+.legal-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.legal-card :global(.card-header) {
+  border: none;
+  padding: 1.25rem 1.25rem 0.4rem 1.25rem;
+}
+
+.legal-card :global(.card-body) {
+  padding: 0 1.25rem 1.25rem 1.25rem;
+}
+
+.legal-card :global(.card-title) {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.legal-card :global(.card-subtitle) {
+  margin-top: 0.25rem;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
+
+.legal-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.legal-dates {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.info-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.info-label {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.info-value {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.legal-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
 /* Progress Pengisian */
 .progress-grid {
   display: grid;
@@ -420,6 +483,28 @@
     flex-direction: column;
     align-items: stretch;
     gap: 1rem;
+  }
+
+  /* Smaller legal docs typography on mobile */
+  .legal-card :global(.card-title) {
+    font-size: 0.95rem;
+  }
+
+  .legal-card :global(.card-subtitle) {
+    font-size: 0.8rem;
+  }
+
+  .info-label {
+    font-size: 0.78rem;
+  }
+
+  .info-value {
+    font-size: 0.78rem;
+  }
+
+  /* Keep dates side-by-side on mobile */
+  .legal-dates {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .profile-content > :global(button) {
