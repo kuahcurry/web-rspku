@@ -167,6 +167,15 @@
 .register-container form{
   margin-bottom: 1rem;
 }
+
+.register-content :global(.error-message) {
+  display: block;
+  margin-top: 0.35rem;
+  color: var(--error-light);
+  font-weight: 500;
+  line-height: 1.4;
+}
+
 .login-link {
   text-align: center;
   margin-top: 0.5rem;
@@ -198,6 +207,18 @@
 
 .register-footer p {
   margin: 0.2rem 0;
+}
+
+.register-error {
+  margin: 0.5rem 0 0.75rem 0;
+  padding: 0.75rem 0.9rem;
+  border-radius: var(--radius-md);
+  background: var(--error-light);
+  color: var(--error-dark);
+  border: 1px solid color-mix(in srgb, var(--error-red) 35%, transparent);
+  font-weight: 600;
+  font-size: 0.95rem;
+  line-height: 1.5;
 }
 
 /* Responsive Design */
