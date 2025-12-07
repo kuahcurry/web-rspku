@@ -77,6 +77,13 @@
   flex-shrink: 0;
 }
 
+.actionButtons {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+
 .sectionTitle {
   margin: 0;
   font-size: 1.5rem;
@@ -91,6 +98,13 @@
   padding: 0.5rem 0 0.75rem 0;
 }
 
+.deleteNotice {
+  margin: 0.35rem 0 0;
+  color: #c2410c;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
 .emptyText {
   color: #6b7280;
   margin: 0.5rem 0;
@@ -101,6 +115,18 @@
   border-radius: 16px;
   border: none;
   box-shadow: none;
+}
+
+.deleteSelectable {
+  border: 1px dashed var(--border-grey);
+  background: var(--soft-grey) !important;
+  cursor: pointer;
+}
+
+.deleteSelected {
+  border: 1px solid #ef4444;
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2);
+  background: #fff8f6 !important;
 }
 
 .itemContent {
@@ -146,10 +172,26 @@
 .actions {
   display: flex;
   justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.deleteList {
+  margin: 0.25rem 0 0;
+  padding-left: 1.1rem;
+  color: var(--heading-main);
+  font-weight: 600;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.deleteListItem {
+  list-style: disc;
 }
 
 /* Modal Styles */
-.modal-content {
+.modal-content,
+.modalContent {
   display: flex;
   flex-direction: column;
   gap: 1rem;
@@ -174,24 +216,52 @@
   color: var(--text-secondary);
 }
 
-.pdf-viewer {
-  width: 100%;
-  height: 600px;
+.metaRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0.5rem 1rem;
+}
+
+.metaLabel {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.metaValue {
+  margin: 0;
+  color: var(--heading-main);
+  font-weight: 600;
+}
+
+.fileInfo {
+  display: flex;
+  gap: 0.75rem;
+  align-items: baseline;
+}
+
+.pdfFrameWrapper {
   border: 1px solid var(--border-grey);
   border-radius: var(--radius-lg);
   overflow: hidden;
+  height: 360px;
 }
 
-.pdf-frame {
+.pdfFrame {
   width: 100%;
   height: 100%;
   border: none;
 }
 
-.modal-actions {
+.modalActions {
   display: flex;
   justify-content: flex-end;
+  align-items: center;
   gap: 0.75rem;
+  flex-wrap: wrap;
+  padding-top: 1.25rem;
+  margin-top: 0.5rem;
+  border-top: 1px solid var(--border-grey);
 }
 
 /* Upload Drop Styles */
@@ -244,7 +314,7 @@
   }
 
   .sectionTitle {
-    font-size: 1.25rem;
+    font-size: 1.5rem;
   }
 
   .itemTitle {
@@ -276,11 +346,15 @@
     font-size: 1rem;
   }
 
-  .modal-actions {
+  .metaRow {
+    grid-template-columns: 1fr;
+  }
+
+  .modalActions {
     flex-direction: column;
   }
 
-  .modal-actions :global(button) {
+  .modalActions :global(button) {
     width: 100%;
   }
 }

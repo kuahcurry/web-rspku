@@ -5,55 +5,77 @@ import Button from '../../components/button/Button';
 import Modal from '../../components/modal/Modal';
 import Form from '../../components/form/Form';
 import Input from '../../components/input/Input';
-import { MdAdd, MdVisibility, MdCloudUpload, MdSave, MdDownload } from 'react-icons/md';
+import { MdAdd, MdVisibility, MdCloudUpload, MdSave, MdDownload, MdDelete } from 'react-icons/md';
 import styles from './Penugasan.module.css';
 
 const initialAssignments = [
   {
     id: 1,
     unit: 'IGD (Instalasi Gawat Darurat)',
-    periode: 'Jan 2025 - Sekarang',
+    startDate: '2025-01-01',
+    endDate: '',
     penanggungJawab: 'Dr. Ahmad Fauzi, Sp.EM',
-    status: 'Aktif',
-    file: 'penugasan_igd_2025.pdf'
+    file: 'penugasan_igd_2025.pdf',
+    fileUrl: '/storage/penugasan_igd_2025.pdf'
   },
   {
     id: 2,
     unit: 'Rawat Inap Lantai 3',
-    periode: 'Jul 2024 - Des 2024',
+    startDate: '2024-07-01',
+    endDate: '2024-12-31',
     penanggungJawab: 'Ns. Siti Aminah, M.Kep',
-    status: 'Selesai',
-    file: 'penugasan_ri3_2024.pdf'
+    file: 'penugasan_ri3_2024.pdf',
+    fileUrl: '/storage/penugasan_ri3_2024.pdf'
   },
   {
     id: 3,
     unit: 'Poliklinik Umum',
-    periode: 'Jan 2024 - Jun 2024',
+    startDate: '2024-01-01',
+    endDate: '2024-06-30',
     penanggungJawab: 'Dr. Budi Santoso, Sp.PD',
-    status: 'Selesai',
-    file: 'penugasan_poli_2024.pdf'
+    file: 'penugasan_poli_2024.pdf',
+    fileUrl: '/storage/penugasan_poli_2024.pdf'
   }
 ];
 
-const getStatusClass = (status) => {
+const formatDate = (value) => {
+  if (!value) return '-';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return date.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+};
+
+const deriveStatus = (endDate) => {
+  if (!endDate) return 'Aktif';
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const end = new Date(endDate);
+  if (Number.isNaN(end.getTime())) return 'Aktif';
+  end.setHours(0, 0, 0, 0);
+  return end >= today ? 'Aktif' : 'Selesai';
+};
+
+const getStatusVariant = (status) => {
   const normalized = (status || '').toLowerCase();
-  if (normalized === 'aktif') return styles.statusAktif;
-  if (normalized === 'selesai') return styles.statusSelesai;
-  return '';
+  if (normalized === 'aktif') return 'success';
+  return 'secondary';
 };
 
 const Penugasan = () => {
   const [assignments, setAssignments] = useState(initialAssignments);
   const [showViewModal, setShowViewModal] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteMode, setDeleteMode] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
+  const [deleteTargets, setDeleteTargets] = useState([]);
   const [formData, setFormData] = useState({
     unit: '',
     penanggungJawab: '',
-    periodeMulai: '',
-    periodeSelesai: '',
-    status: 'Aktif',
-    file: null
+    startDate: '',
+    endDate: '',
+    file: null,
+    fileUrl: null
   });
 
   const handleViewClick = (item) => {
@@ -65,12 +87,60 @@ const Penugasan = () => {
     setFormData({
       unit: '',
       penanggungJawab: '',
-      periodeMulai: '',
-      periodeSelesai: '',
-      status: 'Aktif',
-      file: null
+      startDate: '',
+      endDate: '',
+      file: null,
+      fileUrl: null
     });
     setShowAddModal(true);
+  };
+
+  const handleStartDelete = () => {
+    setDeleteMode(true);
+    setDeleteTargets([]);
+    setShowDeleteModal(false);
+  };
+
+  const handleCancelDelete = () => {
+    setDeleteMode(false);
+    setDeleteTargets([]);
+    setShowDeleteModal(false);
+  };
+
+  const handleSelectForDelete = (item) => {
+    if (!deleteMode) return;
+    setDeleteTargets((prev) => {
+      const exists = prev.find((entry) => entry.id === item.id);
+      if (exists) {
+        return prev.filter((entry) => entry.id !== item.id);
+      }
+      return [...prev, item];
+    });
+  };
+
+  const handleConfirmDelete = () => {
+    if (!deleteTargets.length) return;
+    const idsToDelete = deleteTargets.map((item) => item.id);
+    setAssignments((prev) => prev.filter((item) => !idsToDelete.includes(item.id)));
+    if (selectedItem && idsToDelete.includes(selectedItem.id)) {
+      setSelectedItem(null);
+      setShowViewModal(false);
+    }
+    setShowDeleteModal(false);
+    setDeleteTargets([]);
+    setDeleteMode(false);
+  };
+
+  const handleDeleteButtonClick = () => {
+    if (!deleteMode) {
+      handleStartDelete();
+      return;
+    }
+    if (deleteTargets.length) {
+      setShowDeleteModal(true);
+      return;
+    }
+    handleCancelDelete();
   };
 
   const handleInputChange = (e) => {
@@ -80,7 +150,8 @@ const Penugasan = () => {
 
   const handleFileChange = (e) => {
     const file = e.target.files?.[0];
-    setFormData({ ...formData, file });
+    const fileUrl = file ? URL.createObjectURL(file) : null;
+    setFormData({ ...formData, file, fileUrl });
   };
 
   const handleSubmit = (e) => {
@@ -90,10 +161,11 @@ const Penugasan = () => {
     const newItem = {
       id: Date.now(),
       unit: formData.unit,
-      periode: `${formData.periodeMulai} - ${formData.periodeSelesai || 'Sekarang'}`,
       penanggungJawab: formData.penanggungJawab,
-      status: formData.status,
-      file: formData.file?.name || 'lampiran_penugasan.pdf'
+      startDate: formData.startDate,
+      endDate: formData.endDate,
+      file: formData.file?.name || 'lampiran_penugasan.pdf',
+      fileUrl: formData.fileUrl
     };
 
     setAssignments([newItem, ...assignments]);
@@ -103,9 +175,8 @@ const Penugasan = () => {
   const isFormValid =
     formData.unit &&
     formData.penanggungJawab &&
-    formData.periodeMulai &&
-    formData.periodeSelesai &&
-    formData.status &&
+    formData.startDate &&
+    formData.endDate &&
     formData.file;
 
   return (
@@ -120,35 +191,89 @@ const Penugasan = () => {
           <div className={styles.headerRow}>
             <div>
               <h3 className={styles.sectionTitle}>Riwayat Penugasan</h3>
-              <p className={styles.sectionSubtitle}>Pantau status penugasan beserta penanggung jawab dan lampiran</p>
             </div>
-            <Button variant="primary" size="small" icon={<MdAdd />} iconPosition="left" onClick={handleAddClick}>
-              Tambah
-            </Button>
+            <div className={styles.actionButtons}>
+              <Button
+                variant="success"
+                icon={<MdAdd />}
+                iconPosition="left"
+                onClick={handleAddClick}
+                className={`${styles.compactButton} ${styles.headerAction}`}
+              >
+                Tambah
+              </Button>
+              <Button
+                variant="danger"
+                icon={<MdDelete />}
+                iconPosition="left"
+                onClick={handleDeleteButtonClick}
+                className={`${styles.compactButton} ${styles.headerAction}`}
+              >
+                {deleteMode
+                  ? deleteTargets.length
+                    ? `Hapus (${deleteTargets.length})`
+                    : 'Batal'
+                  : 'Hapus'}
+              </Button>
+            </div>
           </div>
+
+          {deleteMode && (
+            <p className={styles.deleteNotice}>
+              Pilih satu atau lebih kartu penugasan yang ingin dihapus, lalu klik Hapus.
+            </p>
+          )}
 
           <div className={styles.list}>
             {assignments.map((item) => (
-              <Card key={item.id} className={styles.itemCard} shadow={false}>
+              <Card
+                key={item.id}
+                className={`${styles.itemCard} ${deleteMode ? styles.deleteSelectable : ''} ${
+                  deleteTargets.some((entry) => entry.id === item.id) ? styles.deleteSelected : ''
+                }`}
+                shadow={false}
+                onClick={() => handleSelectForDelete(item)}
+              >
                 <div className={styles.itemBody}>
                   <div className={styles.itemHead}>
                     <h4 className={styles.itemTitle}>{item.unit}</h4>
-                    <span className={`${styles.statusBadge} ${getStatusClass(item.status)}`}>{item.status}</span>
+                    <Button
+                      variant={getStatusVariant(deriveStatus(item.endDate))}
+                      size="small"
+                      disabled
+                      className={styles.compactButton}
+                    >
+                      {deriveStatus(item.endDate)}
+                    </Button>
                   </div>
 
                   <div className={styles.itemGrid}>
                     <div className={styles.metaBlock}>
                       <p className={styles.metaLabel}>Periode</p>
-                      <p className={styles.metaValue}>{item.periode}</p>
+                      <p className={styles.metaValue}>
+                        {formatDate(item.startDate)} - {item.endDate ? formatDate(item.endDate) : 'Sekarang'}
+                      </p>
                     </div>
                     <div className={styles.metaBlock}>
                       <p className={styles.metaLabel}>Penanggung Jawab</p>
                       <p className={styles.metaValue}>{item.penanggungJawab}</p>
                     </div>
-                    <div className={styles.fileBlock}>
+                    <div className={styles.metaBlock}>
                       <p className={styles.metaLabel}>File</p>
                       <div className={styles.fileAction}>
-                        <a href="#" className={styles.fileLink}>
+                        <a
+                          href={item.fileUrl || '#'}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={styles.fileLink}
+                          onClick={(e) => {
+                            if (deleteMode) {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              handleSelectForDelete(item);
+                            }
+                          }}
+                        >
                           {item.file}
                         </a>
                         <Button
@@ -156,7 +281,11 @@ const Penugasan = () => {
                           size="small"
                           icon={<MdVisibility />}
                           iconPosition="left"
-                          onClick={() => handleViewClick(item)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleViewClick(item);
+                          }}
+                          className={`${styles.compactButton} ${styles.viewButton}`}
                         >
                           Lihat
                         </Button>
@@ -181,37 +310,78 @@ const Penugasan = () => {
           <div className={styles.metaRow}>
             <div>
               <p className={styles.metaLabel}>Periode</p>
-              <p className={styles.metaValue}>{selectedItem?.periode || '-'}</p>
+              <p className={styles.metaValue}>
+                {formatDate(selectedItem?.startDate)} -{' '}
+                {selectedItem?.endDate ? formatDate(selectedItem?.endDate) : 'Sekarang'}
+              </p>
             </div>
             <div>
               <p className={styles.metaLabel}>Penanggung Jawab</p>
               <p className={styles.metaValue}>{selectedItem?.penanggungJawab || '-'}</p>
             </div>
-            <div>
-              <p className={styles.metaLabel}>Status</p>
-              <p className={`${styles.metaValue} ${styles.metaStatus}`}>
-                <span className={`${styles.statusBadge} ${getStatusClass(selectedItem?.status)}`}>
-                  {selectedItem?.status || '-'}
-                </span>
-              </p>
-            </div>
           </div>
-          <div className={styles.filePreview}>
-            <div className={styles.fileInfo}>
-              <MdCloudUpload size={32} />
-              <div>
-                <p className={styles.metaLabel}>Lampiran</p>
-                <p className={styles.metaValue}>{selectedItem?.file || 'Belum ada file'}</p>
-              </div>
+          {selectedItem?.fileUrl && (
+            <div className={styles.pdfFrameWrapper}>
+              <iframe title="Preview PDF" src={selectedItem.fileUrl} className={styles.pdfFrame} />
             </div>
+          )}
+          <div className={styles.modalActions}>
+            <Button variant="danger" onClick={() => setShowViewModal(false)}>
+              Tutup
+            </Button>
             <Button
               variant="primary"
               icon={<MdDownload />}
               iconPosition="left"
-              disabled={!selectedItem?.file}
-              onClick={() => selectedItem?.file && window.open(`/storage/${selectedItem.file}`, '_blank')}
+              onClick={() => {
+                const downloadUrl =
+                  selectedItem?.fileUrl || (selectedItem?.file ? `/storage/${selectedItem.file}` : null);
+                if (downloadUrl) {
+                  window.open(downloadUrl, '_blank');
+                }
+              }}
+              disabled={!selectedItem?.fileUrl && !selectedItem?.file}
             >
               Download
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={showDeleteModal}
+        onClose={handleCancelDelete}
+        title="Konfirmasi Hapus"
+        size="small"
+        padding="normal"
+      >
+        <div className={styles.modalContent}>
+          <p className={styles.metaValue}>
+            Hapus {deleteTargets.length} penugasan terpilih?
+          </p>
+          <p className={styles.metaLabel}>
+            Tindakan ini akan menghapus penugasan dari daftar riwayat.
+          </p>
+          {!!deleteTargets.length && (
+            <ul className={styles.deleteList}>
+              {deleteTargets.map((item) => (
+                <li key={item.id} className={styles.deleteListItem}>
+                  {item.unit}
+                </li>
+              ))}
+            </ul>
+          )}
+          <div className={styles.modalActions}>
+            <Button variant="secondary" onClick={handleCancelDelete}>
+              Batal
+            </Button>
+            <Button
+              variant="danger"
+              icon={<MdDelete />}
+              iconPosition="left"
+              onClick={handleConfirmDelete}
+            >
+              Hapus
             </Button>
           </div>
         </div>
@@ -247,46 +417,53 @@ const Penugasan = () => {
           <Form.Row columns={2} className={styles.formRow}>
             <Input
               label="Periode Mulai"
-              name="periodeMulai"
-              placeholder="Contoh: Jan 2025"
-              value={formData.periodeMulai}
+              name="startDate"
+              type="date"
+              placeholder="Pilih tanggal mulai"
+              value={formData.startDate}
               onChange={handleInputChange}
               required
             />
             <Input
               label="Periode Selesai"
-              name="periodeSelesai"
-              placeholder="Contoh: Sekarang / Des 2025"
-              value={formData.periodeSelesai}
+              name="endDate"
+              type="date"
+              placeholder="Pilih tanggal selesai"
+              value={formData.endDate}
               onChange={handleInputChange}
               required
             />
           </Form.Row>
 
-          <Form.Row columns={2} className={styles.formRow}>
-            <Input
-              label="Status Penugasan"
-              name="status"
-              type="select"
-              value={formData.status}
-              onChange={handleInputChange}
-              options={[
-                { value: 'Aktif', label: 'Aktif' },
-                { value: 'Selesai', label: 'Selesai' }
-              ]}
-              placeholder="Pilih status"
-              required
-            />
-            <Input
-              label="Lampiran (PDF)"
-              name="file"
+          <div className={styles.fileDrop} onClick={() => document.getElementById('penugasanFile').click()}>
+            <MdCloudUpload size={40} />
+            <div className={styles.fileDropText}>
+              <p className={styles.fileDropTitle}>Pilih atau seret file ke sini</p>
+              <p className={styles.fileDropHint}>PDF, maks 5MB</p>
+              <Button
+                type="button"
+                variant="outline"
+                size="medium"
+                icon={<MdCloudUpload />}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  document.getElementById('penugasanFile').click();
+                }}
+                className={styles.fileDropButton}
+              >
+                Pilih File
+              </Button>
+              {formData.file && <p className={styles.fileDropSelected}>{formData.file.name}</p>}
+            </div>
+            <input
+              id="penugasanFile"
               type="file"
               accept=".pdf"
               onChange={handleFileChange}
-              helperText={formData.file ? formData.file.name : 'Unggah file penugasan (PDF, maks 5MB)'}
+              style={{ display: 'none' }}
               required
             />
-          </Form.Row>
+          </div>
 
           <Form.Actions align="right" className={styles.modalActions}>
             <Button variant="danger" type="button" onClick={() => setShowAddModal(false)}>

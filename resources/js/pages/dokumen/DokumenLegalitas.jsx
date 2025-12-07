@@ -125,7 +125,7 @@ const DokumenLegalitas = () => {
                       <span className={styles['info-label']}>Berlaku Sampai</span>
                       <span className={styles['info-value']}>{doc.endDate}</span>
                     </div>
-                    <div className={styles['info-block']}>
+                    <div className={`${styles['info-block']} ${styles['info-file']}`}>
                       <span className={styles['info-label']}>File</span>
                       <a className={styles['file-link']} href="#">
                         {doc.fileName}
@@ -161,7 +161,7 @@ const DokumenLegalitas = () => {
           size="medium"
           padding="normal"
         >
-          <Form onSubmit={handleUploadSubmit} className={styles['modal-content']}>
+          <Form onSubmit={handleUploadSubmit} className={styles.modalContent}>
             <Form.Row columns={2}>
               <Input
                 label="Tanggal Mulai"
@@ -194,7 +194,7 @@ const DokumenLegalitas = () => {
               </Button>
               {uploadFile && <div className={styles['upload-file-name']}>{uploadFile.name}</div>}
             </div>
-            <Form.Actions align="right" className={styles['modal-actions']}>
+            <Form.Actions align="right" className={styles.modalActions}>
               <Button variant="danger" type="button" onClick={() => setShowUploadModal(false)}>
                 Batal
               </Button>
@@ -218,39 +218,50 @@ const DokumenLegalitas = () => {
           size="large"
           padding="normal"
         >
-          <div className={styles['modal-content']}>
-            <div className={styles['doc-info-header']}>
+          <div className={styles.modalContent}>
+            <div className={styles.metaRow}>
               <div>
-                <p className={styles['doc-name']}>{selectedDoc?.fileName || 'File belum tersedia'}</p>
-                <p className={styles['doc-meta']}>{selectedDoc?.number}</p>
-                <p className={styles['doc-meta']}>
-                  Berlaku: {selectedDoc?.startDate} - {selectedDoc?.endDate}
-                </p>
+                <p className={styles.metaLabel}>Tanggal Mulai</p>
+                <p className={styles.metaValue}>{selectedDoc?.startDate || '-'}</p>
+              </div>
+              <div>
+                <p className={styles.metaLabel}>Berlaku Sampai</p>
+                <p className={styles.metaValue}>{selectedDoc?.endDate || '-'}</p>
+              </div>
+            </div>
+            <div className={styles.fileInfo}>
+              <div>
+                <p className={styles.metaLabel}>Nomor Dokumen</p>
+                <p className={styles.metaValue}>{selectedDoc?.number || '-'}</p>
+              </div>
+              <div>
+                <p className={styles.metaLabel}>File</p>
+                <p className={styles.metaValue}>{selectedDoc?.fileName || 'File belum tersedia'}</p>
               </div>
             </div>
             {selectedDoc?.fileName && (
-              <div className={styles['pdf-viewer']}>
+              <div className={styles.pdfFrameWrapper}>
                 <iframe
                   src={`/storage/${selectedDoc.fileName}`}
-                  className={styles['pdf-frame']}
+                  className={styles.pdfFrame}
                   title="PDF Viewer"
                 />
               </div>
             )}
-          </div>
-          <div className={styles['modal-actions']}>
-            <Button variant="danger" onClick={() => setShowViewModal(false)}>
-              Tutup
-            </Button>
-            <Button
-              variant="primary"
-              icon={<MdDownload />}
-              iconPosition="left"
-              onClick={() => window.open(`/storage/${selectedDoc?.fileName}`, '_blank')}
-              disabled={!selectedDoc?.fileName}
-            >
-              Download
-            </Button>
+            <div className={styles.modalActions}>
+              <Button variant="danger" onClick={() => setShowViewModal(false)}>
+                Tutup
+              </Button>
+              <Button
+                variant="primary"
+                icon={<MdDownload />}
+                iconPosition="left"
+                onClick={() => window.open(`/storage/${selectedDoc?.fileName}`, '_blank')}
+                disabled={!selectedDoc?.fileName}
+              >
+                Download
+              </Button>
+            </div>
           </div>
         </Modal>
     </MainLayout>
