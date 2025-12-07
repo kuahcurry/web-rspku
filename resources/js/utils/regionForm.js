@@ -12,10 +12,10 @@ export const buildRegionStateUpdate = ({
   const nextState = { ...state, [name]: value };
 
   if (name === 'provinsiId') {
-    const selectedProvince = provinces.find(p => p.id === value);
+    const selectedProvince = provinces.find((p) => p.value === value);
     return {
       ...nextState,
-      provinsi: selectedProvince?.name || '',
+      provinsi: selectedProvince?.label || '',
       kabupatenId: '',
       kabupaten: '',
       kecamatanId: '',
@@ -26,10 +26,10 @@ export const buildRegionStateUpdate = ({
   }
 
   if (name === 'kabupatenId') {
-    const selectedRegency = regencies.find(r => r.id === value);
+    const selectedRegency = regencies.find((r) => r.value === value);
     return {
       ...nextState,
-      kabupaten: selectedRegency?.name || '',
+      kabupaten: selectedRegency?.label || '',
       kecamatanId: '',
       kecamatan: '',
       kelurahanId: '',
@@ -38,20 +38,20 @@ export const buildRegionStateUpdate = ({
   }
 
   if (name === 'kecamatanId') {
-    const selectedDistrict = districts.find(d => d.id === value);
+    const selectedDistrict = districts.find((d) => d.value === value);
     return {
       ...nextState,
-      kecamatan: selectedDistrict?.name || '',
+      kecamatan: selectedDistrict?.label || '',
       kelurahanId: '',
       kelurahan: ''
     };
   }
 
   if (name === 'kelurahanId') {
-    const selectedVillage = villages.find(v => v.id === value);
+    const selectedVillage = villages.find((v) => v.value === value);
     return {
       ...nextState,
-      kelurahan: selectedVillage?.name || ''
+      kelurahan: selectedVillage?.label || ''
     };
   }
 

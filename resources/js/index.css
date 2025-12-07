@@ -6,13 +6,13 @@
 
 body {
   margin: 0;
-  font-family: 'Outfit', 'Inter', 'Segoe UI', sans-serif;
+  font-family: 'Outfit', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 body, input, textarea, select, button {
-  font-family: 'Outfit', 'Inter', 'Segoe UI', sans-serif;
+  font-family: 'Outfit', sans-serif;
 }
 
 #root {
