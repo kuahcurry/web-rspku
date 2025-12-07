@@ -6,7 +6,9 @@ import Button from '../../components/button/Button';
 import {
   FaChevronRight
 } from 'react-icons/fa';
-import { getUser, isAuthenticated } from '../../utils/auth';
+import { useUser } from '../../contexts/UserContext';
+import { isAuthenticated } from '../../utils/auth';
+import { getDistrictById } from '../../services/indonesiaRegion';
 import styles from './Beranda.module.css';
 
 const legalDocs = [
@@ -40,9 +42,9 @@ const getStatusVariant = (status) => {
 
 const Beranda = () => {
   const navigate = useNavigate();
+  const { user, loading: userLoading } = useUser();
   const [avatarError, setAvatarError] = useState(false);
-  const [userData, setUserData] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [districtName, setDistrictName] = useState(null);
   const avatarUrl = 'https://i.pravatar.cc/160?img=64';
 
   useEffect(() => {
@@ -51,18 +53,23 @@ const Beranda = () => {
       navigate('/login');
       return;
     }
-
-    // Get user data from localStorage
-    const user = getUser();
-    if (user) {
-      setUserData(user);
-    }
-    setLoading(false);
   }, [navigate]);
 
-  // Calculate age from date of birth (if available)
+  useEffect(() => {
+    // Fetch district name if user has district ID
+    const fetchDistrictName = async () => {
+      if (user && user.regency && user.district) {
+        const name = await getDistrictById(user.regency, user.district);
+        setDistrictName(name);
+      }
+    };
+
+    fetchDistrictName();
+  }, [user]);
+
+  // Calculate age from date of birth
   const calculateAge = (dateOfBirth) => {
-    if (!dateOfBirth) return 'N/A';
+    if (!dateOfBirth) return null;
     const today = new Date();
     const birthDate = new Date(dateOfBirth);
     let age = today.getFullYear() - birthDate.getFullYear();
@@ -73,9 +80,9 @@ const Beranda = () => {
     return age;
   };
 
-  // Calculate work duration (if available)
+  // Calculate work duration in years and months
   const calculateWorkDuration = (startDate) => {
-    if (!startDate) return 'N/A';
+    if (!startDate) return null;
     const today = new Date();
     const start = new Date(startDate);
     const years = today.getFullYear() - start.getFullYear();
@@ -83,10 +90,20 @@ const Beranda = () => {
     const totalMonths = years * 12 + months;
     const displayYears = Math.floor(totalMonths / 12);
     const displayMonths = totalMonths % 12;
+    
+    if (displayYears === 0) {
+      return `${displayMonths} Bulan`;
+    } else if (displayMonths === 0) {
+      return `${displayYears} Tahun`;
+    }
     return `${displayYears} Tahun ${displayMonths} Bulan`;
   };
 
-  if (loading) {
+  const userData = user || {};
+  const age = calculateAge(userData.tanggal_lahir);
+  const workDuration = calculateWorkDuration(userData.tanggal_mulai_kerja);
+
+  if (userLoading) {
     return (
       <MainLayout 
         title="Beranda" 
@@ -125,18 +142,18 @@ const Beranda = () => {
                 ) : null}
               </div>
               <div className={styles['profile-info']}>
-                <h2 className={styles['profile-name']}>{userData?.name || 'Nama Tidak Tersedia'}</h2>
+                <h2 className={styles['profile-name']}>{userData.name || 'Nama Tidak Tersedia'}</h2>
                 <p className={styles['profile-nip']}>
-                  <span>NIP: {userData?.nip || 'N/A'}</span>
+                  <span>NIP: {userData.nip || 'N/A'}</span>
                   <span className={styles['separator']}>|</span>
-                  <span>NIK: {userData?.nik || 'N/A'}</span>
+                  <span>NIK: {userData.nik || 'N/A'}</span>
                 </p>
                 <div className={styles['profile-badges']}>
                   <Card glass padding="small">
-                    <p>{userData?.position || 'Jabatan Tidak Tersedia'}</p>
+                    <p>{userData.jabatan || 'Jabatan Tidak Tersedia'}</p>
                   </Card>
                   <Card glass padding="small">
-                    <p>Status: {userData?.employment_status || 'Belum Diisi'}</p>
+                    <p>Status: {userData.status_kepegawaian || 'Belum Diisi'}</p>
                   </Card>
                 </div>
               </div>
@@ -149,19 +166,19 @@ const Beranda = () => {
           <div className={styles['profile-stats']}>
             <Card glass padding="compact">
               <p>Domisili</p>
-              <h1>{userData?.regency && userData?.province ? `${userData.regency}, ${userData.province}` : 'Belum Diisi'}</h1>
+              <h1>{districtName || 'Belum Diisi'}</h1>
             </Card>
             <Card glass padding="compact">
               <p>Umur</p>
-              <h1>{userData?.date_of_birth ? `${calculateAge(userData.date_of_birth)} Tahun` : 'Belum Diisi'}</h1>
+              <h1>{age !== null ? `${age} Tahun` : 'Belum Diisi'}</h1>
             </Card>
             <Card glass padding="compact">
               <p>Lama Bekerja</p>
-              <h1>{userData?.start_work_date ? calculateWorkDuration(userData.start_work_date) : 'Belum Diisi'}</h1>
+              <h1>{workDuration || 'Belum Diisi'}</h1>
             </Card>
             <Card glass padding="compact">
               <p>Unit Kerja</p>
-              <h1>{userData?.work_unit || 'Belum Diisi'}</h1>
+              <h1>{userData.unit_kerja || 'Belum Diisi'}</h1>
             </Card>
           </div>
         </div>

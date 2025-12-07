@@ -6,12 +6,14 @@ import Pengaturan from "./pages/pengaturan/Pengaturan";
 import Dokumen from "./pages/dokumen/DokumenLegalitas";
 import Pendidikan from "./pages/pendidikan/RiwayatPendidikan"; 
 import ProtectedRoute from "./components/ProtectedRoute";
+import { UserProvider } from "./contexts/UserContext";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 function App() {
   return (
     <Router>
-      <Routes>
+      <UserProvider>
+        <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
@@ -56,6 +58,7 @@ function App() {
           }
         />
       </Routes>
+      </UserProvider>
     </Router>
   );
 }
