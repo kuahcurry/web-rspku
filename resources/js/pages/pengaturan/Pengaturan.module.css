@@ -168,13 +168,9 @@
   font-size: 1.25rem;
   font-weight: 700;
   color: var(--text-main);
-  margin: 1.5rem 0 1rem 0;
+  margin-top: 1.5rem;
   padding-bottom: 0.75rem;
   border-bottom: 2px solid color-mix(in srgb, var(--primary-main) 20%, transparent);
-}
-
-.form-section-title:first-child {
-  margin-top: 0;
 }
 
 .form-section-description {
@@ -186,6 +182,44 @@
 
 .settings-form :global(.form-row) {
   gap: 1rem;
+}
+
+.settings-form :global(.input-field.input-error) {
+  border-color: color-mix(in srgb, var(--error-red) 50%, transparent);
+  background: color-mix(in srgb, var(--error-light) 35%, var(--pure-white) 65%);
+}
+
+.settings-form :global(.input-field.input-error:focus) {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--error-light) 70%, transparent);
+}
+
+.settings-form :global(.error-message) {
+  display: block;
+  margin-top: 0.35rem;
+  padding: 0.35rem 0.5rem;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--error-light) 55%, var(--pure-white) 45%);
+  color: var(--error-dark);
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.form-error {
+  margin: 0.5rem 0 0.75rem 0;
+  padding: 0.75rem 0.9rem;
+  border-radius: var(--radius-md);
+  background: var(--error-light);
+  color: var(--error-dark);
+  border: 1px solid color-mix(in srgb, var(--error-red) 35%, transparent);
+  font-weight: 600;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.account-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.5rem;
 }
 
 /* Settings Actions */
@@ -217,6 +251,10 @@
 @media (max-width: 768px) {
   .page-title {
     font-size: 1.75rem;
+  }
+
+  .account-grid {
+    grid-template-columns: 1fr;
   }
 
   .page-subtitle {
