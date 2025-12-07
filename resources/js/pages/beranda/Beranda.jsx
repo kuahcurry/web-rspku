@@ -8,7 +8,7 @@ import {
 } from 'react-icons/fa';
 import { useUser } from '../../contexts/UserContext';
 import { isAuthenticated } from '../../utils/auth';
-import { getDistrictById } from '../../services/indonesiaRegion';
+import { getDistrictNameById } from '../../services/indonesiaRegion';
 import styles from './Beranda.module.css';
 
 const legalDocs = [
@@ -59,7 +59,7 @@ const Beranda = () => {
     // Fetch district name if user has district ID
     const fetchDistrictName = async () => {
       if (user && user.regency && user.district) {
-        const name = await getDistrictById(user.regency, user.district);
+        const name = await getDistrictNameById(user.regency, user.district);
         setDistrictName(name);
       }
     };
