@@ -4,6 +4,7 @@ import Beranda from "./pages/beranda/Beranda";
 import Profil from "./pages/profil/ProfilSaya";
 import Pengaturan from "./pages/pengaturan/Pengaturan";
 import Dokumen from "./pages/dokumen/DokumenLegalitas";
+import Kredensial from "./pages/kredensial/Kredensial";
 import Pendidikan from "./pages/pendidikan/RiwayatPendidikan"; 
 import Penugasan from "./pages/penugasan/Penugasan";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -63,6 +64,14 @@ function App() {
           element={
             <ProtectedRoute>
               <Penugasan />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/kredensial"
+          element={
+            <ProtectedRoute>
+              <Kredensial />
             </ProtectedRoute>
           }
         />
