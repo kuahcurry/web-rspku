@@ -41,8 +41,7 @@
 2. Tabel Migrasinya Rapihin (Terakhir, kalo dah kelar semua, biar ga repot di tengah)
 3. Tabel User Mengikuti Data Apa saja yang ada di Profil Saya ✅ done
 
-
-
+1. 
 # Fitur Opsional Tapi Penting
 
 1. Kode verifikasi register email

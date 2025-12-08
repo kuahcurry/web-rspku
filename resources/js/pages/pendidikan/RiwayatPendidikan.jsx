@@ -1,4 +1,5 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import MainLayout from '../../layout/main/MainLayout';
 import Card from '../../components/card/Card';
 import Button from '../../components/button/Button';
@@ -7,6 +8,7 @@ import Form from '../../components/form/Form';
 import Input from '../../components/input/Input';
 import Tabs from '../../components/tabs/Tabs';
 import { MdVisibility, MdAdd, MdCloudUpload, MdSave, MdDownload, MdDelete } from 'react-icons/md';
+import { authenticatedFetch, isAuthenticated } from '../../utils/auth';
 import styles from './RiwayatPendidikan.module.css';
 
 const tabs = [
@@ -15,24 +17,14 @@ const tabs = [
   { key: 'workshop', label: 'Sertifikat Workshop / In-House Training' }
 ];
 
-const initialData = {
-  ijazah: [
-    { id: 1, title: 'S1 Keperawatan', institusi: 'Universitas Indonesia', tahun: '2020', file: 'ijazah_s1.pdf' },
-    { id: 2, title: 'D3 Keperawatan', institusi: 'Politeknik Kesehatan Jakarta', tahun: '2017', file: 'ijazah_d3.pdf' }
-  ],
-  pelatihan: [{ id: 3, title: 'BTCLS', institusi: 'RS PKU Muhammadiyah', tahun: '2024', file: 'btcls.pdf' }],
-  workshop: [
-    {
-      id: 4,
-      title: 'Workshop Patient Safety',
-      institusi: 'RS PKU Muhammadiyah',
-      tahun: '2023',
-      file: 'workshop_patient_safety.pdf'
-    }
-  ]
+const JENIS_MAPPING = {
+  'ijazah': 'Ijazah',
+  'pelatihan': 'Sertifikat Pelatihan',
+  'workshop': 'Sertifikat Workshop'
 };
 
 const RiwayatPendidikan = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('ijazah');
   const [showViewModal, setShowViewModal] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -40,16 +32,63 @@ const RiwayatPendidikan = () => {
   const [deleteMode, setDeleteMode] = useState(false);
   const [deleteTargets, setDeleteTargets] = useState([]);
   const [selectedItem, setSelectedItem] = useState(null);
-  const [dataByTab, setDataByTab] = useState(initialData);
+  const [pdfUrl, setPdfUrl] = useState(null);
+  const [loadingPdf, setLoadingPdf] = useState(false);
+  const [dataByTab, setDataByTab] = useState({
+    ijazah: [],
+    pelatihan: [],
+    workshop: []
+  });
+  const [loading, setLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
-    title: '',
+    judul: '',
     institusi: '',
-    tahun: '',
+    tahun_lulus: '',
     file: null
   });
   const fileInputRef = useRef(null);
 
   const items = dataByTab[activeTab] || [];
+
+  useEffect(() => {
+    if (!isAuthenticated()) {
+      navigate('/login');
+      return;
+    }
+    fetchData();
+  }, [navigate]);
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const response = await authenticatedFetch('/api/riwayat-pendidikan');
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        // Map API data to tab structure
+        console.log('Education data received:', data.data);
+        setDataByTab({
+          ijazah: data.data['Ijazah'] || [],
+          pelatihan: data.data['Sertifikat Pelatihan'] || [],
+          workshop: data.data['Sertifikat Workshop'] || []
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching education records:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Cleanup PDF URL
+  useEffect(() => {
+    return () => {
+      if (pdfUrl) {
+        URL.revokeObjectURL(pdfUrl);
+      }
+    };
+  }, [pdfUrl]);
 
   const handleTabChange = (key) => {
     setActiveTab(key);
@@ -58,20 +97,52 @@ const RiwayatPendidikan = () => {
     setShowDeleteModal(false);
   };
 
-  const handleViewClick = (item) => {
+  const handleViewClick = async (item) => {
+    console.log('Viewing item:', item); // Debug log
     setSelectedItem(item);
     setShowViewModal(true);
+    setLoadingPdf(true);
+    setPdfUrl(null);
+
+    try {
+      console.log('Fetching PDF from:', `/api/riwayat-pendidikan/view/${item.id}`); // Debug log
+      const response = await authenticatedFetch(`/api/riwayat-pendidikan/view/${item.id}`);
+      
+      console.log('Response status:', response.status, 'OK:', response.ok); // Debug log
+      
+      if (response.ok) {
+        const blob = await response.blob();
+        console.log('Blob size:', blob.size, 'Type:', blob.type); // Debug log
+        const url = URL.createObjectURL(blob);
+        setPdfUrl(url);
+      } else {
+        const errorText = await response.text();
+        console.error('Response error:', errorText);
+        alert('Gagal memuat dokumen');
+      }
+    } catch (error) {
+      console.error('Error loading PDF:', error);
+      alert('Terjadi kesalahan saat memuat dokumen');
+    } finally {
+      setLoadingPdf(false);
+    }
   };
 
   const handleAddClick = () => {
-    setFormData({ title: '', institusi: '', tahun: '', file: null });
+    setFormData({ judul: '', institusi: '', tahun_lulus: '', file: null });
     setShowAddModal(true);
   };
 
   const handleFileChange = (e) => {
     const file = e.target.files?.[0];
-    if (file) {
-      setFormData({ ...formData, file });
+    if (file && file.type === 'application/pdf') {
+      if (file.size <= 10 * 1024 * 1024) { // 10MB limit
+        setFormData({ ...formData, file });
+      } else {
+        alert('File terlalu besar. Maksimal 10MB');
+      }
+    } else {
+      alert('Hanya file PDF yang diperbolehkan');
     }
   };
 
@@ -119,38 +190,114 @@ const RiwayatPendidikan = () => {
     });
   };
 
-  const handleConfirmDelete = () => {
+  const handleConfirmDelete = async () => {
     if (!deleteTargets.length) return;
-    const idsToDelete = deleteTargets.map((entry) => entry.id);
-    setDataByTab((prev) => ({
-      ...prev,
-      [activeTab]: prev[activeTab].filter((item) => !idsToDelete.includes(item.id))
-    }));
-    if (selectedItem && idsToDelete.includes(selectedItem.id)) {
-      setSelectedItem(null);
-      setShowViewModal(false);
+    
+    try {
+      const idsToDelete = deleteTargets.map((entry) => entry.id);
+      
+      const response = await authenticatedFetch('/api/riwayat-pendidikan/delete-multiple', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ ids: idsToDelete }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        alert(`${data.deleted_count} data berhasil dihapus`);
+        
+        // Update local state
+        setDataByTab((prev) => ({
+          ...prev,
+          [activeTab]: prev[activeTab].filter((item) => !idsToDelete.includes(item.id))
+        }));
+        
+        if (selectedItem && idsToDelete.includes(selectedItem.id)) {
+          setSelectedItem(null);
+          setShowViewModal(false);
+        }
+        
+        fetchData(); // Refresh data
+      } else {
+        alert(data.message || 'Gagal menghapus data');
+      }
+    } catch (error) {
+      console.error('Error deleting records:', error);
+      alert('Terjadi kesalahan saat menghapus data');
+    } finally {
+      setDeleteTargets([]);
+      setDeleteMode(false);
+      setShowDeleteModal(false);
     }
-    setDeleteTargets([]);
-    setDeleteMode(false);
-    setShowDeleteModal(false);
   };
 
-  const handleAddSubmit = (e) => {
+  const handleAddSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.title || !formData.institusi || !formData.tahun || !formData.file) return;
-    const newItem = {
-      id: Date.now(),
-      title: formData.title,
-      institusi: formData.institusi,
-      tahun: formData.tahun,
-      file: formData.file?.name || 'lampiran_pendidikan.pdf'
-    };
-    setDataByTab((prev) => ({
-      ...prev,
-      [activeTab]: [newItem, ...(prev[activeTab] || [])]
-    }));
-    setShowAddModal(false);
-    setFormData({ title: '', institusi: '', tahun: '', file: null });
+    
+    if (!formData.judul || !formData.institusi || !formData.tahun_lulus || !formData.file) {
+      alert('Mohon lengkapi semua field');
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const apiFormData = new FormData();
+      apiFormData.append('file', formData.file);
+      apiFormData.append('jenis', JENIS_MAPPING[activeTab]);
+      apiFormData.append('judul', formData.judul);
+      apiFormData.append('institusi', formData.institusi);
+      apiFormData.append('tahun_lulus', formData.tahun_lulus);
+
+      const response = await authenticatedFetch('/api/riwayat-pendidikan/store', {
+        method: 'POST',
+        body: apiFormData,
+        headers: {} // Let browser set Content-Type with boundary
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        alert('Data berhasil ditambahkan!');
+        setShowAddModal(false);
+        setFormData({ judul: '', institusi: '', tahun_lulus: '', file: null });
+        fetchData(); // Refresh data
+      } else {
+        alert(data.message || 'Gagal menambahkan data');
+      }
+    } catch (error) {
+      console.error('Error adding record:', error);
+      alert('Terjadi kesalahan saat menambahkan data');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Handle download
+  const handleDownload = async (item) => {
+    try {
+      const response = await authenticatedFetch(`/api/riwayat-pendidikan/view/${item.id}`);
+      
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${item.judul}_${item.tahun_lulus}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      } else {
+        alert('Gagal mendownload dokumen');
+      }
+    } catch (error) {
+      console.error('Error downloading PDF:', error);
+      alert('Terjadi kesalahan saat mendownload dokumen');
+    }
   };
 
   return (
@@ -201,9 +348,9 @@ const RiwayatPendidikan = () => {
               >
                 <div className={styles.itemContent}>
                   <div>
-                    <h4 className={styles.itemTitle}>{item.title}</h4>
+                    <h4 className={styles.itemTitle}>{item.judul}</h4>
                     <p className={styles.itemMeta}>{item.institusi}</p>
-                    <p className={styles.itemMeta}>Tahun Lulus: {item.tahun}</p>
+                    <p className={styles.itemMeta}>Tahun Lulus: {item.tahun_lulus}</p>
                   </div>
                   <div className={styles.fileBlock}>
                     <span className={styles.fileLabel}>File:</span>
@@ -218,7 +365,7 @@ const RiwayatPendidikan = () => {
                         }
                       }}
                     >
-                      {item.file}
+                      {item.file_name}
                     </a>
                   </div>
                   <div className={styles.actions}>
@@ -256,7 +403,7 @@ const RiwayatPendidikan = () => {
             <ul className={styles.deleteList}>
               {deleteTargets.map((item) => (
                 <li key={item.id} className={styles.deleteListItem}>
-                  {item.title} - {item.institusi}
+                  {item.judul} - {item.institusi}
                 </li>
               ))}
             </ul>
@@ -275,8 +422,12 @@ const RiwayatPendidikan = () => {
       {/* View PDF Modal */}
       <Modal
         isOpen={showViewModal}
-        onClose={() => setShowViewModal(false)}
-        title={selectedItem?.title || 'Lihat Dokumen'}
+        onClose={() => {
+          setShowViewModal(false);
+          if (pdfUrl) URL.revokeObjectURL(pdfUrl);
+          setPdfUrl(null);
+        }}
+        title={selectedItem?.judul || 'Lihat Dokumen'}
         size="large"
         padding="normal"
       >
@@ -288,32 +439,48 @@ const RiwayatPendidikan = () => {
             </div>
             <div>
               <p className={styles.metaLabel}>Tahun Lulus</p>
-              <p className={styles.metaValue}>{selectedItem?.tahun || '-'}</p>
+              <p className={styles.metaValue}>{selectedItem?.tahun_lulus || '-'}</p>
             </div>
             <div>
               <p className={styles.metaLabel}>File</p>
-              <p className={styles.metaValue}>{selectedItem?.file || 'File belum tersedia'}</p>
+              <p className={styles.metaValue}>{selectedItem?.file_name || 'File belum tersedia'}</p>
             </div>
           </div>
-          {selectedItem?.file && (
+          {loadingPdf ? (
+            <div className={styles.pdfFrameWrapper}>
+              <div style={{ textAlign: 'center', padding: '2rem' }}>
+                <p>Memuat dokumen...</p>
+              </div>
+            </div>
+          ) : pdfUrl ? (
             <div className={styles.pdfFrameWrapper}>
               <iframe
-                src={`/storage/${selectedItem.file}`}
+                src={pdfUrl}
                 className={styles.pdfFrame}
                 title="PDF Viewer"
               />
             </div>
+          ) : (
+            <div className={styles.pdfFrameWrapper}>
+              <div style={{ textAlign: 'center', padding: '2rem' }}>
+                <p>Dokumen tidak tersedia</p>
+              </div>
+            </div>
           )}
           <div className={styles.modalActions}>
-            <Button variant="danger" onClick={() => setShowViewModal(false)}>
+            <Button variant="danger" onClick={() => {
+              setShowViewModal(false);
+              if (pdfUrl) URL.revokeObjectURL(pdfUrl);
+              setPdfUrl(null);
+            }}>
               Tutup
             </Button>
             <Button
               variant="primary"
               icon={<MdDownload />}
               iconPosition="left"
-              onClick={() => window.open(`/storage/${selectedItem?.file}`, '_blank')}
-              disabled={!selectedItem?.file}
+              onClick={() => handleDownload(selectedItem)}
+              disabled={!selectedItem?.file_path}
             >
               Download
             </Button>
@@ -333,10 +500,16 @@ const RiwayatPendidikan = () => {
           <Input
             label="Judul/Nama"
             type="text"
-            name="title"
-            value={formData.title}
+            name="judul"
+            value={formData.judul}
             onChange={handleInputChange}
-            placeholder="Contoh: S1 Keperawatan"
+            placeholder={
+              activeTab === 'ijazah' 
+                ? "Contoh: S1 Keperawatan" 
+                : activeTab === 'pelatihan'
+                ? "Contoh: Pelatihan BLS (Basic Life Support)"
+                : "Contoh: Workshop Penanganan Pasien Kritis"
+            }
             required
           />
           <Input
@@ -345,14 +518,20 @@ const RiwayatPendidikan = () => {
             name="institusi"
             value={formData.institusi}
             onChange={handleInputChange}
-            placeholder="Contoh: Universitas Indonesia"
+            placeholder={
+              activeTab === 'ijazah'
+                ? "Contoh: Universitas Indonesia"
+                : activeTab === 'pelatihan'
+                ? "Contoh: Perhimpunan Dokter Spesialis Kardiovaskular Indonesia"
+                : "Contoh: RSUP Dr. Sardjito"
+            }
             required
           />
           <Input
             label="Tahun Lulus"
             type="text"
-            name="tahun"
-            value={formData.tahun}
+            name="tahun_lulus"
+            value={formData.tahun_lulus}
             onChange={handleInputChange}
             placeholder="Contoh: 2020"
             required
@@ -382,9 +561,9 @@ const RiwayatPendidikan = () => {
               icon={<MdSave />}
               iconPosition="left"
               type="submit"
-              disabled={!formData.title || !formData.institusi || !formData.tahun || !formData.file}
+              disabled={isSubmitting || !formData.judul || !formData.institusi || !formData.tahun_lulus || !formData.file}
             >
-              Simpan Perubahan
+              {isSubmitting ? 'Menyimpan...' : 'Simpan Perubahan'}
             </Button>
           </Form.Actions>
         </Form>

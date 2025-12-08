@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\RegisterController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\DokumenLegalitasController;
+use App\Http\Controllers\Api\RiwayatPendidikanController;
 
 // Public routes
 Route::post('/register', [RegisterController::class, 'register']);
@@ -25,5 +26,13 @@ Route::middleware('auth:api')->group(function () {
         Route::post('/upload', [DokumenLegalitasController::class, 'upload']);
         Route::get('/view/{id}', [DokumenLegalitasController::class, 'view']);
         Route::delete('/{id}', [DokumenLegalitasController::class, 'delete']);
+    });
+    
+    // Riwayat Pendidikan routes
+    Route::prefix('riwayat-pendidikan')->group(function () {
+        Route::get('/', [RiwayatPendidikanController::class, 'index']);
+        Route::post('/store', [RiwayatPendidikanController::class, 'store']);
+        Route::get('/view/{id}', [RiwayatPendidikanController::class, 'view']);
+        Route::post('/delete-multiple', [RiwayatPendidikanController::class, 'deleteMultiple']);
     });
 });
