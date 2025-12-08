@@ -7,6 +7,7 @@ import Dokumen from "./pages/dokumen/DokumenLegalitas";
 import Kredensial from "./pages/kredensial/Kredensial";
 import Pendidikan from "./pages/pendidikan/RiwayatPendidikan"; 
 import Penugasan from "./pages/penugasan/Penugasan";
+import EtikDisiplin from "./pages/etik/EtikDisiplin";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { UserProvider } from "./contexts/UserContext";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
@@ -64,6 +65,14 @@ function App() {
           element={
             <ProtectedRoute>
               <Penugasan />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/riwayat-etik"
+          element={
+            <ProtectedRoute>
+              <EtikDisiplin />
             </ProtectedRoute>
           }
         />

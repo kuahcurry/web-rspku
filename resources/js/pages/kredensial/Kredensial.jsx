@@ -380,7 +380,7 @@ const Kredensial = () => {
       <header className={styles.pageHeader}>
         <h1 className={styles.pageTitle}>Kredensial & Rekredensial</h1>
         <p className={styles.pageSubtitle}>
-          Riwayat kegiatan kredensial, hasil penilaian, dan dokumen pendukung yang diinput sendiri oleh perawat.
+          Riwayat kegiatan kredensial perawat.
         </p>
       </header>
 
@@ -452,22 +452,22 @@ const Kredensial = () => {
                     className={`table-row ${deleteMode ? styles.deleteSelectable : ''} ${isSelected ? styles.deleteSelected : ''}`}
                     onClick={() => handleSelectForDelete(item)}
                   >
-                    <div className="table-cell">{formatDateToIndonesian(item.tanggal_kegiatan)}</div>
-                    <div className={`table-cell ${styles.mainCell}`}>
+                    <div className="table-cell" data-label="Tanggal Kegiatan">{formatDateToIndonesian(item.tanggal_kegiatan)}</div>
+                    <div className={`table-cell ${styles.mainCell}`} data-label="Nama Kegiatan">
                       <p className={styles.mainTitle}>{item.nama_kegiatan}</p>
                       <p className={styles.mutedText}>{item.jenis_kegiatan}</p>
                     </div>
-                    <div className="table-cell">{item.jenis_kegiatan}</div>
-                    <div className="table-cell">{item.tahap}</div>
-                    <div className="table-cell">
+                    <div className="table-cell" data-label="Jenis">{item.jenis_kegiatan}</div>
+                    <div className="table-cell" data-label="Tahap">{item.tahap}</div>
+                    <div className="table-cell" data-label="Hasil Penilaian">
                       <span className={`${styles.statusBadge} ${styles[`badge-${badge.variant}`]}`}>
                         {badge.label}
                       </span>
                     </div>
-                    <div className="table-cell">
+                    <div className="table-cell" data-label="Catatan">
                       <p className={styles.mutedText}>{item.catatan || '-'}</p>
                     </div>
-                    <div className={`table-cell ${styles.actionCol}`}>
+                    <div className={`table-cell ${styles.actionCol}`} data-label="Aksi">
                       <Button variant="warning" size="small" icon={<MdEdit />} iconPosition='left' onClick={() => openEditModal(item)}>
                         Edit
                       </Button>
@@ -522,23 +522,23 @@ const Kredensial = () => {
                     className={`table-row ${deleteMode ? styles.deleteSelectable : ''} ${isSelected ? styles.deleteSelected : ''}`}
                     onClick={() => handleSelectForDelete(item)}
                   >
-                    <div className="table-cell">{formatDateToIndonesian(item.tanggal_kegiatan)}</div>
-                    <div className="table-cell">
+                    <div className="table-cell" data-label="Tanggal Rekredensial">{formatDateToIndonesian(item.tanggal_kegiatan)}</div>
+                    <div className="table-cell" data-label="Periode Berlaku">
                       {item.masa_berlaku
                         ? `${new Date(item.tanggal_kegiatan).getFullYear()} - ${new Date(
                             item.masa_berlaku
                           ).getFullYear()}`
                         : '-'}
                     </div>
-                    <div className="table-cell">
+                    <div className="table-cell" data-label="Hasil">
                       <span className={`${styles.statusBadge} ${styles[`badge-${badge.variant}`]}`}>
                         {badge.label}
                       </span>
                     </div>
-                    <div className="table-cell">
+                    <div className="table-cell" data-label="Catatan">
                       <p className={styles.mutedText}>{item.catatan || '-'}</p>
                     </div>
-                    <div className={`table-cell ${styles.actionCol}`}>
+                    <div className={`table-cell ${styles.actionCol}`} data-label="Aksi">
                       <Button 
                         variant="warning" 
                         size="small" 

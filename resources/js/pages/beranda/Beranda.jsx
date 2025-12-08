@@ -440,7 +440,7 @@ const Beranda = () => {
             <div className={styles['section-title']}>
               <h3>Kredensial / Rekredensial</h3>
             </div>
-            <Button variant="outline" size="small" icon={<FaChevronRight />} iconPosition="right">
+            <Button variant="outline" size="small" icon={<FaChevronRight />} iconPosition="right" onClick={() => navigate('/kredensial')}>
               Lihat Detail
             </Button>
           </div>
@@ -484,7 +484,7 @@ const Beranda = () => {
             <div className={styles['section-title']}>
               <h3>Riwayat Etik & Disiplin</h3>
             </div>
-            <Button variant="outline" size="small" icon={<FaChevronRight />} iconPosition="right">
+            <Button variant="outline" size="small" icon={<FaChevronRight />} iconPosition="right" onClick={() => navigate('/riwayat-etik')}>
               Lihat Detail
             </Button>
           </div>
