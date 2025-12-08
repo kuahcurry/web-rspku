@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import MainLayout from '../../layout/main/MainLayout';
 import Card from '../../components/card/Card';
 import Button from '../../components/button/Button';
@@ -6,37 +7,8 @@ import Modal from '../../components/modal/Modal';
 import Form from '../../components/form/Form';
 import Input from '../../components/input/Input';
 import { MdAdd, MdVisibility, MdCloudUpload, MdSave, MdDownload, MdDelete } from 'react-icons/md';
+import { authenticatedFetch, isAuthenticated } from '../../utils/auth';
 import styles from './Penugasan.module.css';
-
-const initialAssignments = [
-  {
-    id: 1,
-    unit: 'IGD (Instalasi Gawat Darurat)',
-    startDate: '2025-01-01',
-    endDate: '',
-    penanggungJawab: 'Dr. Ahmad Fauzi, Sp.EM',
-    file: 'penugasan_igd_2025.pdf',
-    fileUrl: '/storage/penugasan_igd_2025.pdf'
-  },
-  {
-    id: 2,
-    unit: 'Rawat Inap Lantai 3',
-    startDate: '2024-07-01',
-    endDate: '2024-12-31',
-    penanggungJawab: 'Ns. Siti Aminah, M.Kep',
-    file: 'penugasan_ri3_2024.pdf',
-    fileUrl: '/storage/penugasan_ri3_2024.pdf'
-  },
-  {
-    id: 3,
-    unit: 'Poliklinik Umum',
-    startDate: '2024-01-01',
-    endDate: '2024-06-30',
-    penanggungJawab: 'Dr. Budi Santoso, Sp.PD',
-    file: 'penugasan_poli_2024.pdf',
-    fileUrl: '/storage/penugasan_poli_2024.pdf'
-  }
-];
 
 const formatDate = (value) => {
   if (!value) return '-';
@@ -62,35 +34,83 @@ const getStatusVariant = (status) => {
 };
 
 const Penugasan = () => {
-  const [assignments, setAssignments] = useState(initialAssignments);
+  const navigate = useNavigate();
+  const fileInputRef = useRef(null);
+  
+  const [assignments, setAssignments] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [showViewModal, setShowViewModal] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteMode, setDeleteMode] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [deleteTargets, setDeleteTargets] = useState([]);
+  const [pdfUrl, setPdfUrl] = useState(null);
+  const [loadingPdf, setLoadingPdf] = useState(false);
   const [formData, setFormData] = useState({
     unit: '',
-    penanggungJawab: '',
-    startDate: '',
-    endDate: '',
-    file: null,
-    fileUrl: null
+    penanggung_jawab: '',
+    tanggal_mulai: '',
+    tanggal_selesai: '',
+    file: null
   });
 
-  const handleViewClick = (item) => {
+  useEffect(() => {
+    if (!isAuthenticated()) {
+      navigate('/login');
+      return;
+    }
+    fetchData();
+  }, [navigate]);
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const response = await authenticatedFetch('/api/penugasan');
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        setAssignments(data.data);
+      }
+    } catch (error) {
+      console.error('Error fetching assignments:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleViewClick = async (item) => {
     setSelectedItem(item);
     setShowViewModal(true);
+    setLoadingPdf(true);
+    setPdfUrl(null);
+
+    try {
+      const response = await authenticatedFetch(`/api/penugasan/view/${item.id}`);
+      
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        setPdfUrl(url);
+      } else {
+        alert('Gagal memuat dokumen');
+      }
+    } catch (error) {
+      console.error('Error loading PDF:', error);
+      alert('Terjadi kesalahan saat memuat dokumen');
+    } finally {
+      setLoadingPdf(false);
+    }
   };
 
   const handleAddClick = () => {
     setFormData({
       unit: '',
-      penanggungJawab: '',
-      startDate: '',
-      endDate: '',
-      file: null,
-      fileUrl: null
+      penanggung_jawab: '',
+      tanggal_mulai: '',
+      tanggal_selesai: '',
+      file: null
     });
     setShowAddModal(true);
   };
@@ -118,17 +138,44 @@ const Penugasan = () => {
     });
   };
 
-  const handleConfirmDelete = () => {
+  const handleConfirmDelete = async () => {
     if (!deleteTargets.length) return;
-    const idsToDelete = deleteTargets.map((item) => item.id);
-    setAssignments((prev) => prev.filter((item) => !idsToDelete.includes(item.id)));
-    if (selectedItem && idsToDelete.includes(selectedItem.id)) {
-      setSelectedItem(null);
-      setShowViewModal(false);
+    
+    try {
+      const idsToDelete = deleteTargets.map((item) => item.id);
+      
+      const response = await authenticatedFetch('/api/penugasan/delete-multiple', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ ids: idsToDelete }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        alert(`${data.deleted_count} penugasan berhasil dihapus`);
+        
+        setAssignments((prev) => prev.filter((item) => !idsToDelete.includes(item.id)));
+        
+        if (selectedItem && idsToDelete.includes(selectedItem.id)) {
+          setSelectedItem(null);
+          setShowViewModal(false);
+        }
+        
+        fetchData();
+      } else {
+        alert(data.message || 'Gagal menghapus data');
+      }
+    } catch (error) {
+      console.error('Error deleting records:', error);
+      alert('Terjadi kesalahan saat menghapus data');
+    } finally {
+      setDeleteTargets([]);
+      setDeleteMode(false);
+      setShowDeleteModal(false);
     }
-    setShowDeleteModal(false);
-    setDeleteTargets([]);
-    setDeleteMode(false);
   };
 
   const handleDeleteButtonClick = () => {
@@ -150,34 +197,86 @@ const Penugasan = () => {
 
   const handleFileChange = (e) => {
     const file = e.target.files?.[0];
-    const fileUrl = file ? URL.createObjectURL(file) : null;
-    setFormData({ ...formData, file, fileUrl });
+    if (file && file.type === 'application/pdf' && file.size <= 10 * 1024 * 1024) {
+      setFormData({ ...formData, file });
+    } else if (file) {
+      alert('File harus berformat PDF dan maksimal 10MB');
+      e.target.value = null;
+    }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!isFormValid) return;
+    
+    if (!formData.unit || !formData.penanggung_jawab || !formData.tanggal_mulai || !formData.file) {
+      alert('Mohon lengkapi field yang wajib diisi');
+      return;
+    }
 
-    const newItem = {
-      id: Date.now(),
-      unit: formData.unit,
-      penanggungJawab: formData.penanggungJawab,
-      startDate: formData.startDate,
-      endDate: formData.endDate,
-      file: formData.file?.name || 'lampiran_penugasan.pdf',
-      fileUrl: formData.fileUrl
-    };
+    setIsSubmitting(true);
 
-    setAssignments([newItem, ...assignments]);
-    setShowAddModal(false);
+    try {
+      const apiFormData = new FormData();
+      apiFormData.append('file', formData.file);
+      apiFormData.append('unit', formData.unit);
+      apiFormData.append('penanggung_jawab', formData.penanggung_jawab);
+      apiFormData.append('tanggal_mulai', formData.tanggal_mulai);
+      if (formData.tanggal_selesai) {
+        apiFormData.append('tanggal_selesai', formData.tanggal_selesai);
+      }
+
+      const response = await authenticatedFetch('/api/penugasan/store', {
+        method: 'POST',
+        body: apiFormData,
+        headers: {}
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        alert('Penugasan berhasil ditambahkan!');
+        setShowAddModal(false);
+        setFormData({
+          unit: '',
+          penanggung_jawab: '',
+          tanggal_mulai: '',
+          tanggal_selesai: '',
+          file: null
+        });
+        fetchData();
+      } else {
+        alert(data.message || 'Gagal menambahkan data');
+      }
+    } catch (error) {
+      console.error('Error adding assignment:', error);
+      alert('Terjadi kesalahan saat menambahkan data');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const isFormValid =
-    formData.unit &&
-    formData.penanggungJawab &&
-    formData.startDate &&
-    formData.endDate &&
-    formData.file;
+  const handleDownload = async (item) => {
+    try {
+      const response = await authenticatedFetch(`/api/penugasan/view/${item.id}`);
+      
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${item.unit}_${item.tanggal_mulai}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      } else {
+        alert('Gagal mendownload dokumen');
+      }
+    } catch (error) {
+      console.error('Error downloading PDF:', error);
+      alert('Terjadi kesalahan saat mendownload dokumen');
+    }
+  };
 
   return (
     <MainLayout>
@@ -224,8 +323,17 @@ const Penugasan = () => {
             </p>
           )}
 
-          <div className={styles.list}>
-            {assignments.map((item) => (
+          {loading ? (
+            <div className={styles.list}>
+              <p style={{ textAlign: 'center', padding: '2rem' }}>Memuat data...</p>
+            </div>
+          ) : assignments.length === 0 ? (
+            <div className={styles.list}>
+              <p style={{ textAlign: 'center', padding: '2rem' }}>Belum ada data penugasan.</p>
+            </div>
+          ) : (
+            <div className={styles.list}>
+              {assignments.map((item) => (
               <Card
                 key={item.id}
                 className={`${styles.itemCard} ${deleteMode ? styles.deleteSelectable : ''} ${
@@ -238,12 +346,12 @@ const Penugasan = () => {
                   <div className={styles.itemHead}>
                     <h4 className={styles.itemTitle}>{item.unit}</h4>
                     <Button
-                      variant={getStatusVariant(deriveStatus(item.endDate))}
+                      variant={getStatusVariant(item.status)}
                       size="small"
                       disabled
                       className={styles.compactButton}
                     >
-                      {deriveStatus(item.endDate)}
+                      {item.status}
                     </Button>
                   </div>
 
@@ -251,30 +359,28 @@ const Penugasan = () => {
                     <div className={styles.metaBlock}>
                       <p className={styles.metaLabel}>Periode</p>
                       <p className={styles.metaValue}>
-                        {formatDate(item.startDate)} - {item.endDate ? formatDate(item.endDate) : 'Sekarang'}
+                        {formatDate(item.tanggal_mulai)} - {item.tanggal_selesai ? formatDate(item.tanggal_selesai) : 'Sekarang'}
                       </p>
                     </div>
                     <div className={styles.metaBlock}>
                       <p className={styles.metaLabel}>Penanggung Jawab</p>
-                      <p className={styles.metaValue}>{item.penanggungJawab}</p>
+                      <p className={styles.metaValue}>{item.penanggung_jawab}</p>
                     </div>
                     <div className={styles.metaBlock}>
                       <p className={styles.metaLabel}>File</p>
                       <div className={styles.fileAction}>
                         <a
-                          href={item.fileUrl || '#'}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                          href="#"
                           className={styles.fileLink}
                           onClick={(e) => {
+                            e.preventDefault();
                             if (deleteMode) {
-                              e.preventDefault();
                               e.stopPropagation();
                               handleSelectForDelete(item);
                             }
                           }}
                         >
-                          {item.file}
+                          {item.file_name}
                         </a>
                         <Button
                           variant="outline"
@@ -295,13 +401,18 @@ const Penugasan = () => {
                 </div>
               </Card>
             ))}
-          </div>
+            </div>
+          )}
         </div>
       </div>
 
       <Modal
         isOpen={showViewModal}
-        onClose={() => setShowViewModal(false)}
+        onClose={() => {
+          setShowViewModal(false);
+          if (pdfUrl) URL.revokeObjectURL(pdfUrl);
+          setPdfUrl(null);
+        }}
         title={selectedItem?.unit || 'Detail Penugasan'}
         size="large"
         padding="normal"
@@ -311,36 +422,50 @@ const Penugasan = () => {
             <div>
               <p className={styles.metaLabel}>Periode</p>
               <p className={styles.metaValue}>
-                {formatDate(selectedItem?.startDate)} -{' '}
-                {selectedItem?.endDate ? formatDate(selectedItem?.endDate) : 'Sekarang'}
+                {formatDate(selectedItem?.tanggal_mulai)} -{' '}
+                {selectedItem?.tanggal_selesai ? formatDate(selectedItem?.tanggal_selesai) : 'Sekarang'}
               </p>
             </div>
             <div>
               <p className={styles.metaLabel}>Penanggung Jawab</p>
-              <p className={styles.metaValue}>{selectedItem?.penanggungJawab || '-'}</p>
+              <p className={styles.metaValue}>{selectedItem?.penanggung_jawab || '-'}</p>
+            </div>
+            <div>
+              <p className={styles.metaLabel}>Status</p>
+              <p className={styles.metaValue}>{selectedItem?.status || '-'}</p>
             </div>
           </div>
-          {selectedItem?.fileUrl && (
+          {loadingPdf ? (
             <div className={styles.pdfFrameWrapper}>
-              <iframe title="Preview PDF" src={selectedItem.fileUrl} className={styles.pdfFrame} />
+              <div style={{ textAlign: 'center', padding: '2rem' }}>
+                <p>Memuat dokumen...</p>
+              </div>
+            </div>
+          ) : pdfUrl ? (
+            <div className={styles.pdfFrameWrapper}>
+              <iframe title="Preview PDF" src={pdfUrl} className={styles.pdfFrame} />
+            </div>
+          ) : (
+            <div className={styles.pdfFrameWrapper}>
+              <div style={{ textAlign: 'center', padding: '2rem' }}>
+                <p>Dokumen tidak tersedia</p>
+              </div>
             </div>
           )}
           <div className={styles.modalActions}>
-            <Button variant="danger" onClick={() => setShowViewModal(false)}>
+            <Button variant="danger" onClick={() => {
+              setShowViewModal(false);
+              if (pdfUrl) URL.revokeObjectURL(pdfUrl);
+              setPdfUrl(null);
+            }}>
               Tutup
             </Button>
             <Button
               variant="primary"
               icon={<MdDownload />}
               iconPosition="left"
-              onClick={() => {
-                const downloadUrl =
-                  selectedItem?.fileUrl || (selectedItem?.file ? `/storage/${selectedItem.file}` : null);
-                if (downloadUrl) {
-                  window.open(downloadUrl, '_blank');
-                }
-              }}
-              disabled={!selectedItem?.fileUrl && !selectedItem?.file}
+              onClick={() => handleDownload(selectedItem)}
+              disabled={!selectedItem?.file_path}
             >
               Download
             </Button>
@@ -406,9 +531,9 @@ const Penugasan = () => {
             />
             <Input
               label="Penanggung Jawab"
-              name="penanggungJawab"
+              name="penanggung_jawab"
               placeholder="Contoh: Dr. Ahmad Fauzi, Sp.EM"
-              value={formData.penanggungJawab}
+              value={formData.penanggung_jawab}
               onChange={handleInputChange}
               required
             />
@@ -417,21 +542,20 @@ const Penugasan = () => {
           <Form.Row columns={2} className={styles.formRow}>
             <Input
               label="Periode Mulai"
-              name="startDate"
+              name="tanggal_mulai"
               type="date"
               placeholder="Pilih tanggal mulai"
-              value={formData.startDate}
+              value={formData.tanggal_mulai}
               onChange={handleInputChange}
               required
             />
             <Input
-              label="Periode Selesai"
-              name="endDate"
+              label="Periode Selesai (Opsional)"
+              name="tanggal_selesai"
               type="date"
-              placeholder="Pilih tanggal selesai"
-              value={formData.endDate}
+              placeholder="Kosongkan jika masih aktif"
+              value={formData.tanggal_selesai}
               onChange={handleInputChange}
-              required
             />
           </Form.Row>
 
@@ -474,9 +598,9 @@ const Penugasan = () => {
               icon={<MdSave />}
               iconPosition="left"
               type="submit"
-              disabled={!isFormValid}
+              disabled={isSubmitting || !formData.unit || !formData.penanggung_jawab || !formData.tanggal_mulai || !formData.file}
             >
-              Simpan Penugasan
+              {isSubmitting ? 'Menyimpan...' : 'Simpan Penugasan'}
             </Button>
           </Form.Actions>
         </Form>
