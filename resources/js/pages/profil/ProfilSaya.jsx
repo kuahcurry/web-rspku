@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import MainLayout from '../../layout/main/MainLayout';
 import Button from '../../components/button/Button';
 import { FaEdit } from 'react-icons/fa';
+import { MdPerson } from 'react-icons/md';
 import { useUser } from '../../contexts/UserContext';
 import { isAuthenticated } from '../../utils/auth';
 import { getProvinceNameById, getRegencyNameById, getDistrictNameById, getVillageNameById } from '../../services/indonesiaRegion';
@@ -136,44 +137,58 @@ const ProfileSaya = () => {
         <p className={styles['page-subtitle']}>Lihat informasi profil dan data diri Anda.</p>
       </header>
 
-      {/* Profile Header Card */}
-      <div className={styles.section}>
-        <div className={styles['profile-header-card']}>
-        <div className={styles['profile-header-content']}>
-          <div className={styles['profile-header-left']}>
-            <div className={styles['profile-header-avatar']}>
-              {!avatarError ? (
-                <img src={avatarUrl} alt="Foto Profil" onError={() => setAvatarError(true)} />
-              ) : (
-                <MdPerson className={styles['avatar-placeholder']} />
-              )}
-            </div>
-            <div className={styles['profile-header-info']}>
-              <h2 className={styles['profile-header-name']}>{formData.namaLengkap || 'Nama Lengkap'}</h2>
-              <p className={styles['profile-header-nik']}>
-                {formData.nik ? `NIK: ${formData.nik}` : 'NIK belum tersedia'}
-              </p>
-              <p className={styles['profile-header-nip']}>
-                {formData.nip ? `NIP: ${formData.nip}` : 'NIP belum tersedia'}
-              </p>
+      <div className={styles['page-body']}>
+        {/* Profile Header Card */}
+        <section className={styles['hero-section']}>
+          <div className={styles['profile-hero-card']}>
+            <div className={styles['profile-hero-overlay']} />
+            <div className={styles['profile-hero-content']}>
+              <div className={styles['profile-hero-left']}>
+                <div className={styles['profile-hero-avatar']}>
+                  {!avatarError ? (
+                    <img src={avatarUrl} alt="Foto Profil" onError={() => setAvatarError(true)} />
+                  ) : (
+                    <MdPerson className={styles['avatar-placeholder']} />
+                  )}
+                </div>
+                <div className={styles['profile-hero-identity']}>
+                  <h2 className={styles['profile-hero-name']}>{formData.namaLengkap || 'Nama Lengkap'}</h2>
+                  <div className={styles['profile-hero-ids']}>
+                    <div className={styles['hero-id']}>
+                      <span className={styles['id-label']}>NIK</span>
+                      <span className={styles['id-value']}>{formData.nik || 'Belum ada'}</span>
+                    </div>
+                    <div className={styles['hero-id']}>
+                      <span className={styles['id-label']}>NIP</span>
+                      <span className={styles['id-value']}>{formData.nip || 'Belum ada'}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className={styles['profile-hero-right']}>
+                <div className={styles['hero-actions']}>
+                  <Button
+                    variant="inverse"
+                    size="medium"
+                    icon={<FaEdit />}
+                    iconPosition="left"
+                    onClick={() => navigate('/pengaturan')}
+                  >
+                    Edit Profil
+                  </Button>
+                </div>
+              </div>
             </div>
           </div>
-          <div className={styles['profile-header-right']}>
-            <Button variant="inverse" size="medium" icon={<FaEdit />} iconPosition="left" onClick={() => navigate('/pengaturan')}>
-              Edit Profil
-            </Button>
-          </div>
-        </div>
-      </div>
+        </section>
 
-      {/* Information Sections */}
-      <div className={styles['section-wrapper']}>
-          <div className={styles['section-header']}>
-            <div className={styles['section-header-left']}>
-              <h3 className={styles['section-title']}>Informasi Pribadi</h3>
+        <div className={styles['sections-grid']}>
+          <section className={styles['section-card']}>
+            <div className={styles['section-head']}>
+              <div>
+                <h3 className={styles['section-title']}>Informasi Pribadi</h3>
+              </div>
             </div>
-          </div>
-          <div className={styles['section-content']}>
             <div className={styles['info-grid']}>
               <div className={styles['info-item']}>
                 <span className={styles['info-label']}>Email</span>
@@ -186,8 +201,8 @@ const ProfileSaya = () => {
               <div className={styles['info-item']}>
                 <span className={styles['info-label']}>Tempat, Tanggal Lahir</span>
                 <span className={styles['info-value']}>
-                  {formData.tempatLahir && formData.tanggalLahir 
-                    ? `${formData.tempatLahir}, ${formatDateToIndonesian(formData.tanggalLahir)}` 
+                  {formData.tempatLahir && formData.tanggalLahir
+                    ? `${formData.tempatLahir}, ${formatDateToIndonesian(formData.tanggalLahir)}`
                     : '-'}
                 </span>
               </div>
@@ -208,17 +223,14 @@ const ProfileSaya = () => {
                 </span>
               </div>
             </div>
-        </div>
-      </div>
+          </section>
 
-        {/* Employment Information */}
-      <div className={styles['section-wrapper']}>
-          <div className={styles['section-header']}>
-            <div className={styles['section-header-left']}>
-              <h3 className={styles['section-title']}>Informasi Kepegawaian</h3>
+          <section className={styles['section-card']}>
+            <div className={styles['section-head']}>
+              <div>
+                <h3 className={styles['section-title']}>Informasi Kepegawaian</h3>
+              </div>
             </div>
-          </div>
-          <div className={styles['section-content']}>
             <div className={styles['info-grid']}>
               <div className={styles['info-item']}>
                 <span className={styles['info-label']}>Status Kepegawaian</span>
@@ -234,10 +246,12 @@ const ProfileSaya = () => {
               </div>
               <div className={styles['info-item']}>
                 <span className={styles['info-label']}>Tanggal Mulai Bekerja</span>
-                <span className={styles['info-value']}>{formData.tanggalMulaiBekerja ? formatDateToIndonesian(formData.tanggalMulaiBekerja) : '-'}</span>
+                <span className={styles['info-value']}>
+                  {formData.tanggalMulaiBekerja ? formatDateToIndonesian(formData.tanggalMulaiBekerja) : '-'}
+                </span>
               </div>
             </div>
-          </div>
+          </section>
         </div>
       </div>
     </MainLayout>
