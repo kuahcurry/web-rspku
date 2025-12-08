@@ -35,4 +35,12 @@ Route::middleware('auth:api')->group(function () {
         Route::get('/view/{id}', [RiwayatPendidikanController::class, 'view']);
         Route::post('/delete-multiple', [RiwayatPendidikanController::class, 'deleteMultiple']);
     });
+    
+    // Penugasan routes
+    Route::prefix('penugasan')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Api\PenugasanController::class, 'index']);
+        Route::post('/store', [\App\Http\Controllers\Api\PenugasanController::class, 'store']);
+        Route::get('/view/{id}', [\App\Http\Controllers\Api\PenugasanController::class, 'view']);
+        Route::post('/delete-multiple', [\App\Http\Controllers\Api\PenugasanController::class, 'deleteMultiple']);
+    });
 });
