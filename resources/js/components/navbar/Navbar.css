@@ -30,10 +30,6 @@
   transition: background 0.2s ease;
 }
 
-.menu-toggle:hover {
-  background: var(--bg-hover);
-}
-
 .navbar-title {
   flex: 1;
 }
@@ -71,11 +67,6 @@
   cursor: pointer;
   transition: all 0.2s ease;
   min-width: max-content;
-}
-
-.user-profile:hover {
-  box-shadow: var(--shadow-sm);
-  border-color: var(--primary-main);
 }
 
 .user-avatar {
@@ -130,7 +121,7 @@
 
 .user-dropdown {
   position: absolute;
-  top: calc(100% + 0.5rem);
+  top: calc(100% + 1.05rem);
   right: 0;
   background: var(--bg-main);
   border: 1px solid var(--border-grey);
