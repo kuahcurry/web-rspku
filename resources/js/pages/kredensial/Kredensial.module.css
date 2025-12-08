@@ -241,10 +241,11 @@
 
 .actionCol :global(.btn) {
   --btn-width: auto;
-  --btn-tablet-width: auto;
-  --btn-mobile-width: auto;
+  --btn-tablet-width: 60%;
+  --btn-mobile-width: 100%;
   white-space: nowrap;
-  padding-inline: 0.7rem;
+  padding-inline: 1.1rem;
+  font-size: 1rem;
 }
 
 .statusBadge {
@@ -389,31 +390,224 @@
 }
 
 @media (max-width: 960px) {
+  .pageTitle {
+    font-size: 2rem;
+  }
+
+  .cardShell {
+    padding: 1.5rem 1.25rem;
+  }
+
+  .headerRow {
+    flex-wrap: wrap;
+    padding: 1rem 0;
+  }
+
+  .sectionTitle {
+    font-size: 1.3rem;
+  }
+
   .riwayatTable :global(.table-head),
   .riwayatTable :global(.table-row) {
-    grid-template-columns: 1fr 1.3fr 1fr 1.1fr 1fr 1fr 1.1fr;
+    grid-template-columns: 1fr 1.2fr 1fr 1fr 1fr 1fr 1.1fr;
+  }
+
+  .actionCol {
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 768px) {
+  .pageTitle {
+    font-size: 1.75rem;
+  }
+
+  .pageSubtitle {
+    font-size: 0.95rem;
+  }
+
+  .cardShell {
+    padding: 1.25rem 1rem;
+    border-radius: var(--radius-lg);
+  }
+
+  .headerRow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.75rem 0;
+  }
+
+  .actionButtons {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .actionButtons :global(.btn) {
+    flex: 1;
+  }
+
+  .sectionTitle {
+    font-size: 1.2rem;
+  }
+
+  .toolbar {
+    gap: 0.65rem;
+  }
+
+  .filterRow {
+    grid-template-columns: 1fr;
+  }
+
+  .riwayatTable :global(.table-head),
+  .riwayatTable :global(.table-row) {
+    grid-template-columns: 0.9fr 1.2fr 0.8fr 1fr 0.9fr 0.9fr 1fr;
+    font-size: 0.8rem;
+    gap: 0.35rem;
+  }
+
+  .riwayatTable :global(.table-head) {
+    font-size: 0.75rem;
+  }
+
+  .rekredTable :global(.table-head),
+  .rekredTable :global(.table-row) {
+    grid-template-columns: 1fr 1fr 0.9fr 1fr 1fr;
+    font-size: 0.8rem;
+    gap: 0.35rem;
+  }
+
+  .rekredTable :global(.table-head) {
+    font-size: 0.75rem;
+  }
+
+  .actionCol {
+    flex-direction: column;
+    gap: 0.35rem;
+    align-items: stretch;
+  }
+
+  .actionCol :global(.btn) {
+    font-size: 0.75rem;
+    padding: 0.35rem 0.5rem;
+  }
+
+  .mainCell {
+    gap: 0.15rem;
+  }
+
+  .mainTitle {
+    font-size: 0.85rem;
+  }
+
+  .mutedText {
+    font-size: 0.75rem;
+  }
+
+  .statusBadge {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+  }
+
+  .rekredSummary {
+    grid-template-columns: 1fr;
+    gap: 0.65rem;
+    padding: 0.75rem;
+    background: var(--soft-grey);
+    border-radius: var(--radius-md);
+  }
+
+  .metaRow {
+    grid-template-columns: 1fr;
+  }
+
+  .modalActions {
+    flex-direction: column-reverse;
+    gap: 0.5rem;
+  }
+
+  .modalActions :global(.btn) {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .pageTitle {
+    font-size: 1.5rem;
+  }
+
+  .cardShell {
+    padding: 1rem 0.5rem;
+  }
+
+  .searchBox {
+    padding: 0.5rem 0.65rem;
+  }
+
+  .deleteNotice {
+    font-size: 0.85rem;
+  }
+
+  .riwayatTable :global(.table-head),
+  .riwayatTable :global(.table-row) {
+    font-size: 0.7rem;
+    gap: 0.25rem;
+  }
+
+  .riwayatTable :global(.table-head) {
+    font-size: 0.65rem;
+  }
+
+  .rekredTable :global(.table-head),
+  .rekredTable :global(.table-row) {
+    font-size: 0.7rem;
+    gap: 0.25rem;
+  }
+
+  .rekredTable :global(.table-head) {
+    font-size: 0.65rem;
+  }
+
+  .actionCol :global(.btn) {
+    font-size: 0.7rem;
+    padding: 0.3rem 0.4rem;
+  }
+
+  .mainTitle {
+    font-size: 0.8rem;
+  }
+
+  .mutedText {
+    font-size: 0.7rem;
+  }
+
+  .statusBadge {
+    font-size: 0.7rem;
+    padding: 0.2rem 0.4rem;
   }
 }
 
 @media (max-width: 720px) {
   .riwayatTable :global(.table-head),
-  .riwayatTable :global(.table-row),
-  .rekredTable :global(.table-head),
-  .rekredTable :global(.table-row) {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .rekredTable :global(.table-head) {
+    display: none;
   }
 
-  .riwayatTable :global(.table-head) > div:nth-child(n + 3),
-  .riwayatTable :global(.table-row) > div:nth-child(n + 3),
-  .rekredTable :global(.table-head) > div:nth-child(n + 3),
-  .rekredTable :global(.table-row) > div:nth-child(n + 3) {
-    border-top: 1px solid var(--border-grey);
-    padding-top: 0.5rem;
+  .riwayatTable :global(.table-row),
+  .rekredTable :global(.table-row) {
+    display: block;
+    grid-template-columns: none;
   }
 
   .actionCol {
     flex-direction: row;
     gap: 0.5rem;
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
+  }
+
+  .actionCol :global(.btn) {
+    --btn-mobile-width: 100%;
+    justify-content: center;
+    padding-inline: 1.15rem;
   }
 }
