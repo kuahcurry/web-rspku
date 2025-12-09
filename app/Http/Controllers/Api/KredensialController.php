@@ -75,9 +75,9 @@ class KredensialController extends Controller
             if ($request->hasFile('file')) {
                 $file = $request->file('file');
 
-                // Create folder structure: {name}_{nik}/kredensial
+                // Create folder structure: {name}_{nik}/kredensial&kewenanganKlinis/kredensial&rekredensial
                 $folderName = $this->sanitizeFolderName($user->name) . '_' . $user->nik;
-                $folderPath = $folderName . '/kredensial';
+                $folderPath = $folderName . '/kredensial&kewenanganKlinis/kredensial&rekredensial';
 
                 // Generate unique filename
                 $fileName = Str::slug($request->nama_kegiatan) . '_' . date('Ymd') . '_' . time() . '.pdf';
@@ -166,7 +166,7 @@ class KredensialController extends Controller
 
                 // Store new file
                 $folderName = $this->sanitizeFolderName($user->name) . '_' . $user->nik;
-                $folderPath = $folderName . '/kredensial';
+                $folderPath = $folderName . '/kredensial&kewenanganKlinis/kredensial&rekredensial';
                 $fileName = Str::slug($request->nama_kegiatan) . '_' . date('Ymd') . '_' . time() . '.pdf';
                 $filePath = $file->storeAs($folderPath, $fileName, 'public');
                 
