@@ -7,36 +7,10 @@ import {
   FaChevronRight
 } from 'react-icons/fa';
 import { useUser } from '../../contexts/UserContext';
-import { isAuthenticated } from '../../utils/auth';
+import { isAuthenticated, authenticatedFetch } from '../../utils/auth';
 import { getDistrictNameById } from '../../services/indonesiaRegion';
+import { formatDateToIndonesian } from '../../utils/dateFormatter';
 import styles from './Beranda.module.css';
-
-const legalDocs = [
-  {
-    id: 'surat-keterangan',
-    title: 'Surat Keterangan',
-    number: 'SK/2024/001',
-    startDate: '1/1/2024',
-    endDate: '31/12/2025',
-    status: 'Aktif'
-  },
-  {
-    id: 'str',
-    title: 'STR (Surat Tanda Registrasi)',
-    number: 'STR/2023/456',
-    startDate: '1/1/2024',
-    endDate: '15/02/2025',
-    status: 'Segera Habis'
-  },
-  {
-    id: 'sip',
-    title: 'SIP (Surat Izin Praktek)',
-    number: 'SIP/2024/789',
-    startDate: '1/1/2022',
-    endDate: '31/12/2023',
-    status: 'Sudah Habis'
-  }
-];
 
 const getStatusVariant = (status) => {
   const normalized = (status || '').toLowerCase();
@@ -50,8 +24,26 @@ const Beranda = () => {
   const navigate = useNavigate();
   const { user, loading: userLoading } = useUser();
   const [avatarError, setAvatarError] = useState(false);
+  const [profilePicture, setProfilePicture] = useState(null);
   const [districtName, setDistrictName] = useState(null);
-  const avatarUrl = 'https://i.pravatar.cc/160?img=64';
+  const [progressData, setProgressData] = useState({
+    dataPribadi: 0,
+    dokumenLegalitas: 0,
+    pendidikanPrestasi: 0,
+    penugasan: 0,
+    kredensialKewenangan: 0,
+    etikDisiplin: 0
+  });
+  const [loading, setLoading] = useState(true);
+  
+  // State for actual data from each section
+  const [dokumenData, setDokumenData] = useState([]);
+  const [pendidikanData, setPendidikanData] = useState({});
+  const [prestasiData, setPrestasiData] = useState({ Prestasi: [], Penghargaan: [] });
+  const [penugasanData, setPenugasanData] = useState({ Penugasan: [], Pengabdian: [] });
+  const [kredensialData, setKredensialData] = useState([]);
+  const [kewenanganData, setKewenanganData] = useState({ SPK: [], RKK: [] });
+  const [etikData, setEtikData] = useState({ etik: [], disiplin: [] });
 
   useEffect(() => {
     // Check authentication
@@ -59,7 +51,12 @@ const Beranda = () => {
       navigate('/login');
       return;
     }
-  }, [navigate]);
+    
+    // Wait for user data to be loaded before fetching
+    if (user) {
+      fetchAllData();
+    }
+  }, [navigate, user]);
 
   useEffect(() => {
     // Fetch district name if user has district ID
@@ -72,6 +69,222 @@ const Beranda = () => {
 
     fetchDistrictName();
   }, [user]);
+
+  useEffect(() => {
+    // Fetch profile picture
+    const fetchProfilePicture = async () => {
+      try {
+        console.log('[Beranda] Fetching profile picture for user:', user?.name);
+        const response = await authenticatedFetch('/api/profile/foto-profil');
+        console.log('[Beranda] Response status:', response.status);
+        const data = await response.json();
+        console.log('[Beranda] API Response:', data);
+        if (data.success && data.data.foto_profil_url) {
+          console.log('[Beranda] Setting profile picture:', data.data.foto_profil_url);
+          setProfilePicture(data.data.foto_profil_url);
+        } else {
+          console.log('[Beranda] No profile picture URL in response');
+        }
+      } catch (error) {
+        console.error('[Beranda] Error fetching profile picture:', error);
+      }
+    };
+
+    if (user) {
+      fetchProfilePicture();
+    }
+  }, [user]);
+
+  const fetchAllData = async () => {
+    try {
+      setLoading(true);
+
+      // Fetch all data in parallel
+      const [
+        dokumenRes,
+        pendidikanRes,
+        penugasanRes,
+        kredensialRes,
+        kewenanganRes,
+        etikRes,
+        prestasiRes
+      ] = await Promise.all([
+        authenticatedFetch('/api/dokumen-legalitas'),
+        authenticatedFetch('/api/riwayat-pendidikan'),
+        authenticatedFetch('/api/penugasan'),
+        authenticatedFetch('/api/kredensial'),
+        authenticatedFetch('/api/status-kewenangan'),
+        authenticatedFetch('/api/etik-disiplin'),
+        authenticatedFetch('/api/prestasi-penghargaan')
+      ]);
+
+      const dokumenData = await dokumenRes.json();
+      const pendidikanData = await pendidikanRes.json();
+      const penugasanData = await penugasanRes.json();
+      const kredensialData = await kredensialRes.json();
+      const kewenanganData = await kewenanganRes.json();
+      const etikData = await etikRes.json();
+      const prestasiData = await prestasiRes.json();
+
+      // Debug logging
+      console.log('Dokumen Legalitas:', dokumenData);
+      console.log('Pendidikan:', pendidikanData);
+      console.log('Kredensial:', kredensialData);
+      console.log('Kewenangan:', kewenanganData);
+      console.log('Prestasi:', prestasiData);
+
+      // Calculate Data Pribadi (15 fields, 9 already filled from registration)
+      const dataPribadiFieldsMap = {
+        name: user?.name,
+        nik: user?.nik,
+        tempat: user?.tempat,
+        tanggal_lahir: user?.tanggal_lahir,
+        jenis_kelamin: user?.jenis_kelamin,
+        agama: user?.agama,
+        phone: user?.phone,
+        address: user?.address,
+        province: user?.province,
+        regency: user?.regency,
+        district: user?.district,
+        village: user?.village,
+        email: user?.email,
+        tanggal_mulai_kerja: user?.tanggal_mulai_kerja,
+        status_kepegawaian: user?.status_kepegawaian
+      };
+      
+      console.log('=== DATA PRIBADI DEBUG ===');
+      console.log('All user data:', user);
+      Object.entries(dataPribadiFieldsMap).forEach(([key, value]) => {
+        const isFilled = value !== null && value !== undefined && (typeof value !== 'string' || value.trim() !== '');
+        console.log(`${key}: ${value} [${isFilled ? '✓ FILLED' : '✗ EMPTY'}]`);
+      });
+      
+      const dataPribadiFields = Object.values(dataPribadiFieldsMap);
+      const filledFields = dataPribadiFields.filter(field => {
+        // Consider 0 as a valid value, only filter out null, undefined, and empty strings
+        if (field === null || field === undefined) return false;
+        if (typeof field === 'string' && field.trim() === '') return false;
+        return true;
+      }).length;
+      const dataPribadiPercentage = Math.round((filledFields / 15) * 100);
+      
+      console.log('Data Pribadi filled:', filledFields, '/ 15');
+      console.log('========================');
+
+      // Calculate Dokumen Legalitas (3 types: Surat Keterangan, STR, SIP)
+      let dokumenCount = 0;
+      if (dokumenData.success && dokumenData.data && Array.isArray(dokumenData.data)) {
+        const hasSuratKeterangan = dokumenData.data.some(doc => doc.jenis_dokumen === 'Surat Keterangan');
+        const hasSTR = dokumenData.data.some(doc => doc.jenis_dokumen === 'STR');
+        const hasSIP = dokumenData.data.some(doc => doc.jenis_dokumen === 'SIP');
+        
+        if (hasSuratKeterangan) dokumenCount++;
+        if (hasSTR) dokumenCount++;
+        if (hasSIP) dokumenCount++;
+      }
+      const dokumenPercentage = Math.round((dokumenCount / 3) * 100);
+      
+      console.log('Dokumen Legalitas filled:', dokumenCount, '/ 3');
+
+      // Calculate Pendidikan dan Prestasi (5 sections: Ijazah, Sertifikat Pelatihan, Workshop, Prestasi, Penghargaan)
+      let pendidikanCount = 0;
+      if (pendidikanData.success && pendidikanData.data) {
+        if (pendidikanData.data.Ijazah?.length > 0) pendidikanCount++;
+        if (pendidikanData.data['Sertifikat Pelatihan']?.length > 0) pendidikanCount++;
+        if (pendidikanData.data['Sertifikat Workshop']?.length > 0) pendidikanCount++;
+      }
+      if (prestasiData.success && prestasiData.data) {
+        if (prestasiData.data.Prestasi?.length > 0) pendidikanCount++;
+        if (prestasiData.data.Penghargaan?.length > 0) pendidikanCount++;
+      }
+      const pendidikanPercentage = Math.round((pendidikanCount / 5) * 100);
+      
+      console.log('Pendidikan & Prestasi filled:', pendidikanCount, '/ 5');
+
+      // Calculate Penugasan (2 types: Penugasan, Pengabdian)
+      let penugasanCount = 0;
+      if (penugasanData.success && penugasanData.data) {
+        if (penugasanData.data.Penugasan?.length > 0) penugasanCount++;
+        if (penugasanData.data.Pengabdian?.length > 0) penugasanCount++;
+      }
+      const penugasanPercentage = Math.round((penugasanCount / 2) * 100);
+      
+      console.log('Penugasan filled:', penugasanCount, '/ 2');
+
+      // Calculate Kredensial & Kewenangan Klinis (3 sections: Kredensial, SPK, RKK)
+      let kredensialCount = 0;
+      if (kredensialData.success && kredensialData.data?.riwayat?.length > 0) kredensialCount++;
+      if (kewenanganData.success && kewenanganData.data) {
+        if (kewenanganData.data.SPK?.length > 0) kredensialCount++;
+        if (kewenanganData.data.RKK?.length > 0) kredensialCount++;
+      }
+      const kredensialPercentage = Math.round((kredensialCount / 3) * 100);
+      
+      console.log('Kredensial & Kewenangan filled:', kredensialCount, '/ 3');
+
+      // Calculate Riwayat Etik & Disiplin (2 types: Etik, Disiplin)
+      let etikCount = 0;
+      if (etikData.success && etikData.data) {
+        if (etikData.data.etik?.length > 0) etikCount++;
+        if (etikData.data.disiplin?.length > 0) etikCount++;
+      }
+      const etikPercentage = Math.round((etikCount / 2) * 100);
+      
+      console.log('Etik & Disiplin filled:', etikCount, '/ 2');
+
+      setProgressData({
+        dataPribadi: dataPribadiPercentage,
+        dokumenLegalitas: dokumenPercentage,
+        pendidikanPrestasi: pendidikanPercentage,
+        penugasan: penugasanPercentage,
+        kredensialKewenangan: kredensialPercentage,
+        etikDisiplin: etikPercentage
+      });
+      
+      // Store actual data for display
+      const storedDokumen = dokumenData.success && Array.isArray(dokumenData.data) ? dokumenData.data : [];
+      const storedPendidikan = pendidikanData.success ? pendidikanData.data : {};
+      const storedPrestasi = prestasiData.success ? prestasiData.data : { Prestasi: [], Penghargaan: [] };
+      const storedPenugasan = penugasanData.success ? penugasanData.data : { Penugasan: [], Pengabdian: [] };
+      const storedKredensial = kredensialData.success && kredensialData.data?.riwayat ? kredensialData.data.riwayat : [];
+      const storedKewenangan = kewenanganData.success ? kewenanganData.data : { SPK: [], RKK: [] };
+      const storedEtik = etikData.success ? etikData.data : { etik: [], disiplin: [] };
+      
+      setDokumenData(storedDokumen);
+      setPendidikanData(storedPendidikan);
+      setPrestasiData(storedPrestasi);
+      setPenugasanData(storedPenugasan);
+      setKredensialData(storedKredensial);
+      setKewenanganData(storedKewenangan);
+      setEtikData(storedEtik);
+      
+      console.log('=== STORED DATA FOR DISPLAY ===');
+      console.log('Dokumen stored:', storedDokumen.length, 'items');
+      console.log('Sample Dokumen:', storedDokumen[0]);
+      console.log('Pendidikan stored:', Object.keys(storedPendidikan).map(k => `${k}: ${storedPendidikan[k]?.length || 0}`));
+      console.log('Sample Ijazah:', storedPendidikan.Ijazah?.[0]);
+      console.log('Sample Pelatihan:', storedPendidikan['Sertifikat Pelatihan']?.[0]);
+      console.log('Sample Workshop:', storedPendidikan['Sertifikat Workshop']?.[0]);
+      console.log('Prestasi stored:', storedPrestasi.Prestasi?.length || 0, 'prestasi,', storedPrestasi.Penghargaan?.length || 0, 'penghargaan');
+      console.log('Sample Prestasi:', storedPrestasi.Prestasi?.[0]);
+      console.log('Sample Penghargaan:', storedPrestasi.Penghargaan?.[0]);
+      console.log('Penugasan stored:', storedPenugasan.Penugasan?.length || 0, 'penugasan,', storedPenugasan.Pengabdian?.length || 0, 'pengabdian');
+      console.log('Sample Penugasan:', storedPenugasan.Penugasan?.[0]);
+      console.log('Kredensial stored:', storedKredensial.length, 'items');
+      console.log('Sample Kredensial:', storedKredensial[0]);
+      console.log('Kewenangan stored:', storedKewenangan.SPK?.length || 0, 'SPK,', storedKewenangan.RKK?.length || 0, 'RKK');
+      console.log('Sample SPK:', storedKewenangan.SPK?.[0]);
+      console.log('Sample RKK:', storedKewenangan.RKK?.[0]);
+      console.log('Etik stored:', storedEtik.etik?.length || 0, 'etik,', storedEtik.disiplin?.length || 0, 'disiplin');
+      console.log('Sample Etik:', storedEtik.etik?.[0]);
+      console.log('Sample Disiplin:', storedEtik.disiplin?.[0]);
+      console.log('===============================');
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Calculate age from date of birth
   const calculateAge = (dateOfBirth) => {
@@ -105,11 +318,18 @@ const Beranda = () => {
     return `${displayYears} Tahun ${displayMonths} Bulan`;
   };
 
+  // Get progress color based on percentage
+  const getProgressColor = (percentage) => {
+    if (percentage === 100) return 'success';
+    if (percentage >= 50) return 'warning';
+    return 'danger';
+  };
+
   const userData = user || {};
   const age = calculateAge(userData.tanggal_lahir);
   const workDuration = calculateWorkDuration(userData.tanggal_mulai_kerja);
 
-  if (userLoading) {
+  if (userLoading || loading) {
     return (
       <MainLayout 
         title="Beranda" 
@@ -141,13 +361,21 @@ const Beranda = () => {
             <div className={styles['profile-content']}>
               <div className={styles['profile-left']}>
                 <div className={styles['profile-avatar']}>
-                  {!avatarError ? (
+                  {profilePicture && !avatarError ? (
                     <img
-                      src={avatarUrl}
+                      src={profilePicture}
                       alt={userData?.name || 'User'}
-                      onError={() => setAvatarError(true)}
+                      onLoad={() => console.log('[Beranda] Image loaded successfully:', profilePicture)}
+                      onError={(e) => {
+                        console.error('[Beranda] Image failed to load:', profilePicture, 'Error:', e);
+                        setAvatarError(true);
+                      }}
                     />
-                  ) : null}
+                  ) : (
+                    <div className={styles['avatar-initials']}>
+                      {userData?.name?.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'U'}
+                    </div>
+                  )}
                 </div>
                 <div className={styles['profile-info']}>
                   <h2 className={styles['profile-name']}>{userData.name || 'Nama Tidak Tersedia'}</h2>
@@ -203,77 +431,77 @@ const Beranda = () => {
             
             <div className={styles['progress-grid']}>
               <Card variant='secondary' padding="normal">
-              <div className={styles['progress-item']}>
-                <div className={styles['progress-header']}>
-                  <span className={styles['progress-label']}>Data Pribadi</span>
-                  <span className={styles['progress-percentage']}>100%</span>
+                <div className={styles['progress-item']}>
+                  <div className={styles['progress-header']}>
+                    <span className={styles['progress-label']}>Data Pribadi</span>
+                    <span className={styles['progress-percentage']}>{progressData.dataPribadi}%</span>
+                  </div>
+                  <div className={styles['progress-bar']}>
+                    <div className={`${styles['progress-fill']} ${styles[getProgressColor(progressData.dataPribadi)]}`} style={{width: `${progressData.dataPribadi}%`}}></div>
+                  </div>
                 </div>
-                <div className={styles['progress-bar']}>
-                  <div className={`${styles['progress-fill']} ${styles.success}`} style={{width: '100%'}}></div>
+              </Card>
+              
+              <Card variant='secondary' padding="normal">
+                <div className={styles['progress-item']}>
+                  <div className={styles['progress-header']}>
+                    <span className={styles['progress-label']}>Dokumen Legalitas</span>
+                    <span className={styles['progress-percentage']}>{progressData.dokumenLegalitas}%</span>
+                  </div>
+                  <div className={styles['progress-bar']}>
+                    <div className={`${styles['progress-fill']} ${styles[getProgressColor(progressData.dokumenLegalitas)]}`} style={{width: `${progressData.dokumenLegalitas}%`}}></div>
+                  </div>
                 </div>
-              </div>
-            </Card>
-            
-            <Card variant='secondary' padding="normal">
-              <div className={styles['progress-item']}>
-                <div className={styles['progress-header']}>
-                  <span className={styles['progress-label']}>Dokumen Legalitas</span>
-                  <span className={styles['progress-percentage']}>100%</span>
+              </Card>
+              
+              <Card variant='secondary' padding="normal">
+                <div className={styles['progress-item']}>
+                  <div className={styles['progress-header']}>
+                    <span className={styles['progress-label']}>Pendidikan dan Prestasi</span>
+                    <span className={styles['progress-percentage']}>{progressData.pendidikanPrestasi}%</span>
+                  </div>
+                  <div className={styles['progress-bar']}>
+                    <div className={`${styles['progress-fill']} ${styles[getProgressColor(progressData.pendidikanPrestasi)]}`} style={{width: `${progressData.pendidikanPrestasi}%`}}></div>
+                  </div>
                 </div>
-                <div className={styles['progress-bar']}>
-                  <div className={`${styles['progress-fill']} ${styles.success}`} style={{width: '100%'}}></div>
+              </Card>
+              
+              <Card variant='secondary' padding="normal">
+                <div className={styles['progress-item']}>
+                  <div className={styles['progress-header']}>
+                    <span className={styles['progress-label']}>Penugasan</span>
+                    <span className={styles['progress-percentage']}>{progressData.penugasan}%</span>
+                  </div>
+                  <div className={styles['progress-bar']}>
+                    <div className={`${styles['progress-fill']} ${styles[getProgressColor(progressData.penugasan)]}`} style={{width: `${progressData.penugasan}%`}}></div>
+                  </div>
                 </div>
-              </div>
-            </Card>
-            
-            <Card variant='secondary' padding="normal">
-              <div className={styles['progress-item']}>
-                <div className={styles['progress-header']}>
-                  <span className={styles['progress-label']}>Riwayat Pendidikan</span>
-                  <span className={styles['progress-percentage']}>15%</span>
+              </Card>
+              
+              <Card variant='secondary' padding="normal">
+                <div className={styles['progress-item']}>
+                  <div className={styles['progress-header']}>
+                    <span className={styles['progress-label']}>Kredensial & Kewenangan Klinis</span>
+                    <span className={styles['progress-percentage']}>{progressData.kredensialKewenangan}%</span>
+                  </div>
+                  <div className={styles['progress-bar']}>
+                    <div className={`${styles['progress-fill']} ${styles[getProgressColor(progressData.kredensialKewenangan)]}`} style={{width: `${progressData.kredensialKewenangan}%`}}></div>
+                  </div>
                 </div>
-                <div className={styles['progress-bar']}>
-                  <div className={`${styles['progress-fill']} ${styles.danger}`} style={{width: '15%'}}></div>
+              </Card>
+              
+              <Card variant='secondary' padding="normal">
+                <div className={styles['progress-item']}>
+                  <div className={styles['progress-header']}>
+                    <span className={styles['progress-label']}>Riwayat Etik & Disiplin</span>
+                    <span className={styles['progress-percentage']}>{progressData.etikDisiplin}%</span>
+                  </div>
+                  <div className={styles['progress-bar']}>
+                    <div className={`${styles['progress-fill']} ${styles[getProgressColor(progressData.etikDisiplin)]}`} style={{width: `${progressData.etikDisiplin}%`}}></div>
+                  </div>
                 </div>
-              </div>
-            </Card>
-            
-            <Card variant='secondary' padding="normal">
-              <div className={styles['progress-item']}>
-                <div className={styles['progress-header']}>
-                  <span className={styles['progress-label']}>Penugasan Klinik</span>
-                  <span className={styles['progress-percentage']}>90%</span>
-                </div>
-                <div className={styles['progress-bar']}>
-                  <div className={`${styles['progress-fill']} ${styles.warning}`} style={{width: '90%'}}></div>
-                </div>
-              </div>
-            </Card>
-            
-            <Card variant='secondary' padding="normal">
-              <div className={styles['progress-item']}>
-                <div className={styles['progress-header']}>
-                  <span className={styles['progress-label']}>Kredensial</span>
-                  <span className={styles['progress-percentage']}>75%</span>
-                </div>
-                <div className={styles['progress-bar']}>
-                  <div className={`${styles['progress-fill']} ${styles.warning}`} style={{width: '75%'}}></div>
-                </div>
-              </div>
-            </Card>
-            
-            <Card variant='secondary' padding="normal">
-              <div className={styles['progress-item']}>
-                <div className={styles['progress-header']}>
-                  <span className={styles['progress-label']}>Etik & Disiplin</span>
-                  <span className={styles['progress-percentage']}>100%</span>
-                </div>
-                <div className={styles['progress-bar']}>
-                  <div className={`${styles['progress-fill']} ${styles.success}`} style={{width: '100%'}}></div>
-                </div>
-              </div>
-            </Card>
-          </div>
+              </Card>
+            </div>
         </div>
         </section>
 
@@ -288,40 +516,56 @@ const Beranda = () => {
                 Lihat Detail
               </Button>
             </div>
-            {legalDocs.length === 0 ? (
+            {dokumenData.length === 0 ? (
               <p>Belum ada data dokumen legalitas.</p>
             ) : (
               <div className={styles['legal-grid']}>
-              {legalDocs.map((doc) => (
-                <Card
-                  key={doc.id}
-                  variant="secondary"
-                  padding="normal"
-                  title={doc.title}
-                  subtitle={doc.number}
-                  headerAction={
-                    <Button variant={getStatusVariant(doc.status)} size="small" disabled>
-                      {doc.status}
-                    </Button>
-                  }
-                  className={styles['legal-card']}
-                >
-                  <div className={styles['legal-content']}>
-                    <div className={styles['legal-info']}>
-                      <div className={styles['legal-dates']}>
-                        <div className={styles['info-block']}>
-                          <span className={styles['info-label']}>Tanggal Mulai</span>
-                          <span className={styles['info-value']}>{doc.startDate}</span>
-                        </div>
-                        <div className={styles['info-block']}>
-                          <span className={styles['info-label']}>Berlaku Sampai</span>
-                          <span className={styles['info-value']}>{doc.endDate}</span>
+              {dokumenData.slice(0, 3).map((doc) => {
+                const getDocStatus = (masaBerlaku) => {
+                  if (!masaBerlaku) return 'Tidak Diketahui';
+                  const expiryDate = new Date(masaBerlaku);
+                  const today = new Date();
+                  const diffTime = expiryDate - today;
+                  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                  
+                  if (diffDays < 0) return 'Sudah Habis';
+                  if (diffDays <= 30) return 'Segera Habis';
+                  return 'Aktif';
+                };
+                
+                const status = getDocStatus(doc.tanggal_berlaku);
+                
+                return (
+                  <Card
+                    key={doc.id}
+                    variant="secondary"
+                    padding="normal"
+                    title={doc.jenis_dokumen}
+                    subtitle={doc.nomor_sk}
+                    headerAction={
+                      <Button variant={getStatusVariant(status)} size="small" disabled>
+                        {status}
+                      </Button>
+                    }
+                    className={styles['legal-card']}
+                  >
+                    <div className={styles['legal-content']}>
+                      <div className={styles['legal-info']}>
+                        <div className={styles['legal-dates']}>
+                          <div className={styles['info-block']}>
+                            <span className={styles['info-label']}>Tanggal Mulai</span>
+                            <span className={styles['info-value']}>{formatDateToIndonesian(doc.tanggal_mulai)}</span>
+                          </div>
+                          <div className={styles['info-block']}>
+                            <span className={styles['info-label']}>Berlaku Sampai</span>
+                            <span className={styles['info-value']}>{formatDateToIndonesian(doc.tanggal_berlaku)}</span>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                </Card>
-              ))}
+                  </Card>
+                );
+              })}
             </div>
           )}
           </div>
@@ -334,7 +578,7 @@ const Beranda = () => {
           <div className={styles['section-wrapper']}>
             <div className={styles['section-header']}>
               <div className={styles['section-title']}>
-                <h3>Riwayat Pendidikan Terbaru</h3>
+                <h3>Pendidikan dan Prestasi Terkini</h3>
               </div>
               <Button variant="outline" icon={<FaChevronRight />} iconPosition="right" size="small" onClick={() => navigate('/riwayat-pendidikan')}>
                 Lihat Detail
@@ -344,52 +588,83 @@ const Beranda = () => {
           <div className={styles['education-section']}>
             <Card variant='secondary' padding="normal">
               <h4 className={styles['education-subtitle']}>Pendidikan</h4>
-              <div className={styles['education-grid']}>
-                <div className={styles['education-main']}>S1 Keperawatan</div>
-                <div className={styles['education-meta']}>2022</div>
-              </div>
-              <div className={styles['education-grid']}>
-                <div className={styles['education-main']}>D3 Keperawatan</div>
-                <div className={styles['education-meta']}>2018</div>
-              </div>
+              {pendidikanData.Ijazah && pendidikanData.Ijazah.length > 0 ? (
+                pendidikanData.Ijazah.slice(0, 1).map((item) => (
+                  <div key={item.id} className={styles['education-grid']}>
+                    <div className={styles['education-main']}>{item.judul || 'Belum Mengisi/Tidak Ada'} - {item.institusi || 'Belum Mengisi/Tidak Ada'}</div>
+                    <div className={styles['education-meta']}>{item.tahun_lulus || 'Belum Mengisi/Tidak Ada'}</div>
+                  </div>
+                ))
+              ) : (
+                <p>Belum Mengisi/Tidak Ada</p>
+              )}
             </Card>
 
             <Card variant='secondary' padding="normal">
               <h4 className={styles['education-subtitle']}>Pelatihan Terbaru</h4>
-              <div className={styles['certification-grid']}>
-                <Card variant='inverse' className={styles['detail-card']}>
-                  <div className={styles['certification-name']}>BTCLS (Basic Trauma Cardiac Life Support)</div>
-                  <div className={styles['certification-grid']}>
-                    <div className={styles['certification-main']}>RS PKU Muhammadiyah</div>
-                    <div className={styles['certification-meta']}>2024</div>
-                  </div>
-                </Card>
-                <Card variant='inverse' className={styles['detail-card']}>
-                  <div className={styles['certification-name']}>PPGD (Pelatihan Pertolongan Gawat Darurat)</div>
-                  <div className={styles['certification-grid']}>
-                    <div className={styles['certification-main']}>RS PKU Muhammadiyah</div>
-                    <div className={styles['certification-meta']}>2023</div>
-                  </div>
-                </Card>
-              </div>
+              {pendidikanData['Sertifikat Pelatihan'] && pendidikanData['Sertifikat Pelatihan'].length > 0 ? (
+                <div className={styles['certification-grid']}>
+                  {pendidikanData['Sertifikat Pelatihan'].slice(0, 1).map((item) => (
+                    <Card key={item.id} variant='inverse' className={styles['detail-card']}>
+                      <div className={styles['certification-name']}>{item.judul || 'Belum Mengisi/Tidak Ada'}</div>
+                      <div className={styles['certification-grid']}>
+                        <div className={styles['certification-main']}>{item.institusi || 'Belum Mengisi/Tidak Ada'}</div>
+                        <div className={styles['certification-meta']}>{item.tahun_lulus || 'Belum Mengisi/Tidak Ada'}</div>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <p>Belum Mengisi/Tidak Ada</p>
+              )}
             </Card>
 
             <Card variant='secondary' padding="normal">
               <h4 className={styles['education-subtitle']}>Workshop Terbaru</h4>
-              <div className={styles['workshop-grid']}>
-                <Card variant='inverse' className={styles['detail-card']}>
-                  <div className={styles['workshop-main']}>Patient Safety</div>
-                  <div className={styles['workshop-meta']}>2024</div>
-                </Card>
-                <Card variant='inverse' className={styles['detail-card']}>
-                  <div className={styles['workshop-main']}>Infection Control</div>
-                  <div className={styles['workshop-meta']}>2023</div>
-                </Card>
-                <Card variant='inverse' className={styles['detail-card']}>
-                  <div className={styles['workshop-main']}>Komunikasi Terapeutik</div>
-                  <div className={styles['workshop-meta']}>2023</div>
-                </Card>
-              </div>
+              {pendidikanData['Sertifikat Workshop'] && pendidikanData['Sertifikat Workshop'].length > 0 ? (
+                <div className={styles['workshop-grid']}>
+                  {pendidikanData['Sertifikat Workshop'].slice(0, 1).map((item) => (
+                    <Card key={item.id} variant='inverse' className={styles['detail-card']}>
+                      <div className={styles['workshop-main']}>{item.judul || 'Belum Mengisi/Tidak Ada'}</div>
+                      <div className={styles['workshop-meta']}>{item.tahun_lulus || 'Belum Mengisi/Tidak Ada'}</div>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <p>Belum Mengisi/Tidak Ada</p>
+              )}
+            </Card>
+
+            <Card variant='secondary' padding="normal">
+              <h4 className={styles['education-subtitle']}>Prestasi Terbaru</h4>
+              {prestasiData.Prestasi && prestasiData.Prestasi.length > 0 ? (
+                <div className={styles['workshop-grid']}>
+                  {prestasiData.Prestasi.slice(0, 1).map((item) => (
+                    <Card key={item.id} variant='inverse' className={styles['detail-card']}>
+                      <div className={styles['workshop-main']}>{item.judul || 'Belum Mengisi/Tidak Ada'}</div>
+                      <div className={styles['workshop-meta']}>{item.tahun || 'Belum Mengisi/Tidak Ada'}</div>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <p>Belum Mengisi/Tidak Ada</p>
+              )}
+            </Card>
+
+            <Card variant='secondary' padding="normal">
+              <h4 className={styles['education-subtitle']}>Penghargaan Terbaru</h4>
+              {prestasiData.Penghargaan && prestasiData.Penghargaan.length > 0 ? (
+                <div className={styles['workshop-grid']}>
+                  {prestasiData.Penghargaan.slice(0, 1).map((item) => (
+                    <Card key={item.id} variant='inverse' className={styles['detail-card']}>
+                      <div className={styles['workshop-main']}>{item.judul || 'Belum Mengisi/Tidak Ada'}</div>
+                      <div className={styles['workshop-meta']}>{item.tahun || 'Belum Mengisi/Tidak Ada'}</div>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <p>Belum Mengisi/Tidak Ada</p>
+              )}
             </Card>
           </div>
           </div>
@@ -400,7 +675,7 @@ const Beranda = () => {
           <div className={styles['section-wrapper']}>
             <div className={styles['section-header']}>
               <div className={styles['section-title']}>
-                <h3>Penugasan Klinik</h3>
+                <h3>Penugasan</h3>
               </div>
               <Button variant="outline" size="small" icon={<FaChevronRight />} iconPosition="right" onClick={() => navigate('/penugasan')}>
                 Lihat Detail
@@ -408,83 +683,188 @@ const Beranda = () => {
             </div>
           
           <div className={styles['education-section']}>
-            <Card variant='secondary' padding="compact">
-              <div className={styles['assignment-header']}>
-                <span className={styles['assignment-subtitle']}>IGD (Instalasi Gawat Darurat)</span>
-                <div className={styles['status-button-wrapper']}>
-                  <Button variant="success" size="small">Aktif</Button>
-                </div>
-              </div>
-              <div className={styles['assignment-grid']}>
-                <div className={styles['assignment-period']}>Periode</div>
-                <div className={styles['assignment-supervisor']}>Pembimbing</div>
-              </div>
-              <div className={styles['assignment-grid']}>
-                <div className={`${styles['assignment-period']} ${styles.value}`}>Jan - Mar 2024</div>
-                <div className={`${styles['assignment-supervisor']} ${styles.value}`}>Ns. Andi Prasetyo, S.Kep</div>
-              </div>
+            <Card variant='secondary' padding="normal">
+              <h4 className={styles['education-subtitle']}>Penugasan</h4>
+              {penugasanData.Penugasan && penugasanData.Penugasan.length > 0 ? (
+                penugasanData.Penugasan.slice(0, 1).map((item) => {
+                  const getStatus = (tanggalSelesai) => {
+                    const endDate = new Date(tanggalSelesai);
+                    const today = new Date();
+                    return endDate >= today ? 'Aktif' : 'Sebelumnya';
+                  };
+                  
+                  const status = getStatus(item.tanggal_selesai);
+                  const formatPeriod = (start, end) => {
+                    const startDate = new Date(start);
+                    const endDate = new Date(end);
+                    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+                    return `${months[startDate.getMonth()]} ${startDate.getFullYear()} - ${months[endDate.getMonth()]} ${endDate.getFullYear()}`;
+                  };
+                  
+                  return (
+                    <Card key={item.id} variant='inverse' padding="compact" className={styles['detail-card']}>
+                      <div className={styles['assignment-header']}>
+                        <span className={styles['assignment-subtitle']}>{item.unit || 'Belum Mengisi/Tidak Ada'}</span>
+                        <div className={styles['status-button-wrapper']}>
+                          <Button variant={status === 'Aktif' ? 'success' : 'secondary'} size="small">{status}</Button>
+                        </div>
+                      </div>
+                      <div className={styles['assignment-grid']}>
+                        <div className={styles['assignment-period']}>Periode</div>
+                        <div className={styles['assignment-supervisor']}>Penanggung Jawab</div>
+                      </div>
+                      <div className={styles['assignment-grid']}>
+                        <div className={`${styles['assignment-period']} ${styles.value}`}>
+                          {formatPeriod(item.tanggal_mulai, item.tanggal_selesai)}
+                        </div>
+                        <div className={`${styles['assignment-supervisor']} ${styles.value}`}>{item.penanggung_jawab || 'Belum Mengisi/Tidak Ada'}</div>
+                      </div>
+                    </Card>
+                  );
+                })
+              ) : (
+                <p>Belum Mengisi/Tidak Ada</p>
+              )}
             </Card>
 
-            <Card variant='secondary' padding="compact">
-              <div className={styles['assignment-header']}>
-                <span className={styles['assignment-subtitle']}>ICU (Intensive Care Unit)</span>
-                <div className={styles['status-button-wrapper']}>
-                  <Button variant="secondary" size="small">Sebelumnya</Button>
-                </div>
-              </div>
-              <div className={styles['assignment-grid']}>
-                <div className={styles['assignment-period']}>Periode</div>
-                <div className={styles['assignment-supervisor']}>Pembimbing</div>
-              </div>
-              <div className={styles['assignment-grid']}>
-                <div className={`${styles['assignment-period']} ${styles.value}`}>Okt - Des 2023</div>
-                <div className={`${styles['assignment-supervisor']} ${styles.value}`}>Ns. Budi Santoso, S.Kep</div>
-              </div>
+            <Card variant='secondary' padding="normal">
+              <h4 className={styles['education-subtitle']}>Pengabdian</h4>
+              {penugasanData.Pengabdian && penugasanData.Pengabdian.length > 0 ? (
+                penugasanData.Pengabdian.slice(0, 1).map((item) => {
+                  const getStatus = (tanggalSelesai) => {
+                    const endDate = new Date(tanggalSelesai);
+                    const today = new Date();
+                    return endDate >= today ? 'Aktif' : 'Sebelumnya';
+                  };
+                  
+                  const status = getStatus(item.tanggal_selesai);
+                  const formatPeriod = (start, end) => {
+                    const startDate = new Date(start);
+                    const endDate = new Date(end);
+                    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+                    return `${months[startDate.getMonth()]} ${startDate.getFullYear()} - ${months[endDate.getMonth()]} ${endDate.getFullYear()}`;
+                  };
+                  
+                  return (
+                    <Card key={item.id} variant='inverse' padding="compact" className={styles['detail-card']}>
+                      <div className={styles['assignment-header']}>
+                        <span className={styles['assignment-subtitle']}>{item.unit || 'Belum Mengisi/Tidak Ada'}</span>
+                        <div className={styles['status-button-wrapper']}>
+                          <Button variant={status === 'Aktif' ? 'success' : 'secondary'} size="small">{status}</Button>
+                        </div>
+                      </div>
+                      <div className={styles['assignment-grid']}>
+                        <div className={styles['assignment-period']}>Periode</div>
+                        <div className={styles['assignment-supervisor']}>Penanggung Jawab</div>
+                      </div>
+                      <div className={styles['assignment-grid']}>
+                        <div className={`${styles['assignment-period']} ${styles.value}`}>
+                          {formatPeriod(item.tanggal_mulai, item.tanggal_selesai)}
+                        </div>
+                        <div className={`${styles['assignment-supervisor']} ${styles.value}`}>{item.penanggung_jawab || 'Belum Mengisi/Tidak Ada'}</div>
+                      </div>
+                    </Card>
+                  );
+                })
+              ) : (
+                <p>Belum Mengisi/Tidak Ada</p>
+              )}
             </Card>
           </div>
           </div>
         </section>
 
-        {/* Card 3: Kredensial / Rekredensial */}
         <section className={styles.section}>
           <div className={styles['section-wrapper']}>
             <div className={styles['section-header']}>
               <div className={styles['section-title']}>
-                <h3>Kredensial / Rekredensial</h3>
+                <h3>Kredensial & Kewenangan Klinis</h3>
               </div>
               <Button variant="outline" size="small" icon={<FaChevronRight />} iconPosition="right" onClick={() => navigate('/kredensial')}>
               Lihat Detail
             </Button>
           </div>
           
-              <div className={styles['credential-section']}>
-                <Card variant='secondary' className={styles['detail-card']}>
-                  <div className={styles['credential-item-content']}>
-                    <div className={styles['credential-item-main']}>
-                      <span className={styles['credential-subtitle']}>Observasi Klinis IGD</span>
-                      <div className={styles['credential-grid']}>
-                        <span className={styles['credential-date']}>12 Jan 2024</span>
-                        <span className={styles['credential-skp']}> </span>
-                      </div>
-                    </div>
-                    <div className={styles['status-button-wrapper']}>
-                      <Button variant="success" size="small">Diverifikasi</Button>
-                    </div>
-                  </div>
+              <div className={styles['education-section']}>
+                <Card variant='secondary' padding="normal">
+                  <h4 className={styles['education-subtitle']}>Kredensial</h4>
+                  {kredensialData.length > 0 ? (
+                    kredensialData.slice(0, 1).map((item) => (
+                      <Card key={item.id} variant='inverse' className={styles['detail-card']}>
+                        <div className={styles['credential-item-content']}>
+                          <div className={styles['credential-item-main']}>
+                            <span className={styles['credential-subtitle']}>{item.nama_kegiatan}</span>
+                            <div className={styles['credential-grid']}>
+                              <span className={styles['credential-date']}>{formatDateToIndonesian(item.tanggal_berlaku)}</span>
+                              <span className={styles['credential-skp']}>{item.skp_yang_didapat ? `${item.skp_yang_didapat} SKP` : ' '}</span>
+                            </div>
+                          </div>
+                          <div className={styles['status-button-wrapper']}>
+                            <Button 
+                              variant={item.hasil_penilaian === 'Kompeten' ? 'success' : item.hasil_penilaian === 'Tidak Kompeten' ? 'danger' : 'secondary'} 
+                              size="small"
+                            >
+                              {item.hasil_penilaian || 'Pending'}
+                            </Button>
+                          </div>
+                        </div>
+                      </Card>
+                    ))
+                  ) : (
+                    <p>Belum ada data kredensial.</p>
+                  )}
                 </Card>
-                <Card variant='secondary' className={styles['detail-card']}>
-                  <div className={styles['credential-item-content']}>
-                    <div className={styles['credential-item-main']}>
-                      <span className={styles['credential-subtitle']}>Seminar Patient Safety</span>
-                      <div className={styles['credential-grid']}>
-                        <span className={styles['credential-date']}>03 Feb 2024</span>
-                        <span className={styles['credential-skp']}>3 SKP</span>
-                      </div>
-                    </div>
-                    <div className={styles['status-button-wrapper']}>
-                      <Button variant="success" size="small">Tervalidasi</Button>
-                    </div>
-                  </div>
+
+                <Card variant='secondary' padding="normal">
+                  <h4 className={styles['education-subtitle']}>SPK (Surat Penugasan Klinis)</h4>
+                  {kewenanganData.SPK && kewenanganData.SPK.length > 0 ? (
+                    kewenanganData.SPK.slice(0, 1).map((item) => (
+                      <Card key={item.id} variant='inverse' className={styles['detail-card']}>
+                        <div className={styles['credential-item-content']}>
+                          <div className={styles['credential-item-main']}>
+                            <span className={styles['credential-subtitle']}>No. Dokumen: {item.nomor_dokumen || 'Belum Mengisi/Tidak Ada'}</span>
+                            <div className={styles['credential-grid']}>
+                              <span className={styles['credential-date']}>{formatDateToIndonesian(item.tanggal_terbit)}</span>
+                              <span className={styles['credential-skp']}>Berlaku: {formatDateToIndonesian(item.masa_berlaku)}</span>
+                            </div>
+                          </div>
+                          <div className={styles['status-button-wrapper']}>
+                            <Button variant={item.status === 'Aktif' ? 'success' : 'danger'} size="small">
+                              {item.status || 'Tidak Diketahui'}
+                            </Button>
+                          </div>
+                        </div>
+                      </Card>
+                    ))
+                  ) : (
+                    <p>Belum Mengisi/Tidak Ada</p>
+                  )}
+                </Card>
+
+                <Card variant='secondary' padding="normal">
+                  <h4 className={styles['education-subtitle']}>RKK (Rincian Kewenangan Klinis)</h4>
+                  {kewenanganData.RKK && kewenanganData.RKK.length > 0 ? (
+                    kewenanganData.RKK.slice(0, 1).map((item) => (
+                      <Card key={item.id} variant='inverse' className={styles['detail-card']}>
+                        <div className={styles['credential-item-content']}>
+                          <div className={styles['credential-item-main']}>
+                            <span className={styles['credential-subtitle']}>No. Dokumen: {item.nomor_dokumen || 'Belum Mengisi/Tidak Ada'}</span>
+                            <div className={styles['credential-grid']}>
+                              <span className={styles['credential-date']}>{formatDateToIndonesian(item.tanggal_terbit)}</span>
+                              <span className={styles['credential-skp']}>Berlaku: {formatDateToIndonesian(item.masa_berlaku)}</span>
+                            </div>
+                          </div>
+                          <div className={styles['status-button-wrapper']}>
+                            <Button variant={item.status === 'Aktif' ? 'success' : 'danger'} size="small">
+                              {item.status || 'Tidak Diketahui'}
+                            </Button>
+                          </div>
+                        </div>
+                      </Card>
+                    ))
+                  ) : (
+                    <p>Belum Mengisi/Tidak Ada</p>
+                  )}
                 </Card>
               </div>
           </div>
@@ -502,25 +882,51 @@ const Beranda = () => {
               </Button>
             </div>
             
-            <div className={styles['credential-section']}>
-                <Card variant='secondary' padding='normal'>
-                  <div className={styles['ethics-item-content']}>
-                    <div className={styles['ethics-item-main']}>
-                      <span className={styles['ethics-subtitle']}>Mengabaikan Prosedur Keselamatan Pasien</span>
-                      <span className={styles['ethics-date']}>12 Apr 2023</span>
-                    </div>
-                  </div>
+            <div className={styles['education-section']}>
+                <Card variant='secondary' padding="normal">
+                  <h4 className={styles['education-subtitle']}>Riwayat Etik</h4>
+                  {etikData.etik && etikData.etik.length > 0 ? (
+                    etikData.etik.slice(0, 1).map((item) => (
+                      <Card key={item.id} variant='inverse' padding='compact' className={styles['detail-card']}>
+                        <div className={styles['ethics-item-content']}>
+                          <div className={styles['ethics-item-main']}>
+                            <span className={styles['ethics-subtitle']}>{item.jenis_pelanggaran || 'Belum Mengisi/Tidak Ada'}</span>
+                            <span className={styles['ethics-date']}>{formatDateToIndonesian(item.tanggal_kejadian)}</span>
+                          </div>
+                          {item.status_penyelesaian && (
+                            <div className={styles['status-button-wrapper']}>
+                              <Button variant="success" size="small">{item.status_penyelesaian}</Button>
+                            </div>
+                          )}
+                        </div>
+                      </Card>
+                    ))
+                  ) : (
+                    <p>Belum Mengisi/Tidak Ada</p>
+                  )}
                 </Card>
-                <Card variant='secondary' padding='normal'>
-                  <div className={styles['ethics-item-content']}>
-                    <div className={styles['ethics-item-main']}>
-                      <span className={styles['ethics-subtitle']}>Terlambat shift pagi</span>
-                      <span className={styles['ethics-date']}>05 Feb 2023</span>
-                    </div>
-                    <div className={styles['status-button-wrapper']}>
-                      <Button variant="success" size="small">Sudah Dibina</Button>
-                    </div>
-                  </div>
+
+                <Card variant='secondary' padding="normal">
+                  <h4 className={styles['education-subtitle']}>Riwayat Disiplin</h4>
+                  {etikData.disiplin && etikData.disiplin.length > 0 ? (
+                    etikData.disiplin.slice(0, 1).map((item) => (
+                      <Card key={item.id} variant='inverse' padding='compact' className={styles['detail-card']}>
+                        <div className={styles['ethics-item-content']}>
+                          <div className={styles['ethics-item-main']}>
+                            <span className={styles['ethics-subtitle']}>{item.jenis_pelanggaran || 'Belum Mengisi/Tidak Ada'}</span>
+                            <span className={styles['ethics-date']}>{formatDateToIndonesian(item.tanggal_kejadian)}</span>
+                          </div>
+                          {item.status_penyelesaian && (
+                            <div className={styles['status-button-wrapper']}>
+                              <Button variant="success" size="small">{item.status_penyelesaian}</Button>
+                            </div>
+                          )}
+                        </div>
+                      </Card>
+                    ))
+                  ) : (
+                    <p>Belum Mengisi/Tidak Ada</p>
+                  )}
                 </Card>
             </div>
           </div>

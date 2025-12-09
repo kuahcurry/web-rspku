@@ -20,6 +20,11 @@ Route::middleware('auth:api')->group(function () {
     Route::put('/profile', [ProfileController::class, 'updateProfile']);
     Route::put('/account', [ProfileController::class, 'updateAccount']);
     
+    // Profile Picture routes
+    Route::post('/profile/foto-profil', [ProfileController::class, 'uploadProfilePicture']);
+    Route::get('/profile/foto-profil', [ProfileController::class, 'getProfilePicture']);
+    Route::delete('/profile/foto-profil', [ProfileController::class, 'deleteProfilePicture']);
+    
     // Dokumen Legalitas routes
     Route::prefix('dokumen-legalitas')->group(function () {
         Route::get('/', [DokumenLegalitasController::class, 'index']);

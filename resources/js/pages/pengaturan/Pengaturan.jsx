@@ -17,7 +17,8 @@ const Pengaturan = () => {
   const navigate = useNavigate();
   const { user, loading: userLoading, refreshUser } = useUser();
   const [avatarError, setAvatarError] = useState(false);
-  const [avatarUrl, setAvatarUrl] = useState('https://i.pravatar.cc/300?img=64');
+  const [profilePicture, setProfilePicture] = useState(null);
+  const [uploading, setUploading] = useState(false);
   const [activeTab, setActiveTab] = useState('profile'); // 'profile' or 'account'
   const [initialDataLoaded, setInitialDataLoaded] = useState(false);
   const [profileErrors, setProfileErrors] = useState({});
@@ -111,8 +112,27 @@ const Pengaturan = () => {
       };
 
       loadInitialData();
+      fetchProfilePicture();
     }
   }, [navigate, user, initialDataLoaded, fetchRegencies, fetchDistricts, fetchVillages]);
+
+  const fetchProfilePicture = async () => {
+    try {
+      console.log('[Pengaturan] Fetching profile picture');
+      const response = await authenticatedFetch('/api/profile/foto-profil');
+      console.log('[Pengaturan] Response status:', response.status);
+      const data = await response.json();
+      console.log('[Pengaturan] API Response:', data);
+      if (data.success && data.data.foto_profil_url) {
+        console.log('[Pengaturan] Setting profile picture:', data.data.foto_profil_url);
+        setProfilePicture(data.data.foto_profil_url);
+      } else {
+        console.log('[Pengaturan] No profile picture URL in response');
+      }
+    } catch (error) {
+      console.error('[Pengaturan] Error fetching profile picture:', error);
+    }
+  };
 
   const handleProfileChange = (e) => {
     const { name, value } = e.target;
@@ -164,19 +184,56 @@ const Pengaturan = () => {
     }));
   };
 
-  const handlePhotoUpload = (e) => {
+  const handlePhotoUpload = async (e) => {
     const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setAvatarUrl(reader.result);
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      alert('Hanya file gambar yang diizinkan');
+      return;
+    }
+
+    // Validate file size (max 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      alert('Ukuran file maksimal 2MB');
+      return;
+    }
+
+    try {
+      setUploading(true);
+      console.log('[Pengaturan] Starting upload for file:', file.name, 'size:', file.size);
+      
+      const formData = new FormData();
+      formData.append('foto_profil', file);
+
+      const response = await fetch('/api/profile/foto-profil', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+        },
+        body: formData,
+      });
+
+      console.log('[Pengaturan] Upload response status:', response.status);
+      const data = await response.json();
+      console.log('[Pengaturan] Upload response data:', data);
+
+      if (response.ok && data.success) {
+        console.log('[Pengaturan] Upload successful, URL:', data.data.foto_profil_url);
+        setProfilePicture(data.data.foto_profil_url);
         setAvatarError(false);
-        setProfileData((prev) => ({
-          ...prev,
-          fotoProfil: file
-        }));
-      };
-      reader.readAsDataURL(file);
+        await refreshUser();
+        alert('Foto profil berhasil diupload');
+      } else {
+        console.error('[Pengaturan] Upload failed:', data);
+        throw new Error(data.message || 'Gagal upload foto profil');
+      }
+    } catch (error) {
+      console.error('[Pengaturan] Error uploading profile picture:', error);
+      alert('Gagal upload foto profil: ' + error.message);
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -325,10 +382,20 @@ const Pengaturan = () => {
               <Card variant="secondary" padding="normal">
                 <div className={styles['photo-section']}>
                   <div className={styles['photo-avatar']}>
-                    {!avatarError ? (
-                      <img src={avatarUrl} alt="Foto Profil" onError={() => setAvatarError(true)} />
+                    {profilePicture && !avatarError ? (
+                      <img 
+                        src={profilePicture} 
+                        alt="Foto Profil" 
+                        onLoad={() => console.log('[Pengaturan] Image loaded successfully:', profilePicture)}
+                        onError={(e) => {
+                          console.error('[Pengaturan] Image failed to load:', profilePicture, 'Error:', e);
+                          setAvatarError(true);
+                        }} 
+                      />
                     ) : (
-                      <MdPerson className={styles['photo-placeholder']} />
+                      <div className={styles['avatar-initials']}>
+                        {user?.name?.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'U'}
+                      </div>
                     )}
                     <div className={styles['photo-overlay']}>
                       <input
@@ -337,14 +404,16 @@ const Pengaturan = () => {
                         accept="image/*"
                         onChange={handlePhotoUpload}
                         className={styles.hiddenInput}
+                        disabled={uploading}
                       />
                       <Button
                         variant="inverse"
                         size="small"
                         icon={<MdCameraAlt />}
                         onClick={() => document.getElementById('photoUpload').click()}
+                        disabled={uploading}
                       >
-                        Ganti Foto
+                        {uploading ? 'Mengupload...' : 'Ganti Foto'}
                       </Button>
                     </div>
                   </div>

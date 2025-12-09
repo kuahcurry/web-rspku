@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 
 class ProfileController extends Controller
 {
@@ -126,5 +127,160 @@ class ProfileController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * Upload profile picture
+     */
+    public function uploadProfilePicture(Request $request)
+    {
+        try {
+            $user = auth()->user();
+            
+            $validator = Validator::make($request->all(), [
+                'foto_profil' => 'required|image|mimes:jpeg,jpg,png|max:2048', // Max 2MB
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validation error',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            // Delete old profile picture if exists
+            if ($user->foto_profil && Storage::disk('public')->exists($user->foto_profil)) {
+                Storage::disk('public')->delete($user->foto_profil);
+            }
+
+            // Create folder name: {name}_{nik} (same as dokumen legalitas)
+            $folderName = $this->sanitizeFolderName($user->name) . '_' . $user->nik;
+
+            // Store the file in the same base folder
+            $file = $request->file('foto_profil');
+            $fileName = 'profile_' . time() . '.' . $file->getClientOriginalExtension();
+            $filePath = $file->storeAs($folderName, $fileName, 'public');
+
+            // Update user's foto_profil path
+            $user->update([
+                'foto_profil' => $filePath
+            ]);
+
+            $profileUrl = Storage::disk('public')->url($filePath);
+            
+            \Log::info('Profile picture uploaded', [
+                'user_id' => $user->id,
+                'file_path' => $filePath,
+                'full_url' => $profileUrl,
+                'folder_name' => $folderName,
+                'file_exists' => Storage::disk('public')->exists($filePath)
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Profile picture uploaded successfully',
+                'data' => [
+                    'foto_profil' => $filePath,
+                    'foto_profil_url' => $profileUrl
+                ]
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to upload profile picture',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get profile picture URL
+     */
+    public function getProfilePicture()
+    {
+        try {
+            $user = auth()->user();
+            
+            \Log::info('Fetching profile picture', [
+                'user_id' => $user->id,
+                'user_name' => $user->name,
+                'foto_profil_db' => $user->foto_profil
+            ]);
+            
+            if (!$user->foto_profil) {
+                \Log::info('No profile picture in database for user: ' . $user->id);
+                return response()->json([
+                    'success' => true,
+                    'message' => 'No profile picture found',
+                    'data' => [
+                        'foto_profil' => null,
+                        'foto_profil_url' => null
+                    ]
+                ], 200);
+            }
+
+            $fileExists = Storage::disk('public')->exists($user->foto_profil);
+            $profileUrl = Storage::disk('public')->url($user->foto_profil);
+            
+            \Log::info('Profile picture details', [
+                'file_path' => $user->foto_profil,
+                'file_exists' => $fileExists,
+                'full_url' => $profileUrl,
+                'storage_path' => Storage::disk('public')->path($user->foto_profil)
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Profile picture retrieved successfully',
+                'data' => [
+                    'foto_profil' => $user->foto_profil,
+                    'foto_profil_url' => $profileUrl
+                ]
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to get profile picture',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Delete profile picture
+     */
+    public function deleteProfilePicture()
+    {
+        try {
+            $user = auth()->user();
+            
+            if ($user->foto_profil && Storage::disk('public')->exists($user->foto_profil)) {
+                Storage::disk('public')->delete($user->foto_profil);
+            }
+
+            $user->update([
+                'foto_profil' => null
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Profile picture deleted successfully',
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to delete profile picture',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Sanitize folder name to remove special characters
+     */
+    private function sanitizeFolderName($name)
+    {
+        return preg_replace('/[^A-Za-z0-9_-]/', '_', $name);
     }
 }
