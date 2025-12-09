@@ -118,16 +118,10 @@ const Pengaturan = () => {
 
   const fetchProfilePicture = async () => {
     try {
-      console.log('[Pengaturan] Fetching profile picture');
       const response = await authenticatedFetch('/api/profile/foto-profil');
-      console.log('[Pengaturan] Response status:', response.status);
       const data = await response.json();
-      console.log('[Pengaturan] API Response:', data);
       if (data.success && data.data.foto_profil_url) {
-        console.log('[Pengaturan] Setting profile picture:', data.data.foto_profil_url);
         setProfilePicture(data.data.foto_profil_url);
-      } else {
-        console.log('[Pengaturan] No profile picture URL in response');
       }
     } catch (error) {
       console.error('[Pengaturan] Error fetching profile picture:', error);
@@ -202,7 +196,6 @@ const Pengaturan = () => {
 
     try {
       setUploading(true);
-      console.log('[Pengaturan] Starting upload for file:', file.name, 'size:', file.size);
       
       const formData = new FormData();
       formData.append('foto_profil', file);
@@ -215,12 +208,9 @@ const Pengaturan = () => {
         body: formData,
       });
 
-      console.log('[Pengaturan] Upload response status:', response.status);
       const data = await response.json();
-      console.log('[Pengaturan] Upload response data:', data);
 
       if (response.ok && data.success) {
-        console.log('[Pengaturan] Upload successful, URL:', data.data.foto_profil_url);
         setProfilePicture(data.data.foto_profil_url);
         setAvatarError(false);
         await refreshUser();

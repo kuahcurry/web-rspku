@@ -398,7 +398,7 @@ const Penugasan = () => {
                       </p>
                     </div>
                     <div className={styles.metaBlock}>
-                      <p className={styles.metaLabel}>Penanggung Jawab</p>
+                      <p className={styles.metaLabel}>{activeTab === 'pengabdian' ? 'Peran / Posisi' : 'Penanggung Jawab'}</p>
                       <p className={styles.metaValue}>{item.penanggung_jawab}</p>
                     </div>
                     <div className={styles.metaBlock}>
@@ -466,7 +466,7 @@ const Penugasan = () => {
               </p>
             </div>
             <div>
-              <p className={styles.metaLabel}>Penanggung Jawab</p>
+              <p className={styles.metaLabel}>{activeTab === 'pengabdian' ? 'Peran / Posisi' : 'Penanggung Jawab'}</p>
               <p className={styles.metaValue}>{selectedItem?.penanggung_jawab || '-'}</p>
             </div>
             <div>
