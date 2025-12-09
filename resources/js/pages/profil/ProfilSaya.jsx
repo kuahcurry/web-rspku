@@ -5,7 +5,7 @@ import Button from '../../components/button/Button';
 import { FaEdit } from 'react-icons/fa';
 import { MdPerson } from 'react-icons/md';
 import { useUser } from '../../contexts/UserContext';
-import { isAuthenticated } from '../../utils/auth';
+import { isAuthenticated, authenticatedFetch } from '../../utils/auth';
 import { getProvinceNameById, getRegencyNameById, getDistrictNameById, getVillageNameById } from '../../services/indonesiaRegion';
 import { formatDateToIndonesian } from '../../utils/dateFormatter';
 import styles from './ProfilSaya.module.css';
@@ -14,7 +14,7 @@ const ProfileSaya = () => {
   const navigate = useNavigate();
   const { user, loading: userLoading } = useUser();
   const [avatarError, setAvatarError] = useState(false);
-  const [avatarUrl, setAvatarUrl] = useState('https://i.pravatar.cc/300?img=64');
+  const [profilePicture, setProfilePicture] = useState(null);
   const [regionNames, setRegionNames] = useState({
     province: '',
     regency: '',
@@ -75,8 +75,29 @@ const ProfileSaya = () => {
 
       // Fetch region names
       fetchRegionNames(user);
+      
+      // Fetch profile picture
+      fetchProfilePicture();
     }
   }, [navigate, user]);
+
+  const fetchProfilePicture = async () => {
+    try {
+      console.log('[ProfilSaya] Fetching profile picture');
+      const response = await authenticatedFetch('/api/profile/foto-profil');
+      console.log('[ProfilSaya] Response status:', response.status);
+      const data = await response.json();
+      console.log('[ProfilSaya] API Response:', data);
+      if (data.success && data.data.foto_profil_url) {
+        console.log('[ProfilSaya] Setting profile picture:', data.data.foto_profil_url);
+        setProfilePicture(data.data.foto_profil_url);
+      } else {
+        console.log('[ProfilSaya] No profile picture URL in response');
+      }
+    } catch (error) {
+      console.error('[ProfilSaya] Error fetching profile picture:', error);
+    }
+  };
 
   // Fetch region names from IDs
   const fetchRegionNames = async (userData) => {
@@ -145,10 +166,20 @@ const ProfileSaya = () => {
             <div className={styles['profile-hero-content']}>
               <div className={styles['profile-hero-left']}>
                 <div className={styles['profile-hero-avatar']}>
-                  {!avatarError ? (
-                    <img src={avatarUrl} alt="Foto Profil" onError={() => setAvatarError(true)} />
+                  {profilePicture && !avatarError ? (
+                    <img 
+                      src={profilePicture} 
+                      alt="Foto Profil" 
+                      onLoad={() => console.log('[ProfilSaya] Image loaded successfully:', profilePicture)}
+                      onError={(e) => {
+                        console.error('[ProfilSaya] Image failed to load:', profilePicture, 'Error:', e);
+                        setAvatarError(true);
+                      }} 
+                    />
                   ) : (
-                    <MdPerson className={styles['avatar-placeholder']} />
+                    <div className={styles['avatar-initials']}>
+                      {formData.namaLengkap?.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'U'}
+                    </div>
                   )}
                 </div>
                 <div className={styles['profile-hero-identity']}>

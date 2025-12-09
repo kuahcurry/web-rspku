@@ -33,6 +33,7 @@ class UserRegistration extends Authenticatable implements JWTSubject
         'unit_kerja',
         'tanggal_mulai_kerja',
         'password',
+        'foto_profil',
     ];
 
     protected $hidden = [
