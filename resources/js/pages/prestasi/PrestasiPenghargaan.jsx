@@ -21,6 +21,13 @@ const JENIS_MAPPING = {
   'penghargaan': 'Penghargaan'
 };
 
+const EMPTY_FORM = {
+  judul: '',
+  penyelenggara: '',
+  tahun: '',
+  file: null
+};
+
 const PrestasiPenghargaan = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('prestasi');
@@ -38,13 +45,13 @@ const PrestasiPenghargaan = () => {
   });
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formData, setFormData] = useState({
-    judul: '',
-    penyelenggara: '',
-    tahun: '',
-    file: null
+  const [formDataByTab, setFormDataByTab] = useState({
+    prestasi: { ...EMPTY_FORM },
+    penghargaan: { ...EMPTY_FORM }
   });
   const fileInputRef = useRef(null);
+
+  const formData = formDataByTab[activeTab];
 
   const items = dataByTab[activeTab] || [];
 
@@ -124,23 +131,19 @@ const PrestasiPenghargaan = () => {
   };
 
   const handleAddClick = () => {
-    setFormData({
-      judul: '',
-      penyelenggara: '',
-      tahun: '',
-      file: null
-    });
+    setFormDataByTab(prev => ({
+      ...prev,
+      [activeTab]: { ...EMPTY_FORM }
+    }));
     setShowAddModal(true);
   };
 
   const handleCloseAddModal = () => {
     setShowAddModal(false);
-    setFormData({
-      judul: '',
-      penyelenggara: '',
-      tahun: '',
-      file: null
-    });
+    setFormDataByTab(prev => ({
+      ...prev,
+      [activeTab]: { ...EMPTY_FORM }
+    }));
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -148,9 +151,17 @@ const PrestasiPenghargaan = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    const fieldName = name === 'nama' ? 'judul' : name;
+    const nextValue = fieldName === 'tahun'
+      ? (value || '').replace(/\D/g, '').slice(0, 4)
+      : value;
+
+    setFormDataByTab(prev => ({
       ...prev,
-      [name]: value
+      [activeTab]: {
+        ...prev[activeTab],
+        [fieldName]: nextValue
+      }
     }));
   };
 
@@ -170,9 +181,12 @@ const PrestasiPenghargaan = () => {
         return;
       }
 
-      setFormData(prev => ({
+      setFormDataByTab(prev => ({
         ...prev,
-        file: file
+        [activeTab]: {
+          ...prev[activeTab],
+          file
+        }
       }));
     }
   };
@@ -422,6 +436,8 @@ const PrestasiPenghargaan = () => {
         isOpen={showAddModal}
         onClose={handleCloseAddModal}
         title={`Tambah ${JENIS_MAPPING[activeTab]}`}
+        padding="normal"
+        size="medium"
       >
         <Form onSubmit={handleSubmit}>
           <Input
@@ -473,17 +489,18 @@ const PrestasiPenghargaan = () => {
               </div>
             </div>
           </div>
+        </div>
 
-          <div className={styles['modal-actions']}>
-            <Button type="button" variant="secondary" onClick={handleCloseAddModal}>
-              Batal
-            </Button>
-            <Button type="submit" variant="primary" icon={<MdSave />} disabled={isSubmitting}>
-              {isSubmitting ? 'Menyimpan...' : 'Simpan'}
-            </Button>
-          </div>
-        </Form>
-      </Modal>
+        <div className={styles['modal-actions']}>
+          <Button type="button" variant="secondary" onClick={handleCloseAddModal}>
+            Batal
+          </Button>
+          <Button type="submit" variant="success" icon={<MdSave />} disabled={isSubmitting}>
+            {isSubmitting ? 'Menyimpan...' : 'Simpan Perubahan'}
+          </Button>
+        </div>
+      </Form>
+    </Modal>
 
       {/* Delete Confirmation Modal */}
       <Modal

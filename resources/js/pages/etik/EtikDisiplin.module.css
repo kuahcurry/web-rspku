@@ -36,10 +36,6 @@
   border: 1px solid var(--border-grey);
 }
 
-.tabGroup {
-  margin: 1rem 0 0.75rem;
-}
-
 .headerRow {
   display: flex;
   justify-content: space-between;
