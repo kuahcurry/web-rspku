@@ -425,8 +425,8 @@ const PrestasiPenghargaan = () => {
       >
         <Form onSubmit={handleSubmit}>
           <Input
-            label="Nama Prestasi"
-            name="nama"
+            label={activeTab === 'prestasi' ? 'Nama Prestasi' : 'Nama Penghargaan'}
+            name="judul"
             value={formData.judul}
             onChange={handleInputChange}
             placeholder={`Masukkan judul ${activeTab}`}

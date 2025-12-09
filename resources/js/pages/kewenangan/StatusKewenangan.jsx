@@ -46,7 +46,7 @@ const StatusKewenangan = () => {
       navigate('/login');
       return;
     }
-    // fetchData(); // Uncomment when API is ready
+    fetchData();
   }, [navigate]);
 
   const fetchData = async () => {
