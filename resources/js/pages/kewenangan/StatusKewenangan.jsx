@@ -488,12 +488,13 @@ const StatusKewenangan = () => {
 
       {/* Add Modal */}
       <Modal
-      isOpen={showAddModal}
-      onClose={handleCloseAddModal}
-      title={`Tambah ${JENIS_MAPPING[selectedJenis]}`}
-      padding="normal"
-    >
-      <Form onSubmit={handleSubmit} className={styles.modalContent}>
+        isOpen={showAddModal}
+        onClose={handleCloseAddModal}
+        title={`Tambah ${JENIS_MAPPING[selectedJenis]}`}
+        padding="normal"
+        size="medium"
+      >
+        <Form onSubmit={handleSubmit} className={styles.modalContent}>
         <div className={styles['form-group']}>
           <label className={styles['form-label']}>
             Jenis Dokumen <span className={styles.required}>*</span>
@@ -537,49 +538,12 @@ const StatusKewenangan = () => {
             required
           />
 
-          <div className={styles['form-group']}>
-            <label className={styles['form-label']}>
-              Status <span className={styles.required}>*</span>
-            </label>
-            <select
-              name="status"
-              value={formData.status}
-              onChange={handleInputChange}
-              className={styles['form-select']}
-              required
-            >
-              <option value="Aktif">Aktif</option>
-              <option value="Segera Habis">Segera Habis</option>
-              <option value="Tidak Aktif">Tidak Aktif</option>
-            </select>
-          </div>
-
-          <div className={styles['file-input-wrapper']}>
-            <label className={styles['file-label']}>
-              Upload Dokumen (PDF) <span className={styles.required}>*</span>
-            </label>
-            <div className={styles['file-input-container']}>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept=".pdf"
-                onChange={handleFileChange}
-                className={styles['file-input']}
-                required
-              />
-              <div className={styles['file-input-display']}>
-                <MdCloudUpload size={24} />
-                <span>{formData.file ? formData.file.name : 'Pilih file PDF (Maks 5MB)'}</span>
-              </div>
-            </div>
-          </div>
-
           <div className={styles.modalActions}>
             <Button type="button" variant="secondary" onClick={handleCloseAddModal}>
               Batal
             </Button>
-            <Button type="submit" variant="primary" icon={<MdSave />} disabled={isSubmitting}>
-              {isSubmitting ? 'Menyimpan...' : 'Simpan'}
+            <Button type="submit" variant="success" icon={<MdSave />} disabled={isSubmitting}>
+              {isSubmitting ? 'Menyimpan...' : 'Simpan Perubahan'}
             </Button>
           </div>
         </Form>
