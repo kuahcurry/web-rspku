@@ -493,18 +493,6 @@ const Kredensial = () => {
           <div>
             <div className={styles.headerRow}>
               <h3 className={styles.sectionTitle}>Rekredensial</h3>
-              <div className={styles.actionButtons}>
-                <Button variant="success" size="small" icon={<MdAdd />} iconPosition="left" onClick={openAddModal}>
-                  Tambah
-                </Button>
-                <Button variant="danger" size="small" icon={<MdDelete/>} iconPosition="left" onClick={handleDeleteButtonClick}>
-                  {deleteMode
-                    ? deleteTargets.length
-                      ? `Hapus (${deleteTargets.length})`
-                      : 'Batal'
-                    : 'Hapus'}
-                </Button>
-              </div>
             </div>
 
             {deleteMode && (
@@ -613,7 +601,7 @@ const Kredensial = () => {
         <Form onSubmit={handleSubmit} className={styles.modalContent}>
           <Form.Row columns={2} className={styles.formRow}>
             <Input
-              label="Tanggal Kegiatan"
+              label="Tanggal Mulai"
               type="date"
               name="tanggal_kegiatan"
               value={formData.tanggal_kegiatan}
@@ -621,11 +609,12 @@ const Kredensial = () => {
               required
             />
             <Input
-              label="Masa Berlaku (opsional)"
+              label="Tanggal Selesai"
               type="date"
               name="masa_berlaku"
               value={formData.masa_berlaku}
               onChange={(e) => setFormData({ ...formData, masa_berlaku: e.target.value })}
+              required
             />
           </Form.Row>
           <Input
