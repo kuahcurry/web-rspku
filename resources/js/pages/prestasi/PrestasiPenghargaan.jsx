@@ -439,62 +439,54 @@ const PrestasiPenghargaan = () => {
         padding="normal"
         size="medium"
       >
-        <Form onSubmit={handleSubmit} className={styles.modalContent}>
-        <Input
-          label={activeTab === 'prestasi' ? 'Nama Prestasi' : 'Nama Penghargaan'}
-          name="judul"
-          value={formData.judul}
-          onChange={handleInputChange}
-          placeholder={
-            activeTab === 'prestasi' 
-              ? 'Contoh: Juara 1 Lomba Inovasi Pelayanan'
-              : 'Contoh: Penghargaan Tenaga Kesehatan Teladan'
-          }
-          required
-        />
-        
-        <Input
-          label="Penyelenggara"
-          name="penyelenggara"
-          value={formData.penyelenggara}
-          onChange={handleInputChange}
-          placeholder="Masukkan nama penyelenggara"
-          required
-        />
-        
-        <Input
-          label="Tahun"
-          name="tahun"
-          type="text"
-          inputMode="numeric"
-          pattern="\\d{4}"
-          maxLength={4}
-          value={formData.tahun || ''}
-          onChange={handleInputChange}
-          placeholder="Contoh: 2024"
-          required
-        />
+        <Form onSubmit={handleSubmit}>
+          <Input
+            label={activeTab === 'prestasi' ? 'Nama Prestasi' : 'Nama Penghargaan'}
+            name="judul"
+            value={formData.judul}
+            onChange={handleInputChange}
+            placeholder={`Masukkan judul ${activeTab}`}
+            required
+          />
+          
+          <Input
+            label="Penyelenggara"
+            name="penyelenggara"
+            value={formData.penyelenggara}
+            onChange={handleInputChange}
+            placeholder="Masukkan nama penyelenggara"
+            required
+          />
+          
+          <Input
+            label="Tahun"
+            name="tahun"
+            type="number"
+            value={formData.tahun}
+            onChange={handleInputChange}
+            placeholder="Contoh: 2024"
+            min="1900"
+            max={new Date().getFullYear()}
+            required
+          />
 
-        <div className={styles['file-input-wrapper']}>
-          <label className={styles['file-label']}>
-            Upload Dokumen (PDF) <span className={styles.required}>*</span>
-          </label>
-          <div className={styles['file-input-container']}>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".pdf"
-              onChange={handleFileChange}
-              className={styles['file-input']}
-              required
-            />
-            <div className={styles['file-input-display']}>
-              <MdCloudUpload size={24} />
-              <span className={styles.uploadText}>Seret atau klik untuk pilih dokumen</span>
-              <span className={styles.uploadHint}>Format PDF, maks 5MB</span>
-              {formData.file && (
-                <span className={styles.uploadFileName}>{formData.file.name}</span>
-              )}
+          <div className={styles['file-input-wrapper']}>
+            <label className={styles['file-label']}>
+              Upload Dokumen (PDF) <span className={styles.required}>*</span>
+            </label>
+            <div className={styles['file-input-container']}>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".pdf"
+                onChange={handleFileChange}
+                className={styles['file-input']}
+                required
+              />
+              <div className={styles['file-input-display']}>
+                <MdCloudUpload size={24} />
+                <span>{formData.file ? formData.file.name : 'Pilih file PDF (Maks 5MB)'}</span>
+              </div>
             </div>
           </div>
         </div>

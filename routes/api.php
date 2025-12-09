@@ -61,4 +61,20 @@ Route::middleware('auth:api')->group(function () {
         Route::get('/view/{id}', [\App\Http\Controllers\Api\KredensialController::class, 'view']);
         Route::post('/delete-multiple', [\App\Http\Controllers\Api\KredensialController::class, 'deleteMultiple']);
     });
+    
+    // Prestasi & Penghargaan routes
+    Route::prefix('prestasi-penghargaan')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Api\PrestasiPenghargaanController::class, 'index']);
+        Route::post('/', [\App\Http\Controllers\Api\PrestasiPenghargaanController::class, 'store']);
+        Route::get('/{id}/file', [\App\Http\Controllers\Api\PrestasiPenghargaanController::class, 'viewFile']);
+        Route::post('/bulk-delete', [\App\Http\Controllers\Api\PrestasiPenghargaanController::class, 'bulkDelete']);
+    });
+    
+    // Status Kewenangan routes
+    Route::prefix('status-kewenangan')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Api\StatusKewenanganController::class, 'index']);
+        Route::post('/', [\App\Http\Controllers\Api\StatusKewenanganController::class, 'store']);
+        Route::get('/{id}/file', [\App\Http\Controllers\Api\StatusKewenanganController::class, 'viewFile']);
+        Route::post('/bulk-delete', [\App\Http\Controllers\Api\StatusKewenanganController::class, 'bulkDelete']);
+    });
 });
