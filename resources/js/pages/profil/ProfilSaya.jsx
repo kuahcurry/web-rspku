@@ -83,16 +83,10 @@ const ProfileSaya = () => {
 
   const fetchProfilePicture = async () => {
     try {
-      console.log('[ProfilSaya] Fetching profile picture');
       const response = await authenticatedFetch('/api/profile/foto-profil');
-      console.log('[ProfilSaya] Response status:', response.status);
       const data = await response.json();
-      console.log('[ProfilSaya] API Response:', data);
       if (data.success && data.data.foto_profil_url) {
-        console.log('[ProfilSaya] Setting profile picture:', data.data.foto_profil_url);
         setProfilePicture(data.data.foto_profil_url);
-      } else {
-        console.log('[ProfilSaya] No profile picture URL in response');
       }
     } catch (error) {
       console.error('[ProfilSaya] Error fetching profile picture:', error);
@@ -170,7 +164,6 @@ const ProfileSaya = () => {
                     <img 
                       src={profilePicture} 
                       alt="Foto Profil" 
-                      onLoad={() => console.log('[ProfilSaya] Image loaded successfully:', profilePicture)}
                       onError={(e) => {
                         console.error('[ProfilSaya] Image failed to load:', profilePicture, 'Error:', e);
                         setAvatarError(true);

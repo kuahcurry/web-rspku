@@ -4,10 +4,12 @@ import { FiCreditCard, FiLock } from 'react-icons/fi';
 import Input from '../../components/input/Input';
 import Button from '../../components/button/Button';
 import Form from '../../components/form/Form';
+import { useUser } from '../../contexts/UserContext';
 import styles from './Login.module.css';
 
 function Login() {
   const navigate = useNavigate();
+  const { refreshUser } = useUser();
   const [formData, setFormData] = useState({
     nik: '',
     password: ''
@@ -68,6 +70,9 @@ function Login() {
         localStorage.setItem('user', JSON.stringify(data.data.user));
         localStorage.setItem('token_expires_at', Date.now() + (data.data.expires_in * 1000));
 
+        // Refresh user context to load user data immediately
+        await refreshUser();
+        
         navigate('/beranda');
       } else {
         // Handle errors
