@@ -8,6 +8,7 @@ import Form from '../../components/form/Form';
 import Input from '../../components/input/Input';
 import { MdVisibility, MdAdd, MdCloudUpload, MdSave, MdDownload, MdDelete, MdPrint } from 'react-icons/md';
 import { authenticatedFetch, isAuthenticated } from '../../utils/auth';
+import { formatDateToIndonesian } from '../../utils/dateFormatter';
 import styles from './StatusKewenangan.module.css';
 
 const JENIS_MAPPING = {
@@ -387,8 +388,8 @@ const StatusKewenangan = () => {
                     <div>
                       <h4 className={styles.itemTitle}>{item.nomor_dokumen || 'Tanpa nomor dokumen'}</h4>
                       <p className={styles.itemMeta}>Jenis: {item.jenis || '-'}</p>
-                      <p className={styles.itemMeta}>Tanggal Terbit: {item.tanggal_terbit || '-'}</p>
-                      <p className={styles.itemMeta}>Masa Berlaku: {item.masa_berlaku || '-'}</p>
+                      <p className={styles.itemMeta}>Tanggal Terbit: {item.tanggal_terbit ? formatDateToIndonesian(item.tanggal_terbit) : '-'}</p>
+                      <p className={styles.itemMeta}>Masa Berlaku: {item.masa_berlaku ? formatDateToIndonesian(item.masa_berlaku) : '-'}</p>
                     </div>
                     <div className={styles.fileBlock}>
                       <span className={styles.fileLabel}>Status</span>
