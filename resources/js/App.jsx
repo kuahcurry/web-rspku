@@ -5,6 +5,7 @@ import Profil from "./pages/profil/ProfilSaya";
 import Pengaturan from "./pages/pengaturan/Pengaturan";
 import Dokumen from "./pages/dokumen/DokumenLegalitas";
 import Kredensial from "./pages/kredensial/Kredensial";
+import StatusKewenangan from "./pages/kewenangan/StatusKewenangan";
 import Pendidikan from "./pages/pendidikan/RiwayatPendidikan"; 
 import PrestasiPenghargaan from "./pages/prestasi/PrestasiPenghargaan";
 import Penugasan from "./pages/penugasan/Penugasan";
@@ -90,6 +91,14 @@ function App() {
           element={
             <ProtectedRoute>
               <Kredensial />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/status-kewenangan"
+          element={
+            <ProtectedRoute>
+              <StatusKewenangan />
             </ProtectedRoute>
           }
         />
