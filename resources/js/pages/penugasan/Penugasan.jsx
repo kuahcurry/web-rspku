@@ -237,11 +237,14 @@ const Penugasan = () => {
 
     try {
       const apiFormData = new FormData();
+      // Ensure jenis matches current active tab
+      const currentJenis = activeTab === 'pengabdian' ? 'Pengabdian' : 'Penugasan';
+      
       apiFormData.append('file', formData.file);
       apiFormData.append('unit', formData.unit);
       apiFormData.append('penanggung_jawab', formData.penanggung_jawab);
       apiFormData.append('tanggal_mulai', formData.tanggal_mulai);
-      apiFormData.append('jenis', formData.jenis || 'Penugasan');
+      apiFormData.append('jenis', currentJenis);
       if (formData.tanggal_selesai) {
         apiFormData.append('tanggal_selesai', formData.tanggal_selesai);
       }

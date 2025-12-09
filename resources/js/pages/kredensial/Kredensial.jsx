@@ -55,6 +55,24 @@ const getStatusBadge = (hasil) => {
   return { label: 'Belum Diisi', variant: 'secondary' };
 };
 
+const calculateMonthsDifference = (startDate, endDate) => {
+  if (!startDate || !endDate) return null;
+  
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  
+  if (isNaN(start.getTime()) || isNaN(end.getTime())) return null;
+  
+  const yearsDiff = end.getFullYear() - start.getFullYear();
+  const monthsDiff = end.getMonth() - start.getMonth();
+  
+  const totalMonths = yearsDiff * 12 + monthsDiff;
+  
+  if (totalMonths === 0) return '< 1 bulan';
+  if (totalMonths === 1) return '1 bulan';
+  return `${totalMonths} bulan`;
+};
+
 const Kredensial = () => {
   const navigate = useNavigate();
   const [activities, setActivities] = useState([]);
@@ -116,9 +134,13 @@ const Kredensial = () => {
           id: record.id,
           nama_kegiatan: record.nama_kegiatan,
           tanggal_kegiatan: record.tanggal_berlaku,
+          tanggal_berlaku: record.tanggal_berlaku, // Keep original for edit form
+          tanggal_selesai: record.tanggal_selesai, // Keep original for edit form
           jenis_kegiatan: record.jenis_kegiatan,
           tahap: record.kredensial_type,
+          kredensial_type: record.kredensial_type, // Keep original for edit form
           hasil: record.hasil_penilaian,
+          hasil_penilaian: record.hasil_penilaian, // Keep original for edit form
           masa_berlaku: record.tanggal_selesai,
           catatan: record.catatan,
           fileName: record.file_name,
@@ -198,11 +220,11 @@ const Kredensial = () => {
     setEditingId(item.id);
     setFormData({
       nama_kegiatan: item.nama_kegiatan || '',
-      tanggal_berlaku: item.tanggal_kegiatan || '',
-      tanggal_selesai: item.masa_berlaku || '',
+      tanggal_berlaku: item.tanggal_berlaku || '',
+      tanggal_selesai: item.tanggal_selesai || '',
       jenis_kegiatan: item.jenis_kegiatan || '',
-      kredensial_type: item.tahap || 'Kredensial Awal',
-      hasil_penilaian: item.hasil || 'Belum Diisi',
+      kredensial_type: item.kredensial_type || 'Kredensial Awal',
+      hasil_penilaian: item.hasil_penilaian || 'Belum Diisi',
       catatan: item.catatan || '',
       file: null,
       fileUrl: item.fileUrl || null
@@ -559,11 +581,7 @@ const Kredensial = () => {
                   >
                     <div className="table-cell" data-label="Tanggal Rekredensial">{formatDateToIndonesian(item.tanggal_kegiatan)}</div>
                     <div className="table-cell" data-label="Periode Berlaku">
-                      {item.masa_berlaku
-                        ? `${new Date(item.tanggal_kegiatan).getFullYear()} - ${new Date(
-                            item.masa_berlaku
-                          ).getFullYear()}`
-                        : '-'}
+                      {calculateMonthsDifference(item.tanggal_kegiatan, item.masa_berlaku) || '-'}
                     </div>
                     <div className="table-cell" data-label="Hasil">
                       <span className={`${styles.statusBadge} ${styles[`badge-${badge.variant}`]}`}>
