@@ -4,15 +4,23 @@
   box-sizing: border-box;
 }
 
-body {
+html, body {
   margin: 0;
-  font-family: 'Outfit', 'Inter', 'Segoe UI', sans-serif;
+  font-family: 'Outfit', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar,
+*::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
 }
 
 body, input, textarea, select, button {
-  font-family: 'Outfit', 'Inter', 'Segoe UI', sans-serif;
+  font-family: 'Outfit', sans-serif;
 }
 
 #root {

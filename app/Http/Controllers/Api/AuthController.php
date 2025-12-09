@@ -18,7 +18,7 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'email' => 'required|email',
+            'nik' => 'required|digits:16|numeric',
             'password' => 'required|string|min:8',
         ]);
 
@@ -30,13 +30,13 @@ class AuthController extends Controller
             ], 422);
         }
 
-        // Find user by email
-        $user = UserRegistration::where('email', $request->email)->first();
+        // Find user by NIK
+        $user = UserRegistration::where('nik', $request->nik)->first();
 
         if (!$user || !Hash::check($request->password, $user->password)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Email atau password salah'
+                'message' => 'NIK atau password salah'
             ], 401);
         }
 

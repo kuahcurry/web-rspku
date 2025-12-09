@@ -3,12 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { FiCreditCard, FiLock } from 'react-icons/fi';
 import Input from '../../components/input/Input';
 import Button from '../../components/button/Button';
-import './Login.css';
+import Form from '../../components/form/Form';
+import styles from './Login.module.css';
 
 function Login() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    email: '',
+    nik: '',
     password: ''
   });
   const [errors, setErrors] = useState({});
@@ -16,10 +17,25 @@ function Login() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value
-    });
+    
+    // Special handling for NIK input - only numeric and max 16 digits
+    if (name === 'nik') {
+      // Remove any non-numeric characters
+      const numericValue = value.replace(/\D/g, '');
+      // Limit to 16 digits
+      const limitedValue = numericValue.slice(0, 16);
+      
+      setFormData({
+        ...formData,
+        [name]: limitedValue
+      });
+    } else {
+      setFormData({
+        ...formData,
+        [name]: value
+      });
+    }
+    
     // Clear error for this field when user starts typing
     if (errors[name]) {
       setErrors({ ...errors, [name]: null });
@@ -27,7 +43,8 @@ function Login() {
   };
 
   const handleLogin = async (e) => {
-    e.preventDefault();
+    // prevent default handled by Form, but keep guard in case called directly
+    if (e?.preventDefault) e.preventDefault();
     setErrors({});
     setIsSubmitting(true);
 
@@ -37,6 +54,7 @@ function Login() {
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest'
         },
         body: JSON.stringify(formData),
       });
@@ -50,47 +68,50 @@ function Login() {
         localStorage.setItem('user', JSON.stringify(data.data.user));
         localStorage.setItem('token_expires_at', Date.now() + (data.data.expires_in * 1000));
 
-        // Redirect to dashboard
         navigate('/beranda');
       } else {
         // Handle errors
         if (data.errors) {
           setErrors(data.errors);
         } else {
-          setErrors({ general: data.message || 'Login gagal. Silakan coba lagi.' });
+          const errorMessage = data.message || 'Login gagal. Silakan coba lagi.';
+          setErrors({ general: errorMessage });
         }
       }
     } catch (error) {
       console.error('Login error:', error);
-      setErrors({ general: 'Terjadi kesalahan. Silakan coba lagi.' });
+      const errorMessage = 'Terjadi kesalahan koneksi. Silakan coba lagi.';
+      setErrors({ general: errorMessage });
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="login-page">
-      <div className="login-container">
+    <div className={styles['login-page']}>
+      <div className={styles['login-container']}>
         {/* Decorative Circles */}
-        <div className="circle circle-2"></div>
-        <div className="circle circle-1"></div>
+        <div className={`${styles.circle} ${styles['circle-2']}`}></div>
+        <div className={`${styles.circle} ${styles['circle-1']}`}></div>
 
         {/* Login Card */}
-        <div className="login-card">
-          <div className="login-content">
-            <form onSubmit={handleLogin} className="login-form">
-              <div className="login-header">
+        <div className={styles['login-card']}>
+          <div className={styles['login-content']}>
+            <Form onSubmit={handleLogin} className={styles['login-form']}>
+              <div className={styles['login-header']}>
                 <h1>Selamat Datang</h1>
               </div>
               <Input
-                label="Email"
-                type="email"
-                name="email"
-                placeholder="Masukkan Email"
-                value={formData.email}
+                label="NIK"
+                type="text"
+                name="nik"
+                placeholder="Masukkan NIK (16 digit)"
+                value={formData.nik}
                 onChange={handleChange}
                 required
-                error={errors.email?.[0]}
+                pattern="[0-9]{16}"
+                maxLength={16}
+                error={errors.nik?.[0]}
                 disabled={isSubmitting}
               />
 
@@ -107,9 +128,9 @@ function Login() {
                 disabled={isSubmitting}
               />
 
-              {errors.general && <p className="login-error">{errors.general}</p>}
+              {errors.general && <div className={styles['login-error']}>{errors.general}</div>}
 
-              <div className="forgot-password">
+              <div className={styles['forgot-password']}>
                 <a href="/forgot-password">Lupa Password?</a>
               </div>
 
@@ -123,12 +144,12 @@ function Login() {
                 {isSubmitting ? 'Masuk...' : 'Login'}
               </Button>
 
-              <div className="register-link">
+              <div className={styles['register-link']}>
                 <a href="/register">Belum Punya Akun?</a>
               </div>
-            </form>
+            </Form>
 
-            <div className="login-footer">
+            <div className={styles['login-footer']}>
               <p>Petugas Rumah Sakit</p>
               <p>PKU Muhammadiyah Gombong</p>
             </div>
@@ -136,11 +157,11 @@ function Login() {
         </div>
 
         {/* Right Side Image with Logo */}
-        <div className="right-panel">
-          <div className="logo-container">
-            <img src="favicon.ico" alt="Logo Muhammadiyah" className="logo" />
+        <div className={styles['right-panel']}>
+          <div className={styles['logo-container']}>
+            <img src="favicon.ico" alt="Logo Muhammadiyah" className={styles.logo} />
           </div>
-          <div className="building-image"></div>
+          <div className={styles['building-image']}></div>
         </div>
       </div>
     </div>

@@ -4,7 +4,7 @@ import Form from '../../components/form/Form';
 import Input from '../../components/input/Input';
 import Button from '../../components/button/Button';
 import { useIndonesiaRegion } from '../../hooks/useIndonesiaRegion';
-import './Register.css';
+import styles from './Register.module.css';
 
 function Register() {
   const navigate = useNavigate();
@@ -36,41 +36,97 @@ function Register() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value
-    });
+    let processedValue = value;
+
+    // Only allow numbers for nik, nip, and phone with sensible length limits
+    if (name === 'nik') {
+      processedValue = value.replace(/\D/g, '').slice(0, 16);
+    } else if (name === 'nip') {
+      processedValue = value.replace(/\D/g, '').slice(0, 18);
+    } else if (name === 'phone') {
+      processedValue = value.replace(/\D/g, '').slice(0, 15);
+    }
 
     // Handle cascade dropdown untuk wilayah
     if (name === 'province') {
-      fetchRegencies(value);
+      fetchRegencies(processedValue);
       setFormData(prev => ({
         ...prev,
-        province: value,
+        province: processedValue,
         regency: '',
         district: '',
         village: ''
       }));
+      return;
     } else if (name === 'regency') {
-      fetchDistricts(value);
+      fetchDistricts(processedValue);
       setFormData(prev => ({
         ...prev,
-        regency: value,
+        regency: processedValue,
         district: '',
         village: ''
       }));
+      return;
     } else if (name === 'district') {
-      fetchVillages(value);
+      fetchVillages(processedValue);
       setFormData(prev => ({
         ...prev,
-        district: value,
+        district: processedValue,
         village: ''
       }));
+      return;
     }
+
+    setFormData(prev => ({
+      ...prev,
+      [name]: processedValue
+    }));
   };
 
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const translateMessage = (message) => {
+    if (!message) return '';
+    const normalized = message.toLowerCase();
+
+    const map = [
+      { key: 'has already been taken', text: 'Sudah terdaftar.' },
+      { key: 'must be a valid email address', text: 'Format email tidak valid.' },
+      { key: 'must not be greater than 15 characters', text: 'Tidak boleh lebih dari 15 karakter.' },
+      { key: 'must be at least 8 characters', text: 'Minimal 8 karakter.' },
+      { key: 'must match password', text: 'Konfirmasi kata sandi tidak sesuai.' },
+      { key: 'confirm password field must match password', text: 'Konfirmasi kata sandi tidak sesuai.' },
+      { key: 'password confirmation', text: 'Konfirmasi kata sandi tidak sesuai.' },
+      { key: 'is required', text: 'Wajib diisi.' },
+    ];
+
+    const found = map.find(({ key }) => normalized.includes(key));
+
+    // Special case for "has already been taken" to keep field context
+    if (found && found.key === 'has already been taken') {
+      if (normalized.includes('nip')) return 'NIP sudah terdaftar.';
+      if (normalized.includes('nik')) return 'NIK sudah terdaftar.';
+      if (normalized.includes('email')) return 'Email sudah terdaftar.';
+      return 'Data sudah terdaftar.';
+    }
+
+    if (found) return found.text;
+
+    return message;
+  };
+
+  const translateErrors = (errs = {}) => {
+    const translated = {};
+    Object.entries(errs).forEach(([field, messages]) => {
+      if (Array.isArray(messages)) {
+        translated[field] = messages.map(translateMessage);
+      } else {
+        translated[field] = translateMessage(messages);
+      }
+    });
+    return translated;
+  };
 
   const handleRegister = async (e) => {
     e.preventDefault();
@@ -78,102 +134,90 @@ function Register() {
     setIsSubmitting(true);
 
     try {
-      // Convert IDs to names before submitting
-      const provinceName = provinces.find(p => p.value === formData.province)?.label || formData.province;
-      const regencyName = regencies.find(r => r.value === formData.regency)?.label || formData.regency;
-      const districtName = districts.find(d => d.value === formData.district)?.label || formData.district;
-      const villageName = villages.find(v => v.value === formData.village)?.label || formData.village;
-
-      const submitData = {
-        ...formData,
-        province: provinceName,
-        regency: regencyName,
-        district: districtName,
-        village: villageName,
-      };
-
+      // Submit IDs directly (no conversion needed)
       const response = await fetch('/api/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
         },
-        body: JSON.stringify(submitData),
+        body: JSON.stringify(formData),
       });
 
       const data = await response.json();
 
       if (response.ok && data.success) {
         // Registration successful
-        alert('Registrasi berhasil! Silakan login.');
         navigate('/login');
       } else {
         // Handle validation errors
         if (data.errors) {
-          setErrors(data.errors);
+          setErrors(translateErrors(data.errors));
         } else {
-          alert(data.message || 'Registrasi gagal. Silakan coba lagi.');
+          const message = translateMessage(data.message) || 'Registrasi gagal. Silakan coba lagi.';
+          setErrors({ general: message });
         }
       }
     } catch (error) {
       console.error('Registration error:', error);
-      alert('Terjadi kesalahan. Silakan coba lagi.');
+      const message = 'Terjadi kesalahan. Silakan coba lagi.';
+      setErrors({ general: message });
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="register-page">
-      <div className="register-container">
+    <div className={styles['register-page']}>
+      <div className={styles['register-container']}>
         {/* Left Side Image with Logo */}
-        <div className="left-panel">
-          <div className="logo-container">
-            <img src="favicon.ico" alt="Logo Muhammadiyah" className="logo" />
+        <div className={styles['left-panel']}>
+          <div className={styles['logo-container']}>
+            <img src="favicon.ico" alt="Logo Muhammadiyah" className={styles.logo} />
           </div>
-          <div className="building-image"></div>
+          <div className={styles['building-image']}></div>
         </div>
 
         {/* Decorative Circles */}
-        <div className="circle circle-2"></div>
-        <div className="circle circle-1"></div>
-        <div className="circle circle-3"></div>
+        <div className={`${styles.circle} ${styles['circle-2']}`}></div>
+        <div className={`${styles.circle} ${styles['circle-1']}`}></div>
+        <div className={`${styles.circle} ${styles['circle-3']}`}></div>
 
         {/* Register Card */}
-        <div className="register-card">
-          <div className="register-content">
-            <div className="register-header">
+        <div className={styles['register-card']}>
+          <div className={styles['register-content']}>
+            <div className={styles['register-header']}>
               <h1>Daftar Akun</h1>
             </div>
             
-            <Form onSubmit={handleRegister} className="register-form">
+            <Form onSubmit={handleRegister} className={styles['register-form']}>
               <Form.Row columns={2}>
                 <Input
-                  label="NIK"
-                  type="text"
-                  name="nik"
-                  placeholder="Masukkan NIK"
-                  value={formData.nik}
+                label="NIK"
+                type="text"
+                name="nik"
+                placeholder="Masukkan NIK"
+                value={formData.nik}
                   onChange={handleChange}
-                  required
-                  minLength={16}
-                  maxLength={16}
-                  error={errors.nik?.[0]}
-                  disabled={isSubmitting}
-                />
+                required
+                maxLength={16}
+                minLength={16}
+                error={errors.nik?.[0]}
+                disabled={isSubmitting}
+              />
 
                 <Input
-                  label="NIP"
-                  type="text"
-                  name="nip"
-                  placeholder="Masukkan NIP"
-                  value={formData.nip}
-                  onChange={handleChange}
-                  required
-                  maxLength={18}
-                  error={errors.nip?.[0]}
-                  disabled={isSubmitting}
-                />
+                label="NIP"
+                type="text"
+                name="nip"
+                placeholder="Masukkan NIP"
+                value={formData.nip}
+                onChange={handleChange}
+                required
+                maxLength={18}
+                error={errors.nip?.[0]}
+                disabled={isSubmitting}
+              />
               </Form.Row>
 
               <Input
@@ -209,7 +253,8 @@ function Register() {
                   placeholder="Masukkan Nomor Telepon"
                   value={formData.phone}
                   onChange={handleChange}
-                  pattern="[0-9]{10,13}"
+                  pattern="[0-9]{10,15}"
+                  maxLength={15}
                   required
                   error={errors.phone?.[0]}
                   disabled={isSubmitting}
@@ -312,6 +357,12 @@ function Register() {
               />
             </Form>
 
+            {errors.general && (
+              <div className={styles['register-error']}>
+                {errors.general}
+              </div>
+            )}
+
             <Button 
               type="submit" 
               variant="success" 
@@ -323,11 +374,11 @@ function Register() {
                 {isSubmitting ? 'Mendaftar...' : 'Daftar'}
             </Button>
 
-            <div className="login-link">
+            <div className={styles['login-link']}>
               <a href="/login">Sudah Punya Akun?</a>
             </div>
 
-            <div className="register-footer">
+            <div className={styles['register-footer']}>
               <p>Petugas Rumah Sakit</p>
               <p>PKU Muhammadiyah Gombong</p>
             </div>
