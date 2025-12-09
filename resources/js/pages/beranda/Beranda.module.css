@@ -220,20 +220,24 @@
 
 .education-grid, .certification-grid, .assignment-grid  {
   display: grid;
-  margin-top: 0.5rem;
-  grid-template-columns: repeat(2, 1fr);
-}
-.education-grid{
-  margin-right: 0.5rem;
+  grid-template-columns: 1fr auto;
+  gap: 1rem;
+  align-items: start;
 }
 
-.education-main .education-meta{
+.education-main, .education-meta{
   font-size: 0.875rem;
   color: var(--text-secondary);
 }
 
-.education-meta, .certification-meta{
-  justify-self: right;
+.education-main {
+  color: var(--text-main);
+}
+
+.education-meta, .certification-meta, .workshop-meta{
+  justify-self: end;
+  text-align: right;
+  white-space: nowrap;
 }
 
 .certification-grid, .documents-grid,

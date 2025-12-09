@@ -74,16 +74,10 @@ const Beranda = () => {
     // Fetch profile picture
     const fetchProfilePicture = async () => {
       try {
-        console.log('[Beranda] Fetching profile picture for user:', user?.name);
         const response = await authenticatedFetch('/api/profile/foto-profil');
-        console.log('[Beranda] Response status:', response.status);
         const data = await response.json();
-        console.log('[Beranda] API Response:', data);
         if (data.success && data.data.foto_profil_url) {
-          console.log('[Beranda] Setting profile picture:', data.data.foto_profil_url);
           setProfilePicture(data.data.foto_profil_url);
-        } else {
-          console.log('[Beranda] No profile picture URL in response');
         }
       } catch (error) {
         console.error('[Beranda] Error fetching profile picture:', error);
@@ -365,7 +359,6 @@ const Beranda = () => {
                     <img
                       src={profilePicture}
                       alt={userData?.name || 'User'}
-                      onLoad={() => console.log('[Beranda] Image loaded successfully:', profilePicture)}
                       onError={(e) => {
                         console.error('[Beranda] Image failed to load:', profilePicture, 'Error:', e);
                         setAvatarError(true);
@@ -590,10 +583,12 @@ const Beranda = () => {
               <h4 className={styles['education-subtitle']}>Pendidikan</h4>
               {pendidikanData.Ijazah && pendidikanData.Ijazah.length > 0 ? (
                 pendidikanData.Ijazah.slice(0, 1).map((item) => (
-                  <div key={item.id} className={styles['education-grid']}>
-                    <div className={styles['education-main']}>{item.judul || 'Belum Mengisi/Tidak Ada'} - {item.institusi || 'Belum Mengisi/Tidak Ada'}</div>
-                    <div className={styles['education-meta']}>{item.tahun_lulus || 'Belum Mengisi/Tidak Ada'}</div>
-                  </div>
+                  <Card key={item.id} variant='inverse' className={styles['detail-card']}>
+                    <div className={styles['education-grid']}>
+                      <div className={styles['education-main']}>{item.judul || 'Belum Mengisi/Tidak Ada'} - {item.institusi || 'Belum Mengisi/Tidak Ada'}</div>
+                      <div className={styles['education-meta']}>{item.tahun_lulus || 'Belum Mengisi/Tidak Ada'}</div>
+                    </div>
+                  </Card>
                 ))
               ) : (
                 <p>Belum Mengisi/Tidak Ada</p>
@@ -603,17 +598,15 @@ const Beranda = () => {
             <Card variant='secondary' padding="normal">
               <h4 className={styles['education-subtitle']}>Pelatihan Terbaru</h4>
               {pendidikanData['Sertifikat Pelatihan'] && pendidikanData['Sertifikat Pelatihan'].length > 0 ? (
-                <div className={styles['certification-grid']}>
-                  {pendidikanData['Sertifikat Pelatihan'].slice(0, 1).map((item) => (
-                    <Card key={item.id} variant='inverse' className={styles['detail-card']}>
-                      <div className={styles['certification-name']}>{item.judul || 'Belum Mengisi/Tidak Ada'}</div>
-                      <div className={styles['certification-grid']}>
-                        <div className={styles['certification-main']}>{item.institusi || 'Belum Mengisi/Tidak Ada'}</div>
-                        <div className={styles['certification-meta']}>{item.tahun_lulus || 'Belum Mengisi/Tidak Ada'}</div>
-                      </div>
-                    </Card>
-                  ))}
-                </div>
+                pendidikanData['Sertifikat Pelatihan'].slice(0, 1).map((item) => (
+                  <Card key={item.id} variant='inverse' className={styles['detail-card']}>
+                    <div className={styles['certification-name']}>{item.judul || 'Belum Mengisi/Tidak Ada'}</div>
+                    <div className={styles['education-grid']}>
+                      <div className={styles['certification-main']}>{item.institusi || 'Belum Mengisi/Tidak Ada'}</div>
+                      <div className={styles['certification-meta']}>{item.tahun_lulus || 'Belum Mengisi/Tidak Ada'}</div>
+                    </div>
+                  </Card>
+                ))
               ) : (
                 <p>Belum Mengisi/Tidak Ada</p>
               )}
@@ -622,14 +615,14 @@ const Beranda = () => {
             <Card variant='secondary' padding="normal">
               <h4 className={styles['education-subtitle']}>Workshop Terbaru</h4>
               {pendidikanData['Sertifikat Workshop'] && pendidikanData['Sertifikat Workshop'].length > 0 ? (
-                <div className={styles['workshop-grid']}>
-                  {pendidikanData['Sertifikat Workshop'].slice(0, 1).map((item) => (
-                    <Card key={item.id} variant='inverse' className={styles['detail-card']}>
+                pendidikanData['Sertifikat Workshop'].slice(0, 1).map((item) => (
+                  <Card key={item.id} variant='inverse' className={styles['detail-card']}>
+                    <div className={styles['education-grid']}>
                       <div className={styles['workshop-main']}>{item.judul || 'Belum Mengisi/Tidak Ada'}</div>
                       <div className={styles['workshop-meta']}>{item.tahun_lulus || 'Belum Mengisi/Tidak Ada'}</div>
-                    </Card>
-                  ))}
-                </div>
+                    </div>
+                  </Card>
+                ))
               ) : (
                 <p>Belum Mengisi/Tidak Ada</p>
               )}
@@ -638,14 +631,14 @@ const Beranda = () => {
             <Card variant='secondary' padding="normal">
               <h4 className={styles['education-subtitle']}>Prestasi Terbaru</h4>
               {prestasiData.Prestasi && prestasiData.Prestasi.length > 0 ? (
-                <div className={styles['workshop-grid']}>
-                  {prestasiData.Prestasi.slice(0, 1).map((item) => (
-                    <Card key={item.id} variant='inverse' className={styles['detail-card']}>
+                prestasiData.Prestasi.slice(0, 1).map((item) => (
+                  <Card key={item.id} variant='inverse' className={styles['detail-card']}>
+                    <div className={styles['education-grid']}>
                       <div className={styles['workshop-main']}>{item.judul || 'Belum Mengisi/Tidak Ada'}</div>
                       <div className={styles['workshop-meta']}>{item.tahun || 'Belum Mengisi/Tidak Ada'}</div>
-                    </Card>
-                  ))}
-                </div>
+                    </div>
+                  </Card>
+                ))
               ) : (
                 <p>Belum Mengisi/Tidak Ada</p>
               )}
@@ -654,14 +647,14 @@ const Beranda = () => {
             <Card variant='secondary' padding="normal">
               <h4 className={styles['education-subtitle']}>Penghargaan Terbaru</h4>
               {prestasiData.Penghargaan && prestasiData.Penghargaan.length > 0 ? (
-                <div className={styles['workshop-grid']}>
-                  {prestasiData.Penghargaan.slice(0, 1).map((item) => (
-                    <Card key={item.id} variant='inverse' className={styles['detail-card']}>
+                prestasiData.Penghargaan.slice(0, 1).map((item) => (
+                  <Card key={item.id} variant='inverse' className={styles['detail-card']}>
+                    <div className={styles['education-grid']}>
                       <div className={styles['workshop-main']}>{item.judul || 'Belum Mengisi/Tidak Ada'}</div>
                       <div className={styles['workshop-meta']}>{item.tahun || 'Belum Mengisi/Tidak Ada'}</div>
-                    </Card>
-                  ))}
-                </div>
+                    </div>
+                  </Card>
+                ))
               ) : (
                 <p>Belum Mengisi/Tidak Ada</p>
               )}
@@ -755,7 +748,7 @@ const Beranda = () => {
                       </div>
                       <div className={styles['assignment-grid']}>
                         <div className={styles['assignment-period']}>Periode</div>
-                        <div className={styles['assignment-supervisor']}>Penanggung Jawab</div>
+                        <div className={styles['assignment-supervisor']}>Peran / Posisi</div>
                       </div>
                       <div className={styles['assignment-grid']}>
                         <div className={`${styles['assignment-period']} ${styles.value}`}>

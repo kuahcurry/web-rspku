@@ -24,16 +24,10 @@ const Navbar = ({ onMenuToggle, sidebarOpen }) => {
   useEffect(() => {
     const fetchProfilePicture = async () => {
       try {
-        console.log('[Navbar] Fetching profile picture for user:', user?.name);
         const response = await authenticatedFetch('/api/profile/foto-profil');
-        console.log('[Navbar] Response status:', response.status);
         const data = await response.json();
-        console.log('[Navbar] API Response:', data);
         if (data.success && data.data.foto_profil_url) {
-          console.log('[Navbar] Setting profile picture:', data.data.foto_profil_url);
           setProfilePicture(data.data.foto_profil_url);
-        } else {
-          console.log('[Navbar] No profile picture URL in response');
         }
       } catch (error) {
         console.error('[Navbar] Error fetching profile picture:', error);
@@ -60,7 +54,6 @@ const Navbar = ({ onMenuToggle, sidebarOpen }) => {
                 <img
                   src={profilePicture}
                   alt="User avatar"
-                  onLoad={() => console.log('[Navbar] Image loaded successfully:', profilePicture)}
                   onError={(e) => {
                     console.error('[Navbar] Image failed to load:', profilePicture, 'Error:', e);
                     setAvatarError(true);

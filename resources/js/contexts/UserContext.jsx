@@ -31,9 +31,9 @@ export const UserProvider = ({ children }) => {
     }
   };
 
-  const refreshUser = () => {
+  const refreshUser = async () => {
     setLoading(true);
-    fetchUser();
+    await fetchUser();
   };
 
   useEffect(() => {
