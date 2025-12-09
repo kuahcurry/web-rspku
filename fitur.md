@@ -2,14 +2,6 @@
 
 1. Limit NIP (18) dan NIK (16)                                              ✅ done
 
-# UI Implementasi Done - Need Sugestion
-
-1. Beranda
-2. Profil Saya
-3. Pengaturan
-4. Dokumen Legalisasi
-5. Riwayat Pendidikan
-
 
 # Revisi Front-End
 

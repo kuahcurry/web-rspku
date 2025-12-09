@@ -6,6 +6,7 @@ import Button from '../../components/button/Button';
 import Modal from '../../components/modal/Modal';
 import Form from '../../components/form/Form';
 import Input from '../../components/input/Input';
+import Tabs from '../../components/tabs/Tabs';
 import { MdAdd, MdVisibility, MdCloudUpload, MdSave, MdDownload, MdDelete } from 'react-icons/md';
 import { authenticatedFetch, isAuthenticated } from '../../utils/auth';
 import styles from './Penugasan.module.css';
@@ -33,11 +34,17 @@ const getStatusVariant = (status) => {
   return 'secondary';
 };
 
+const tabs = [
+  { key: 'penugasan', label: 'Penugasan' },
+  { key: 'pengabdian', label: 'Pengabdian' }
+];
+
 const Penugasan = () => {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
   
   const [assignments, setAssignments] = useState([]);
+  const [activeTab, setActiveTab] = useState('penugasan');
   const [loading, setLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showViewModal, setShowViewModal] = useState(false);
@@ -53,6 +60,7 @@ const Penugasan = () => {
     penanggung_jawab: '',
     tanggal_mulai: '',
     tanggal_selesai: '',
+    jenis: 'Penugasan',
     file: null
   });
 
@@ -110,6 +118,7 @@ const Penugasan = () => {
       penanggung_jawab: '',
       tanggal_mulai: '',
       tanggal_selesai: '',
+      jenis: activeTab === 'pengabdian' ? 'Pengabdian' : 'Penugasan',
       file: null
     });
     setShowAddModal(true);
@@ -125,6 +134,17 @@ const Penugasan = () => {
     setDeleteMode(false);
     setDeleteTargets([]);
     setShowDeleteModal(false);
+  };
+
+  const handleTabChange = (key) => {
+    setActiveTab(key);
+    setDeleteMode(false);
+    setDeleteTargets([]);
+    setShowDeleteModal(false);
+    setFormData((prev) => ({
+      ...prev,
+      jenis: key === 'pengabdian' ? 'Pengabdian' : 'Penugasan'
+    }));
   };
 
   const handleSelectForDelete = (item) => {
@@ -221,6 +241,7 @@ const Penugasan = () => {
       apiFormData.append('unit', formData.unit);
       apiFormData.append('penanggung_jawab', formData.penanggung_jawab);
       apiFormData.append('tanggal_mulai', formData.tanggal_mulai);
+      apiFormData.append('jenis', formData.jenis || 'Penugasan');
       if (formData.tanggal_selesai) {
         apiFormData.append('tanggal_selesai', formData.tanggal_selesai);
       }
@@ -234,13 +255,14 @@ const Penugasan = () => {
       const data = await response.json();
 
       if (response.ok && data.success) {
-        alert('Penugasan berhasil ditambahkan!');
+        alert(`${formData.jenis || 'Penugasan'} berhasil ditambahkan!`);
         setShowAddModal(false);
         setFormData({
           unit: '',
           penanggung_jawab: '',
           tanggal_mulai: '',
           tanggal_selesai: '',
+          jenis: activeTab === 'pengabdian' ? 'Pengabdian' : 'Penugasan',
           file: null
         });
         fetchData();
@@ -278,18 +300,27 @@ const Penugasan = () => {
     }
   };
 
+  const filteredAssignments = assignments.filter((item) => {
+    const jenis = (item.jenis || 'penugasan').toLowerCase();
+    return jenis === activeTab;
+  });
+
   return (
     <MainLayout>
       <header className={styles.pageHeader}>
-        <h1 className={styles.pageTitle}>Penugasan</h1>
-        <p className={styles.pageSubtitle}>Riwayat penugasan dan penempatan unit kerja</p>
+        <h1 className={styles.pageTitle}>Penugasan & Pengabdian</h1>
+        <p className={styles.pageSubtitle}>Riwayat penugasan, penempatan unit kerja, dan pengabdian</p>
       </header>
 
       <div className={styles.container}>
         <div className={styles.cardShell}>
+          <Tabs tabs={tabs} activeKey={activeTab} onChange={handleTabChange} />
+
           <div className={styles.headerRow}>
             <div>
-              <h3 className={styles.sectionTitle}>Riwayat Penugasan</h3>
+              <h3 className={styles.sectionTitle}>
+                {activeTab === 'pengabdian' ? 'Riwayat Pengabdian' : 'Riwayat Penugasan'}
+              </h3>
             </div>
             <div className={styles.actionButtons}>
               <Button
@@ -327,13 +358,15 @@ const Penugasan = () => {
             <div className={styles.list}>
               <p style={{ textAlign: 'center', padding: '2rem' }}>Memuat data...</p>
             </div>
-          ) : assignments.length === 0 ? (
+          ) : filteredAssignments.length === 0 ? (
             <div className={styles.list}>
-              <p style={{ textAlign: 'center', padding: '2rem' }}>Belum ada data penugasan.</p>
+              <p style={{ textAlign: 'center', padding: '2rem' }}>
+                Belum ada data {activeTab === 'pengabdian' ? 'pengabdian' : 'penugasan'}.
+              </p>
             </div>
           ) : (
             <div className={styles.list}>
-              {assignments.map((item) => (
+              {filteredAssignments.map((item) => (
               <Card
                 key={item.id}
                 className={`${styles.itemCard} ${deleteMode ? styles.deleteSelectable : ''} ${
@@ -365,6 +398,10 @@ const Penugasan = () => {
                     <div className={styles.metaBlock}>
                       <p className={styles.metaLabel}>Penanggung Jawab</p>
                       <p className={styles.metaValue}>{item.penanggung_jawab}</p>
+                    </div>
+                    <div className={styles.metaBlock}>
+                      <p className={styles.metaLabel}>Jenis</p>
+                      <p className={styles.metaValue}>{item.jenis || 'Penugasan'}</p>
                     </div>
                     <div className={styles.metaBlock}>
                       <p className={styles.metaLabel}>File</p>
@@ -515,24 +552,32 @@ const Penugasan = () => {
       <Modal
         isOpen={showAddModal}
         onClose={() => setShowAddModal(false)}
-        title="Tambah Penugasan"
+        title={`Tambah ${activeTab === 'pengabdian' ? 'Pengabdian' : 'Penugasan'}`}
         size="medium"
         padding="normal"
       >
         <Form onSubmit={handleSubmit} className={styles.modalForm}>
           <Form.Row columns={2} className={styles.formRow}>
             <Input
-              label="Unit / Bagian"
+              label={activeTab === 'pengabdian' ? 'Nama Kegiatan / Program' : 'Unit / Bagian'}
               name="unit"
-              placeholder="Contoh: IGD (Instalasi Gawat Darurat)"
+              placeholder={
+                activeTab === 'pengabdian'
+                  ? 'Contoh: Pengabdian Masyarakat Desa Sido Makmur'
+                  : 'Contoh: IGD (Instalasi Gawat Darurat)'
+              }
               value={formData.unit}
               onChange={handleInputChange}
               required
             />
             <Input
-              label="Penanggung Jawab"
+              label={activeTab === 'pengabdian' ? 'Peran / Posisi' : 'Penanggung Jawab'}
               name="penanggung_jawab"
-              placeholder="Contoh: Dr. Ahmad Fauzi, Sp.EM"
+              placeholder={
+                activeTab === 'pengabdian'
+                  ? 'Contoh: Koordinator Lapangan'
+                  : 'Contoh: Dr. Ahmad Fauzi, Sp.EM'
+              }
               value={formData.penanggung_jawab}
               onChange={handleInputChange}
               required
@@ -541,7 +586,7 @@ const Penugasan = () => {
 
           <Form.Row columns={2} className={styles.formRow}>
             <Input
-              label="Periode Mulai"
+              label={activeTab === 'pengabdian' ? 'Tanggal Mulai Pengabdian' : 'Periode Mulai'}
               name="tanggal_mulai"
               type="date"
               placeholder="Pilih tanggal mulai"
@@ -550,10 +595,10 @@ const Penugasan = () => {
               required
             />
             <Input
-              label="Periode Selesai (Opsional)"
+              label={activeTab === 'pengabdian' ? 'Tanggal Selesai (Opsional)' : 'Periode Selesai (Opsional)'}
               name="tanggal_selesai"
               type="date"
-              placeholder="Kosongkan jika masih aktif"
+              placeholder={activeTab === 'pengabdian' ? 'Kosongkan jika kegiatan masih berjalan' : 'Kosongkan jika masih aktif'}
               value={formData.tanggal_selesai}
               onChange={handleInputChange}
             />
