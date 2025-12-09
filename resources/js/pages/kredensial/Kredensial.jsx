@@ -18,7 +18,7 @@ import {
   MdVisibility,
   MdEdit
 } from 'react-icons/md';
-import { isAuthenticated } from '../../utils/auth';
+import { isAuthenticated, authenticatedFetch } from '../../utils/auth';
 import { formatDateToIndonesian } from '../../utils/dateFormatter';
 import styles from './Kredensial.module.css';
 
@@ -42,57 +42,6 @@ const HASIL_OPTIONS = [
   { value: 'Belum Diisi', label: 'Belum Diisi' }
 ];
 
-const DUMMY_ACTIVITIES = [
-  {
-    id: 1,
-    nama_kegiatan: 'Observasi Klinis IGD',
-    tanggal_kegiatan: '2024-02-20',
-    jenis_kegiatan: 'Observasi',
-    tahap: 'Kredensial Awal',
-    hasil: 'Kompeten',
-    masa_berlaku: '2026-02-20',
-    fileName: 'observasi_igd.pdf',
-    fileUrl: '/storage/kredensial/observasi_igd.pdf',
-    catatan: 'Observasi alur triase dan resusitasi selama 3 hari.'
-  },
-  {
-    id: 2,
-    nama_kegiatan: 'Uji Kompetensi Klinis',
-    tanggal_kegiatan: '2024-04-05',
-    jenis_kegiatan: 'Uji Kompetensi',
-    tahap: 'Kredensial Awal',
-    hasil: 'Kompeten',
-    masa_berlaku: '2026-04-05',
-    fileName: 'uji_kompetensi.pdf',
-    fileUrl: '/storage/kredensial/uji_kompetensi.pdf',
-    catatan: 'Lulus dengan nilai A, mencakup prosedur emergensi.'
-  },
-  {
-    id: 3,
-    nama_kegiatan: 'Praktik Mandiri Terbimbing',
-    tanggal_kegiatan: '2024-07-12',
-    jenis_kegiatan: 'Praktik Mandiri',
-    tahap: 'Rekredensial',
-    hasil: 'Kompeten',
-    masa_berlaku: '2026-07-12',
-    fileName: 'praktik_mandiri.pdf',
-    fileUrl: '/storage/kredensial/praktik_mandiri.pdf',
-    catatan: 'Pendampingan 1 bulan di poli umum dengan supervisi.'
-  },
-  {
-    id: 4,
-    nama_kegiatan: 'Seminar Khusus Kredensial',
-    tanggal_kegiatan: '2024-09-01',
-    jenis_kegiatan: 'Seminar',
-    tahap: 'Rekredensial',
-    hasil: 'Tidak Kompeten',
-    masa_berlaku: '',
-    fileName: '',
-    fileUrl: '',
-    catatan: 'Topik patient safety dan kontrol infeksi.'
-  }
-];
-
 const TAB_ITEMS = [
   { key: 'riwayat', label: 'Riwayat Kegiatan' },
   { key: 'rekred', label: 'Rekredensial' }
@@ -107,9 +56,10 @@ const getStatusBadge = (hasil) => {
 
 const Kredensial = () => {
   const navigate = useNavigate();
-  const [activities, setActivities] = useState(DUMMY_ACTIVITIES);
+  const [activities, setActivities] = useState([]);
   const [activeTab, setActiveTab] = useState('riwayat');
   const [loading, setLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [filters, setFilters] = useState({
     search: '',
     year: 'Semua',
@@ -125,11 +75,11 @@ const Kredensial = () => {
   const fileInputRef = useRef(null);
   const [formData, setFormData] = useState({
     nama_kegiatan: '',
-    tanggal_kegiatan: '',
+    tanggal_berlaku: '',
+    tanggal_selesai: '',
     jenis_kegiatan: '',
-    tahap: 'Kredensial Awal',
-    hasil: 'Kompeten',
-    masa_berlaku: '',
+    kredensial_type: 'Kredensial Awal',
+    hasil_penilaian: 'Kompeten',
     catatan: '',
     file: null,
     fileUrl: null
@@ -140,10 +90,52 @@ const Kredensial = () => {
   useEffect(() => {
     if (!isAuthenticated()) {
       navigate('/login');
+      return;
     }
+    fetchData();
   }, [navigate]);
 
+  // Cleanup blob URL when view modal closes
+  useEffect(() => {
+    if (!showViewModal && pdfUrl) {
+      URL.revokeObjectURL(pdfUrl);
+      setPdfUrl(null);
+    }
+  }, [showViewModal, pdfUrl]);
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const response = await authenticatedFetch('/api/kredensial');
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        // Map API fields to component field names
+        const mapRecord = (record) => ({
+          id: record.id,
+          nama_kegiatan: record.nama_kegiatan,
+          tanggal_kegiatan: record.tanggal_berlaku,
+          jenis_kegiatan: record.jenis_kegiatan,
+          tahap: record.kredensial_type,
+          hasil: record.hasil_penilaian,
+          masa_berlaku: record.tanggal_selesai,
+          catatan: record.catatan,
+          fileName: record.file_name,
+          fileUrl: record.url,
+          file_name: record.file_name
+        });
+
+        setActivities((data.data.riwayat || []).map(mapRecord));
+      }
+    } catch (error) {
+      console.error('Error fetching kredensial records:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const yearOptions = useMemo(() => {
+    if (!activities || activities.length === 0) return ['Semua'];
     const years = Array.from(
       new Set(
         activities
@@ -189,11 +181,11 @@ const Kredensial = () => {
     setEditingId(null);
     setFormData({
       nama_kegiatan: '',
-      tanggal_kegiatan: '',
+      tanggal_berlaku: '',
+      tanggal_selesai: '',
       jenis_kegiatan: '',
-      tahap: 'Kredensial Awal',
-      hasil: 'Kompeten',
-      masa_berlaku: '',
+      kredensial_type: 'Kredensial Awal',
+      hasil_penilaian: 'Kompeten',
       catatan: '',
       file: null,
       fileUrl: null
@@ -205,14 +197,14 @@ const Kredensial = () => {
     setEditingId(item.id);
     setFormData({
       nama_kegiatan: item.nama_kegiatan || '',
-      tanggal_kegiatan: item.tanggal_kegiatan || '',
+      tanggal_berlaku: item.tanggal_kegiatan || '',
+      tanggal_selesai: item.masa_berlaku || '',
       jenis_kegiatan: item.jenis_kegiatan || '',
-      tahap: item.tahap || 'Kredensial Awal',
-      hasil: item.hasil || 'Belum Diisi',
-      masa_berlaku: item.masa_berlaku || '',
+      kredensial_type: item.tahap || 'Kredensial Awal',
+      hasil_penilaian: item.hasil || 'Belum Diisi',
       catatan: item.catatan || '',
       file: null,
-      fileUrl: null
+      fileUrl: item.fileUrl || null
     });
     setShowModal(true);
   };
@@ -235,57 +227,92 @@ const Kredensial = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.nama_kegiatan || !formData.tanggal_kegiatan || !formData.jenis_kegiatan || !formData.hasil) {
+    if (!formData.nama_kegiatan || !formData.tanggal_berlaku || !formData.jenis_kegiatan || !formData.hasil_penilaian) {
       alert('Mohon lengkapi minimal nama, tanggal, jenis, dan hasil.');
       return;
     }
-    const payload = {
-      id: editingId || Date.now(),
-      nama_kegiatan: formData.nama_kegiatan,
-      tanggal_kegiatan: formData.tanggal_kegiatan,
-      jenis_kegiatan: formData.jenis_kegiatan,
-      tahap: formData.tahap,
-      hasil: formData.hasil,
-      masa_berlaku: formData.masa_berlaku,
-      catatan: formData.catatan,
-      fileName: formData.file?.name || activities.find((a) => a.id === editingId)?.fileName || '',
-      fileUrl: formData.fileUrl || activities.find((a) => a.id === editingId)?.fileUrl || ''
-    };
-    setActivities((prev) => {
+
+    setIsSubmitting(true);
+    try {
+      const apiFormData = new FormData();
+      apiFormData.append('nama_kegiatan', formData.nama_kegiatan);
+      apiFormData.append('tanggal_berlaku', formData.tanggal_berlaku);
+      if (formData.tanggal_selesai) apiFormData.append('tanggal_selesai', formData.tanggal_selesai);
+      apiFormData.append('jenis_kegiatan', formData.jenis_kegiatan);
+      apiFormData.append('kredensial_type', formData.kredensial_type);
+      apiFormData.append('hasil_penilaian', formData.hasil_penilaian);
+      if (formData.catatan) apiFormData.append('catatan', formData.catatan);
+      if (formData.file) apiFormData.append('file', formData.file);
+
+      const url = editingId 
+        ? `/api/kredensial/update/${editingId}`
+        : '/api/kredensial/store';
+      
+      // Use POST for both create and update (with _method for update)
       if (editingId) {
-        return prev.map((item) => (item.id === editingId ? payload : item));
+        apiFormData.append('_method', 'PUT');
       }
-      return [payload, ...prev];
-    });
-    setShowModal(false);
-    setEditingId(null);
-    setFormData({
-      nama_kegiatan: '',
-      tanggal_kegiatan: '',
-      jenis_kegiatan: '',
-      tahap: 'Kredensial Awal',
-      hasil: 'Kompeten',
-      masa_berlaku: '',
-      catatan: '',
-      file: null,
-      fileUrl: null
-    });
+
+      const response = await authenticatedFetch(url, {
+        method: 'POST',
+        body: apiFormData
+      });
+
+      if (response.ok) {
+        await fetchData(); // Refresh data
+        setShowModal(false);
+        setEditingId(null);
+        setFormData({
+          nama_kegiatan: '',
+          tanggal_berlaku: '',
+          tanggal_selesai: '',
+          jenis_kegiatan: '',
+          kredensial_type: 'Kredensial Awal',
+          hasil_penilaian: 'Kompeten',
+          catatan: '',
+          file: null,
+          fileUrl: null
+        });
+      } else {
+        const error = await response.json();
+        alert(error.message || 'Gagal menyimpan data');
+      }
+    } catch (error) {
+      console.error('Error saving kredensial:', error);
+      alert('Terjadi kesalahan saat menyimpan data');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const handleViewFile = (item) => {
-    const link = item.fileUrl || (item.fileName ? `/storage/kredensial/${item.fileName}` : null);
-    if (link) {
-      setSelectedItem(item);
-      setShowViewModal(true);
-      setLoadingPdf(true);
-      setTimeout(() => {
-        setPdfUrl(link);
-        setLoadingPdf(false);
-      }, 200);
-    } else {
+  const handleViewFile = async (item) => {
+    if (!item.fileName && !item.fileUrl) {
       alert('Sertifikat belum diupload.');
+      return;
+    }
+
+    setSelectedItem(item);
+    setShowViewModal(true);
+    setLoadingPdf(true);
+
+    try {
+      const response = await authenticatedFetch(`/api/kredensial/view/${item.id}`);
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        setPdfUrl(url);
+      } else {
+        alert('Gagal memuat dokumen');
+        setShowViewModal(false);
+      }
+    } catch (error) {
+      console.error('Error viewing file:', error);
+      alert('Terjadi kesalahan saat memuat dokumen');
+      setShowViewModal(false);
+    } finally {
+      setLoadingPdf(false);
     }
   };
 
@@ -324,20 +351,39 @@ const Kredensial = () => {
     });
   };
 
-  const handleConfirmDelete = () => {
+  const handleConfirmDelete = async () => {
     if (!deleteTargets.length) return;
-    const idsToDelete = deleteTargets.map((entry) => entry.id);
-    setActivities((prev) => prev.filter((item) => !idsToDelete.includes(item.id)));
-    if (selectedItem && idsToDelete.includes(selectedItem.id)) {
-      setSelectedItem(null);
-      setShowViewModal(false);
+
+    try {
+      const idsToDelete = deleteTargets.map((entry) => entry.id);
+      const response = await authenticatedFetch('/api/kredensial/delete-multiple', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ ids: idsToDelete })
+      });
+
+      if (response.ok) {
+        await fetchData(); // Refresh data
+        if (selectedItem && idsToDelete.includes(selectedItem.id)) {
+          setSelectedItem(null);
+          setShowViewModal(false);
+        }
+        setDeleteTargets([]);
+        setDeleteMode(false);
+        setShowDeleteModal(false);
+      } else {
+        const error = await response.json();
+        alert(error.message || 'Gagal menghapus data');
+      }
+    } catch (error) {
+      console.error('Error deleting records:', error);
+      alert('Terjadi kesalahan saat menghapus data');
     }
-    setDeleteTargets([]);
-    setDeleteMode(false);
-    setShowDeleteModal(false);
   };
 
-  const isFormValid = formData.nama_kegiatan && formData.tanggal_kegiatan && formData.jenis_kegiatan && formData.hasil;
+  const isFormValid = formData.nama_kegiatan && formData.tanggal_berlaku && formData.jenis_kegiatan && formData.hasil_penilaian;
 
   const columnsRiwayat = useMemo(
     () => [
@@ -613,19 +659,19 @@ const Kredensial = () => {
         <Form onSubmit={handleSubmit} className={styles.modalContent}>
           <Form.Row columns={2} className={styles.formRow}>
             <Input
-              label="Tanggal Kegiatan"
+              label="Tanggal Berlaku"
               type="date"
-              name="tanggal_kegiatan"
-              value={formData.tanggal_kegiatan}
-              onChange={(e) => setFormData({ ...formData, tanggal_kegiatan: e.target.value })}
+              name="tanggal_berlaku"
+              value={formData.tanggal_berlaku}
+              onChange={(e) => setFormData({ ...formData, tanggal_berlaku: e.target.value })}
               required
             />
             <Input
-              label="Masa Berlaku (opsional)"
+              label="Tanggal Selesai (opsional)"
               type="date"
-              name="masa_berlaku"
-              value={formData.masa_berlaku}
-              onChange={(e) => setFormData({ ...formData, masa_berlaku: e.target.value })}
+              name="tanggal_selesai"
+              value={formData.tanggal_selesai}
+              onChange={(e) => setFormData({ ...formData, tanggal_selesai: e.target.value })}
             />
           </Form.Row>
           <Input
@@ -650,9 +696,9 @@ const Kredensial = () => {
             <Input
               label="Kredensial Awal / Rekredensial"
               type="select"
-              name="tahap"
-              value={formData.tahap}
-              onChange={(e) => setFormData({ ...formData, tahap: e.target.value })}
+              name="kredensial_type"
+              value={formData.kredensial_type}
+              onChange={(e) => setFormData({ ...formData, kredensial_type: e.target.value })}
               options={JENIS_TAHAP}
               required
             />
@@ -660,9 +706,9 @@ const Kredensial = () => {
           <Input
             label="Hasil Penilaian"
             type="select"
-            name="hasil"
-            value={formData.hasil}
-            onChange={(e) => setFormData({ ...formData, hasil: e.target.value })}
+            name="hasil_penilaian"
+            value={formData.hasil_penilaian}
+            onChange={(e) => setFormData({ ...formData, hasil_penilaian: e.target.value })}
             options={HASIL_OPTIONS}
             required
           />
@@ -703,11 +749,11 @@ const Kredensial = () => {
             />
           </div>
           <Form.Actions align="right" className={styles.modalActions}>
-            <Button variant="danger" type="button" onClick={() => setShowModal(false)}>
+            <Button variant="danger" type="button" onClick={() => setShowModal(false)} disabled={isSubmitting}>
               Batal
             </Button>
-            <Button variant="success" icon={<MdSave />} iconPosition="left" type="submit" disabled={!isFormValid}>
-              Simpan
+            <Button variant="success" icon={<MdSave />} iconPosition="left" type="submit" disabled={!isFormValid || isSubmitting}>
+              {isSubmitting ? 'Menyimpan...' : 'Simpan'}
             </Button>
           </Form.Actions>
         </Form>
