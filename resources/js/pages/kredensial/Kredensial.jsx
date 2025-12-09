@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import MainLayout from '../../layout/main/MainLayout';
 import Card from '../../components/card/Card';
 import Button from '../../components/button/Button';
@@ -16,7 +16,8 @@ import {
   MdSave,
   MdSearch,
   MdVisibility,
-  MdEdit
+  MdEdit,
+  MdArrowForward
 } from 'react-icons/md';
 import { isAuthenticated } from '../../utils/auth';
 import { formatDateToIndonesian } from '../../utils/dateFormatter';
