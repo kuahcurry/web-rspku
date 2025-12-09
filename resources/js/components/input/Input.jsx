@@ -1,3 +1,5 @@
+import { useState } from 'react';
+import { MdVisibility, MdVisibilityOff } from 'react-icons/md';
 import './Input.css';
 
 const Input = ({ 
@@ -17,6 +19,7 @@ const Input = ({
   icon,
   iconPosition = 'left', // left, right
   className = '',
+  allowPasswordToggle = false,
   // Select props
   options = [],
   // Textarea props
@@ -24,6 +27,12 @@ const Input = ({
   resize = 'vertical', // none, both, horizontal, vertical
   ...props
 }) => {
+  const [passwordVisible, setPasswordVisible] = useState(false);
+
+  const isPassword = type === 'password';
+  const showToggle = allowPasswordToggle && isPassword;
+  const resolvedType = showToggle && passwordVisible ? 'text' : type;
+
   const renderInput = () => {
     // Render Select
     if (type === 'select') {
@@ -83,12 +92,13 @@ const Input = ({
       <>
         {icon && iconPosition === 'left' && <span className="input-icon input-icon-left">{icon}</span>}
         <input
-          type={type}
+          type={resolvedType}
           className={`
             input-field 
             input-${size} 
             input-${variant} 
             ${icon ? `has-icon-${iconPosition}` : ''} 
+            ${showToggle ? 'has-toggle' : ''} 
             ${error ? 'input-error' : ''} 
             ${success ? 'input-success' : ''}
           `.trim().replace(/\s+/g, ' ')}
@@ -101,6 +111,17 @@ const Input = ({
           {...props}
         />
         {icon && iconPosition === 'right' && <span className="input-icon input-icon-right">{icon}</span>}
+        {showToggle && (
+          <button
+            type="button"
+            className="password-toggle"
+            onClick={() => setPasswordVisible((prev) => !prev)}
+            tabIndex={-1}
+            aria-label={passwordVisible ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi'}
+          >
+            {passwordVisible ? <MdVisibilityOff size={18} /> : <MdVisibility size={18} />}
+          </button>
+        )}
       </>
     );
   };

@@ -126,6 +126,7 @@ function Login() {
                 minLength={8}
                 error={errors.password?.[0]}
                 disabled={isSubmitting}
+                allowPasswordToggle
               />
 
               {errors.general && <div className={styles['login-error']}>{errors.general}</div>}

@@ -538,6 +538,30 @@ const StatusKewenangan = () => {
             required
           />
 
+          <div className={styles['file-input-wrapper']}>
+                    <label className={styles['file-label']}>
+                      Upload Dokumen (PDF) <span className={styles.required}>*</span>
+                    </label>
+                    <div className={styles['file-input-container']}>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept=".pdf"
+                        onChange={handleFileChange}
+                        className={styles['file-input']}
+                        required
+                      />
+                      <div className={styles['file-input-display']}>
+                        <MdCloudUpload size={24} />
+                        <span className={styles.uploadText}>Seret atau klik untuk pilih dokumen</span>
+                        <span className={styles.uploadHint}>Format PDF, maks 5MB</span>
+                        {formData.file && (
+                          <span className={styles.uploadFileName}>{formData.file.name}</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
           <div className={styles.modalActions}>
             <Button type="button" variant="secondary" onClick={handleCloseAddModal}>
               Batal

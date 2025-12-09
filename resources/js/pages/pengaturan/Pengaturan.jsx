@@ -653,6 +653,7 @@ const Pengaturan = () => {
                       placeholder="Minimal 8 karakter"
                       minLength={8}
                       error={Array.isArray(accountErrors.password) ? accountErrors.password[0] : accountErrors.password}
+                      allowPasswordToggle
                     />
                   </Form.Row>
 
@@ -670,6 +671,7 @@ const Pengaturan = () => {
                           ? accountErrors.confirmPassword[0]
                           : accountErrors.confirmPassword
                       }
+                      allowPasswordToggle
                     />
                   </Form.Row>
                 </div>
