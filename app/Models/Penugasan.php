@@ -11,6 +11,7 @@ class Penugasan extends Model
 
     protected $fillable = [
         'user_id',
+        'jenis',
         'unit',
         'penanggung_jawab',
         'tanggal_mulai',
