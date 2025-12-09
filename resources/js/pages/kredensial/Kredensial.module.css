@@ -111,10 +111,6 @@
   font-size: 0.9rem;
 }
 
-.tabGroup {
-  margin: 1rem 0 0.75rem 0;
-}
-
 .cardShell {
   background: var(--bg-main);
   border-radius: var(--radius-xl);
