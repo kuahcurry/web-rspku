@@ -43,4 +43,13 @@ Route::middleware('auth:api')->group(function () {
         Route::get('/view/{id}', [\App\Http\Controllers\Api\PenugasanController::class, 'view']);
         Route::post('/delete-multiple', [\App\Http\Controllers\Api\PenugasanController::class, 'deleteMultiple']);
     });
+    
+    // Etik & Disiplin routes
+    Route::prefix('etik-disiplin')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Api\EtikDisiplinController::class, 'index']);
+        Route::post('/store', [\App\Http\Controllers\Api\EtikDisiplinController::class, 'store']);
+        Route::put('/update/{id}', [\App\Http\Controllers\Api\EtikDisiplinController::class, 'update']);
+        Route::get('/view/{id}', [\App\Http\Controllers\Api\EtikDisiplinController::class, 'view']);
+        Route::post('/delete-multiple', [\App\Http\Controllers\Api\EtikDisiplinController::class, 'deleteMultiple']);
+    });
 });
