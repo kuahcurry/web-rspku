@@ -33,7 +33,15 @@ const Sidebar = ({ isOpen, onClose }) => {
       ]
     },
     { path: '/penugasan', icon: MdAssignment, label: 'Penugasan' },
-    { path: '/kredensial', icon: IoShieldCheckmarkSharp, label: 'Kredensial' },
+    { 
+      key: 'kredensial',
+      icon: IoShieldCheckmarkSharp, 
+      label: 'Kredensial & Kewenangan Klinis',
+      subMenus: [
+        { path: '/status-kewenangan', label: 'Status Kewenangan (SPK/RKK)' },
+        { path: '/kredensial', label: 'Kredensial/Rekredensial' }
+      ]
+    },
     { path: '/riwayat-etik', icon: MdGavel, label: 'Riwayat Etik & Disiplin' }
   ];
 
