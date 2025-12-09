@@ -209,6 +209,15 @@ const PrestasiPenghargaan = () => {
       submitData.append('jenis', JENIS_MAPPING[activeTab]);
       submitData.append('file', formData.file);
 
+      // Debug log
+      console.log('Submitting data:', {
+        judul: formData.judul,
+        penyelenggara: formData.penyelenggara,
+        tahun: formData.tahun,
+        jenis: JENIS_MAPPING[activeTab],
+        file: formData.file?.name
+      });
+
       const response = await authenticatedFetch('/api/prestasi-penghargaan', {
         method: 'POST',
         body: submitData
@@ -221,6 +230,10 @@ const PrestasiPenghargaan = () => {
         handleCloseAddModal();
         fetchData();
       } else {
+        // Log validation errors for debugging
+        if (data.errors) {
+          console.error('Validation errors:', data.errors);
+        }
         throw new Error(data.message || 'Gagal menambahkan data');
       }
     } catch (error) {
@@ -489,18 +502,17 @@ const PrestasiPenghargaan = () => {
               </div>
             </div>
           </div>
-        </div>
 
-        <div className={styles['modal-actions']}>
-          <Button type="button" variant="secondary" onClick={handleCloseAddModal}>
-            Batal
-          </Button>
-          <Button type="submit" variant="success" icon={<MdSave />} disabled={isSubmitting}>
-            {isSubmitting ? 'Menyimpan...' : 'Simpan Perubahan'}
-          </Button>
-        </div>
-      </Form>
-    </Modal>
+          <div className={styles['modal-actions']}>
+            <Button type="button" variant="secondary" onClick={handleCloseAddModal}>
+              Batal
+            </Button>
+            <Button type="submit" variant="success" icon={<MdSave />} disabled={isSubmitting}>
+              {isSubmitting ? 'Menyimpan...' : 'Simpan Perubahan'}
+            </Button>
+          </div>
+        </Form>
+      </Modal>
 
       {/* Delete Confirmation Modal */}
       <Modal
