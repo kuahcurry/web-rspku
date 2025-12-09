@@ -55,6 +55,10 @@
   padding-right: 2.75rem;
 }
 
+.input-field.has-toggle {
+  padding-right: 3.25rem;
+}
+
 .input-field:focus {
   outline: none;
   border-color: var(--input-border-focus);
@@ -186,6 +190,26 @@
 
 .input-large.input-textarea {
   min-height: 120px;
+}
+
+.password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 0.75rem;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--primary-main);
+  cursor: pointer;
+  padding: 0.35rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+}
+
+.password-toggle:hover {
+  background: color-mix(in srgb, var(--primary-main) 10%, transparent);
 }
 
 /* Style Variants */

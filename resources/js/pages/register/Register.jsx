@@ -341,6 +341,7 @@ function Register() {
                 minLength={8}
                 error={errors.password?.[0]}
                 disabled={isSubmitting}
+                allowPasswordToggle
               />
 
               <Input
@@ -354,6 +355,7 @@ function Register() {
                 minLength={8}
                 error={errors.confirmPassword?.[0]}
                 disabled={isSubmitting}
+                allowPasswordToggle
               />
             </Form>
 
