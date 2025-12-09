@@ -23,9 +23,15 @@ class PenugasanController extends Controller
                 ->orderBy('tanggal_mulai', 'desc')
                 ->get();
 
+            // Group by jenis
+            $grouped = [
+                'Penugasan' => $assignments->where('jenis', 'Penugasan')->values(),
+                'Pengabdian' => $assignments->where('jenis', 'Pengabdian')->values(),
+            ];
+
             return response()->json([
                 'success' => true,
-                'data' => $assignments
+                'data' => $grouped
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
@@ -42,6 +48,7 @@ class PenugasanController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
+            'jenis' => 'required|in:Penugasan,Pengabdian',
             'unit' => 'required|string|max:255',
             'penanggung_jawab' => 'required|string|max:255',
             'tanggal_mulai' => 'required|date',
@@ -61,9 +68,10 @@ class PenugasanController extends Controller
             $user = auth()->user();
             $file = $request->file('file');
 
-            // Create folder structure: {name}_{nik}/penugasan
+            // Create folder structure based on jenis: {name}_{nik}/penugasan or pengabdian
             $folderName = $this->sanitizeFolderName($user->name) . '_' . $user->nik;
-            $folderPath = $folderName . '/penugasan';
+            $subFolder = strtolower($request->jenis); // 'penugasan' or 'pengabdian'
+            $folderPath = $folderName . '/' . $subFolder;
 
             // Generate unique filename
             $fileName = Str::slug($request->unit) . '_' . date('Y') . '_' . time() . '.pdf';
@@ -74,6 +82,7 @@ class PenugasanController extends Controller
             // Create new record
             $record = Penugasan::create([
                 'user_id' => $user->id,
+                'jenis' => $request->jenis,
                 'unit' => $request->unit,
                 'penanggung_jawab' => $request->penanggung_jawab,
                 'tanggal_mulai' => $request->tanggal_mulai,

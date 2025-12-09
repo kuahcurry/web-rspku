@@ -43,7 +43,7 @@ const Penugasan = () => {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
   
-  const [assignments, setAssignments] = useState([]);
+  const [assignments, setAssignments] = useState({ Penugasan: [], Pengabdian: [] });
   const [activeTab, setActiveTab] = useState('penugasan');
   const [loading, setLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -303,10 +303,9 @@ const Penugasan = () => {
     }
   };
 
-  const filteredAssignments = assignments.filter((item) => {
-    const jenis = (item.jenis || 'penugasan').toLowerCase();
-    return jenis === activeTab;
-  });
+  // Get assignments for current tab
+  const currentTabKey = activeTab === 'penugasan' ? 'Penugasan' : 'Pengabdian';
+  const filteredAssignments = assignments[currentTabKey] || [];
 
   return (
     <MainLayout>
