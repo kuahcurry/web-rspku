@@ -19,7 +19,7 @@
 .page-body {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1rem;
 }
 
 /* Skeleton preload */
@@ -96,7 +96,7 @@
   position: relative;
   overflow: hidden;
   border-radius: var(--radius-2xl, 26px);
-  background: linear-gradient(135deg, #1f2aa5, #3b54d6);
+  background: var(--primary-main);
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
   padding: 2.5rem;
   color: var(--pure-white);

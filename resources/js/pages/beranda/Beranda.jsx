@@ -133,72 +133,76 @@ const Beranda = () => {
           Ringkasan informasi profil, progress pengisian, dan data terbaru Anda.
         </p>
       </header>
-      {/* Header Profil */}
-      <div className={styles.section}>
-        <div className={styles['profile-card']}>
-          <div className={styles['profile-content']}>
-            <div className={styles['profile-left']}>
-              <div className={styles['profile-avatar']}>
-                {!avatarError ? (
-                  <img
-                    src={avatarUrl}
-                    alt={userData?.name || 'User'}
-                    onError={() => setAvatarError(true)}
-                  />
-                ) : null}
-              </div>
-              <div className={styles['profile-info']}>
-                <h2 className={styles['profile-name']}>{userData.name || 'Nama Tidak Tersedia'}</h2>
-                <p className={styles['profile-nip']}>
-                  <span>NIP: {userData.nip || 'N/A'}</span>
-                  <span className={styles['separator']}>|</span>
-                  <span>NIK: {userData.nik || 'N/A'}</span>
-                </p>
-                <div className={styles['profile-badges']}>
-                  <Card glass padding="small">
-                    <p>{userData.jabatan || 'Jabatan Tidak Tersedia'}</p>
-                  </Card>
-                  <Card glass padding="small">
-                    <p>Status: {userData.status_kepegawaian || 'Belum Diisi'}</p>
-                  </Card>
+
+      <div className={styles['page-body']}>
+        {/* Header Profil */}
+        <section className={styles.section}>
+          <div className={styles['profile-card']}>
+            <div className={styles['profile-content']}>
+              <div className={styles['profile-left']}>
+                <div className={styles['profile-avatar']}>
+                  {!avatarError ? (
+                    <img
+                      src={avatarUrl}
+                      alt={userData?.name || 'User'}
+                      onError={() => setAvatarError(true)}
+                    />
+                  ) : null}
+                </div>
+                <div className={styles['profile-info']}>
+                  <h2 className={styles['profile-name']}>{userData.name || 'Nama Tidak Tersedia'}</h2>
+                  <p className={styles['profile-nip']}>
+                    <span>NIP: {userData.nip || 'N/A'}</span>
+                    <span className={styles['separator']}>|</span>
+                    <span>NIK: {userData.nik || 'N/A'}</span>
+                  </p>
+                  <div className={styles['profile-badges']}>
+                    <Card glass padding="small">
+                      <p>{userData.jabatan || 'Jabatan Tidak Tersedia'}</p>
+                    </Card>
+                    <Card glass padding="small">
+                      <p>Status: {userData.status_kepegawaian || 'Belum Diisi'}</p>
+                    </Card>
+                  </div>
                 </div>
               </div>
+              <Button variant="inverse" size="medium" icon={<FaChevronRight />} iconPosition="right" onClick={() => navigate('/profil')}>
+                Lihat Profil
+              </Button>
             </div>
-            <Button variant="inverse" size="medium" icon={<FaChevronRight />} iconPosition="right" onClick={() => navigate('/profil')}>
-              Lihat Profil
-            </Button>
+            
+            <div className={styles['profile-stats']}>
+              <Card glass padding="compact">
+                <p>Domisili</p>
+                <h1>{districtName || 'Belum Diisi'}</h1>
+              </Card>
+              <Card glass padding="compact">
+                <p>Umur</p>
+                <h1>{age !== null ? `${age} Tahun` : 'Belum Diisi'}</h1>
+              </Card>
+              <Card glass padding="compact">
+                <p>Lama Bekerja</p>
+                <h1>{workDuration || 'Belum Diisi'}</h1>
+              </Card>
+              <Card glass padding="compact">
+                <p>Unit Kerja</p>
+                <h1>{userData.unit_kerja || 'Belum Diisi'}</h1>
+              </Card>
+            </div>
           </div>
-          
-          <div className={styles['profile-stats']}>
-            <Card glass padding="compact">
-              <p>Domisili</p>
-              <h1>{districtName || 'Belum Diisi'}</h1>
-            </Card>
-            <Card glass padding="compact">
-              <p>Umur</p>
-              <h1>{age !== null ? `${age} Tahun` : 'Belum Diisi'}</h1>
-            </Card>
-            <Card glass padding="compact">
-              <p>Lama Bekerja</p>
-              <h1>{workDuration || 'Belum Diisi'}</h1>
-            </Card>
-            <Card glass padding="compact">
-              <p>Unit Kerja</p>
-              <h1>{userData.unit_kerja || 'Belum Diisi'}</h1>
-            </Card>
-          </div>
-        </div>
+        </section>
 
         {/* Progress Pengisian */}
-        <div className={styles['section-wrapper']}>
-          <div className={styles['section-header']}>
-            <div className={styles['section-title']}>
-              <h3>Progress Pengisian Data</h3>
+        <section className={styles.section}>
+          <div className={styles['section-wrapper']}>
+            <div className={styles['section-header']}>
+              <div className={styles['section-title']}>
+                <h3>Progress Pengisian Data</h3>
+              </div>
             </div>
-          </div>
-          
-          <div className={styles['progress-grid']}>
-            <Card variant='secondary' padding="normal">
+            
+            <div className={styles['progress-grid']}>
+              <Card variant='secondary' padding="normal">
               <div className={styles['progress-item']}>
                 <div className={styles['progress-header']}>
                   <span className={styles['progress-label']}>Data Pribadi</span>
@@ -271,21 +275,23 @@ const Beranda = () => {
             </Card>
           </div>
         </div>
+        </section>
 
         {/* Ringkasan Dokumen Legalitas */}
-        <div className={styles['section-wrapper']}>
-          <div className={styles['section-header']}>
-            <div className={styles['section-title']}>
-              <h3>Dokumen Legalitas</h3>
+        <section className={styles.section}>
+          <div className={styles['section-wrapper']}>
+            <div className={styles['section-header']}>
+              <div className={styles['section-title']}>
+                <h3>Dokumen Legalitas</h3>
+              </div>
+              <Button variant="outline" size="small" icon={<FaChevronRight />} iconPosition="right" onClick={() => navigate('/dokumen')}>
+                Lihat Detail
+              </Button>
             </div>
-            <Button variant="outline" size="small" icon={<FaChevronRight />} iconPosition="right" onClick={() => navigate('/dokumen')}>
-              Lihat Detail
-            </Button>
-          </div>
-          {legalDocs.length === 0 ? (
-            <p>Belum ada data dokumen legalitas.</p>
-          ) : (
-            <div className={styles['legal-grid']}>
+            {legalDocs.length === 0 ? (
+              <p>Belum ada data dokumen legalitas.</p>
+            ) : (
+              <div className={styles['legal-grid']}>
               {legalDocs.map((doc) => (
                 <Card
                   key={doc.id}
@@ -318,20 +324,22 @@ const Beranda = () => {
               ))}
             </div>
           )}
-        </div>
+          </div>
+        </section>
 
         {/* Ringkasan Data Terbaru */}
         
         {/* Card 1: Riwayat Pendidikan Terbaru */}
-        <div className={styles['section-wrapper']}>
-          <div className={styles['section-header']}>
-            <div className={styles['section-title']}>
-              <h3>Riwayat Pendidikan Terbaru</h3>
+        <section className={styles.section}>
+          <div className={styles['section-wrapper']}>
+            <div className={styles['section-header']}>
+              <div className={styles['section-title']}>
+                <h3>Riwayat Pendidikan Terbaru</h3>
+              </div>
+              <Button variant="outline" icon={<FaChevronRight />} iconPosition="right" size="small" onClick={() => navigate('/riwayat-pendidikan')}>
+                Lihat Detail
+              </Button>
             </div>
-            <Button variant="outline" icon={<FaChevronRight />} iconPosition="right" size="small" onClick={() => navigate('/riwayat-pendidikan')}>
-              Lihat Detail
-            </Button>
-          </div>
           
           <div className={styles['education-section']}>
             <Card variant='secondary' padding="normal">
@@ -384,18 +392,20 @@ const Beranda = () => {
               </div>
             </Card>
           </div>
-        </div>
+          </div>
+        </section>
 
         {/* Card 2: Penugasan Klinik */}
-        <div className={styles['section-wrapper']}>
-          <div className={styles['section-header']}>
-            <div className={styles['section-title']}>
-              <h3>Penugasan Klinik</h3>
+        <section className={styles.section}>
+          <div className={styles['section-wrapper']}>
+            <div className={styles['section-header']}>
+              <div className={styles['section-title']}>
+                <h3>Penugasan Klinik</h3>
+              </div>
+              <Button variant="outline" size="small" icon={<FaChevronRight />} iconPosition="right" onClick={() => navigate('/penugasan')}>
+                Lihat Detail
+              </Button>
             </div>
-            <Button variant="outline" size="small" icon={<FaChevronRight />} iconPosition="right" onClick={() => navigate('/penugasan')}>
-              Lihat Detail
-            </Button>
-          </div>
           
           <div className={styles['education-section']}>
             <Card variant='secondary' padding="compact">
@@ -432,15 +442,17 @@ const Beranda = () => {
               </div>
             </Card>
           </div>
-        </div>
+          </div>
+        </section>
 
         {/* Card 3: Kredensial / Rekredensial */}
-        <div className={styles['section-wrapper']}>
-          <div className={styles['section-header']}>
-            <div className={styles['section-title']}>
-              <h3>Kredensial / Rekredensial</h3>
-            </div>
-            <Button variant="outline" size="small" icon={<FaChevronRight />} iconPosition="right" onClick={() => navigate('/kredensial')}>
+        <section className={styles.section}>
+          <div className={styles['section-wrapper']}>
+            <div className={styles['section-header']}>
+              <div className={styles['section-title']}>
+                <h3>Kredensial / Rekredensial</h3>
+              </div>
+              <Button variant="outline" size="small" icon={<FaChevronRight />} iconPosition="right" onClick={() => navigate('/kredensial')}>
               Lihat Detail
             </Button>
           </div>
@@ -475,42 +487,44 @@ const Beranda = () => {
                   </div>
                 </Card>
               </div>
-          
-        </div>
+          </div>
+        </section>
 
         {/* Card 4: Etik & Disiplin */}
-        <div className={styles['section-wrapper']}>
-          <div className={styles['section-header']}>
-            <div className={styles['section-title']}>
-              <h3>Riwayat Etik & Disiplin</h3>
+        <section className={styles.section}>
+          <div className={styles['section-wrapper']}>
+            <div className={styles['section-header']}>
+              <div className={styles['section-title']}>
+                <h3>Riwayat Etik & Disiplin</h3>
+              </div>
+              <Button variant="outline" size="small" icon={<FaChevronRight />} iconPosition="right" onClick={() => navigate('/riwayat-etik')}>
+                Lihat Detail
+              </Button>
             </div>
-            <Button variant="outline" size="small" icon={<FaChevronRight />} iconPosition="right" onClick={() => navigate('/riwayat-etik')}>
-              Lihat Detail
-            </Button>
+            
+            <div className={styles['credential-section']}>
+                <Card variant='secondary' padding='normal'>
+                  <div className={styles['ethics-item-content']}>
+                    <div className={styles['ethics-item-main']}>
+                      <span className={styles['ethics-subtitle']}>Mengabaikan Prosedur Keselamatan Pasien</span>
+                      <span className={styles['ethics-date']}>12 Apr 2023</span>
+                    </div>
+                  </div>
+                </Card>
+                <Card variant='secondary' padding='normal'>
+                  <div className={styles['ethics-item-content']}>
+                    <div className={styles['ethics-item-main']}>
+                      <span className={styles['ethics-subtitle']}>Terlambat shift pagi</span>
+                      <span className={styles['ethics-date']}>05 Feb 2023</span>
+                    </div>
+                    <div className={styles['status-button-wrapper']}>
+                      <Button variant="success" size="small">Sudah Dibina</Button>
+                    </div>
+                  </div>
+                </Card>
+            </div>
           </div>
-          
-          <div className={styles['credential-section']}>
-              <Card variant='secondary' padding='normal'>
-                <div className={styles['ethics-item-content']}>
-                  <div className={styles['ethics-item-main']}>
-                    <span className={styles['ethics-subtitle']}>Mengabaikan Prosedur Keselamatan Pasien</span>
-                    <span className={styles['ethics-date']}>12 Apr 2023</span>
-                  </div>
-                </div>
-              </Card>
-              <Card variant='secondary' padding='normal'>
-                <div className={styles['ethics-item-content']}>
-                  <div className={styles['ethics-item-main']}>
-                    <span className={styles['ethics-subtitle']}>Terlambat shift pagi</span>
-                    <span className={styles['ethics-date']}>05 Feb 2023</span>
-                  </div>
-                  <div className={styles['status-button-wrapper']}>
-                    <Button variant="success" size="small">Sudah Dibina</Button>
-                  </div>
-                </div>
-              </Card>
-          </div>
-        </div>
+        </section>
       </div>
     </MainLayout>
   );
