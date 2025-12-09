@@ -8,8 +8,8 @@ import Button from '../../components/button/Button';
 import Modal from '../../components/modal/Modal';
 import Form from '../../components/form/Form';
 import Input from '../../components/input/Input';
-import { MdAdd, MdSave, MdSearch, MdVisibility, MdDelete, MdEdit } from 'react-icons/md';
-import { isAuthenticated } from '../../utils/auth';
+import { MdAdd, MdSave, MdSearch, MdVisibility, MdDelete, MdEdit, MdDownload, MdCloudUpload } from 'react-icons/md';
+import { isAuthenticated, authenticatedFetch } from '../../utils/auth';
 import { formatDateToIndonesian } from '../../utils/dateFormatter';
 import styles from './EtikDisiplin.module.css';
 
@@ -38,65 +38,13 @@ const TINDAKAN_OPTIONS = [
   { value: 'SP3', label: 'SP3' }
 ];
 
-const DUMMY_ETIK = [
-  {
-    id: 1,
-    tanggal: '2024-02-15',
-    jenis: 'Pelanggaran Kode Etik',
-    tingkat: 'Sedang',
-    status: 'Selesai',
-    uraian: 'Pelanggaran terkait kerahasiaan pasien.',
-    tanggal_selesai: '2024-03-01',
-    catatan: 'Pembinaan selesai, monitoring 3 bulan.',
-    dokumenName: 'berita_acara_etik.pdf',
-    dokumenUrl: '/storage/etik/berita_acara_etik.pdf'
-  },
-  {
-    id: 2,
-    tanggal: '2024-05-10',
-    jenis: 'Komunikasi Tidak Profesional',
-    tingkat: 'Ringan',
-    status: 'Proses',
-    uraian: 'Keluhan dari keluarga pasien terkait komunikasi.',
-    tanggal_selesai: '',
-    catatan: 'Sedang dalam pembinaan oleh atasan langsung.',
-    dokumenName: '',
-    dokumenUrl: ''
-  }
-];
-
-const DUMMY_DISIPLIN = [
-  {
-    id: 11,
-    tanggal: '2024-01-20',
-    jenis: 'Ketidakhadiran tanpa izin',
-    tindakan: 'SP1',
-    status: 'Selesai',
-    uraian: 'Tidak hadir 2 shift berturut-turut tanpa konfirmasi.',
-    tanggal_selesai: '2024-02-05',
-    catatan: 'Surat pernyataan sudah ditandatangani.',
-    dokumenName: 'sp1_jan2024.pdf',
-    dokumenUrl: '/storage/disiplin/sp1_jan2024.pdf'
-  },
-  {
-    id: 12,
-    tanggal: '2024-08-12',
-    jenis: 'Keterlambatan berulang',
-    tindakan: 'Teguran Tertulis',
-    status: 'Proses',
-    uraian: 'Keterlambatan >5 kali dalam 1 bulan.',
-    tanggal_selesai: '',
-    catatan: 'Monitoring absensi minggu ini.',
-    dokumenName: '',
-    dokumenUrl: ''
-  }
-];
-
 const EtikDisiplin = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('etik');
-  const [etikRecords, setEtikRecords] = useState(DUMMY_ETIK);
-  const [disiplinRecords, setDisiplinRecords] = useState(DUMMY_DISIPLIN);
+  const [loading, setLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [etikRecords, setEtikRecords] = useState([]);
+  const [disiplinRecords, setDisiplinRecords] = useState([]);
   const [filtersEtik, setFiltersEtik] = useState({ search: '', year: 'Semua', status: 'Semua' });
   const [filtersDisiplin, setFiltersDisiplin] = useState({
     search: '',
@@ -111,6 +59,8 @@ const EtikDisiplin = () => {
   const [editingDisiplinId, setEditingDisiplinId] = useState(null);
   const [viewItem, setViewItem] = useState(null);
   const [viewOpen, setViewOpen] = useState(false);
+  const [pdfUrl, setPdfUrl] = useState(null);
+  const [loadingPdf, setLoadingPdf] = useState(false);
   const [deleteMode, setDeleteMode] = useState(false);
   const [deleteTargets, setDeleteTargets] = useState([]);
   const fileEtikRef = useRef(null);
@@ -141,8 +91,51 @@ const EtikDisiplin = () => {
   useEffect(() => {
     if (!isAuthenticated()) {
       navigate('/login');
+      return;
     }
+    fetchData();
   }, [navigate]);
+
+  // Cleanup blob URL when view modal closes
+  useEffect(() => {
+    if (!viewOpen && pdfUrl) {
+      URL.revokeObjectURL(pdfUrl);
+      setPdfUrl(null);
+    }
+  }, [viewOpen, pdfUrl]);
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const response = await authenticatedFetch('/api/etik-disiplin');
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        // Map API fields to component field names
+        const mapRecord = (record) => ({
+          id: record.id,
+          tanggal: record.tanggal_kejadian,
+          jenis: record.jenis_pelanggaran,
+          uraian: record.uraian_singkat,
+          tingkat: record.tingkat,
+          tindakan: record.tindakan,
+          status: record.status_penyelesaian,
+          tanggal_selesai: record.tanggal_penyelesaian,
+          catatan: record.catatan,
+          dokumenName: record.file_name,
+          dokumenUrl: record.url,
+          file_name: record.file_name
+        });
+
+        setEtikRecords((data.data.etik || []).map(mapRecord));
+        setDisiplinRecords((data.data.disiplin || []).map(mapRecord));
+      }
+    } catch (error) {
+      console.error('Error fetching etik-disiplin records:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const yearsEtik = useMemo(() => {
     const years = Array.from(
@@ -270,52 +263,110 @@ const EtikDisiplin = () => {
     setShowDisiplinModal(true);
   };
 
-  const handleSaveEtik = (e) => {
+  const handleSaveEtik = async (e) => {
     e.preventDefault();
     if (!etikForm.tanggal || !etikForm.jenis || !etikForm.uraian || !etikForm.tingkat || !etikForm.status) return;
-    const payload = {
-      id: editingEtikId || Date.now(),
-      tanggal: etikForm.tanggal,
-      jenis: etikForm.jenis,
-      uraian: etikForm.uraian,
-      tingkat: etikForm.tingkat,
-      status: etikForm.status,
-      tanggal_selesai: etikForm.tanggal_selesai,
-      catatan: etikForm.catatan,
-      dokumenName: etikForm.file?.name || etikRecords.find((r) => r.id === editingEtikId)?.dokumenName || '',
-      dokumenUrl: etikForm.fileUrl || etikRecords.find((r) => r.id === editingEtikId)?.dokumenUrl || ''
-    };
-    setEtikRecords((prev) => {
-      if (editingEtikId) return prev.map((item) => (item.id === editingEtikId ? payload : item));
-      return [payload, ...prev];
-    });
-    setShowEtikModal(false);
-    setEditingEtikId(null);
+
+    // Validate file for new record
+    if (!editingEtikId && !etikForm.file) {
+      alert('File dokumen wajib diupload untuk data baru');
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const formData = new FormData();
+      formData.append('jenis', 'etik');
+      formData.append('tanggal_kejadian', etikForm.tanggal);
+      formData.append('jenis_pelanggaran', etikForm.jenis);
+      formData.append('uraian_singkat', etikForm.uraian);
+      formData.append('tingkat', etikForm.tingkat);
+      formData.append('status_penyelesaian', etikForm.status);
+      if (etikForm.tanggal_selesai) formData.append('tanggal_penyelesaian', etikForm.tanggal_selesai);
+      if (etikForm.catatan) formData.append('catatan', etikForm.catatan);
+      if (etikForm.file) formData.append('file', etikForm.file);
+
+      const url = editingEtikId 
+        ? `/api/etik-disiplin/update/${editingEtikId}`
+        : '/api/etik-disiplin/store';
+      
+      // Use POST for both create and update (with _method for update)
+      if (editingEtikId) {
+        formData.append('_method', 'PUT');
+      }
+
+      const response = await authenticatedFetch(url, {
+        method: 'POST',
+        body: formData
+      });
+
+      if (response.ok) {
+        await fetchData(); // Refresh data
+        setShowEtikModal(false);
+        setEditingEtikId(null);
+      } else {
+        const error = await response.json();
+        alert(error.message || 'Gagal menyimpan data');
+      }
+    } catch (error) {
+      console.error('Error saving etik:', error);
+      alert('Terjadi kesalahan saat menyimpan data');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const handleSaveDisiplin = (e) => {
+  const handleSaveDisiplin = async (e) => {
     e.preventDefault();
     if (!disiplinForm.tanggal || !disiplinForm.jenis || !disiplinForm.uraian || !disiplinForm.tindakan) return;
-    const payload = {
-      id: editingDisiplinId || Date.now(),
-      tanggal: disiplinForm.tanggal,
-      jenis: disiplinForm.jenis,
-      uraian: disiplinForm.uraian,
-      tindakan: disiplinForm.tindakan,
-      status: disiplinForm.status,
-      tanggal_selesai: disiplinForm.tanggal_selesai,
-      catatan: disiplinForm.catatan,
-      dokumenName:
-        disiplinForm.file?.name || disiplinRecords.find((r) => r.id === editingDisiplinId)?.dokumenName || '',
-      dokumenUrl:
-        disiplinForm.fileUrl || disiplinRecords.find((r) => r.id === editingDisiplinId)?.dokumenUrl || ''
-    };
-    setDisiplinRecords((prev) => {
-      if (editingDisiplinId) return prev.map((item) => (item.id === editingDisiplinId ? payload : item));
-      return [payload, ...prev];
-    });
-    setShowDisiplinModal(false);
-    setEditingDisiplinId(null);
+
+    // Validate file for new record
+    if (!editingDisiplinId && !disiplinForm.file) {
+      alert('File dokumen wajib diupload untuk data baru');
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const formData = new FormData();
+      formData.append('jenis', 'disiplin');
+      formData.append('tanggal_kejadian', disiplinForm.tanggal);
+      formData.append('jenis_pelanggaran', disiplinForm.jenis);
+      formData.append('uraian_singkat', disiplinForm.uraian);
+      formData.append('tindakan', disiplinForm.tindakan);
+      formData.append('status_penyelesaian', disiplinForm.status);
+      if (disiplinForm.tanggal_selesai) formData.append('tanggal_penyelesaian', disiplinForm.tanggal_selesai);
+      if (disiplinForm.catatan) formData.append('catatan', disiplinForm.catatan);
+      if (disiplinForm.file) formData.append('file', disiplinForm.file);
+
+      const url = editingDisiplinId 
+        ? `/api/etik-disiplin/update/${editingDisiplinId}`
+        : '/api/etik-disiplin/store';
+      
+      // Use POST for both create and update (with _method for update)
+      if (editingDisiplinId) {
+        formData.append('_method', 'PUT');
+      }
+
+      const response = await authenticatedFetch(url, {
+        method: 'POST',
+        body: formData
+      });
+
+      if (response.ok) {
+        await fetchData(); // Refresh data
+        setShowDisiplinModal(false);
+        setEditingDisiplinId(null);
+      } else {
+        const error = await response.json();
+        alert(error.message || 'Gagal menyimpan data');
+      }
+    } catch (error) {
+      console.error('Error saving disiplin:', error);
+      alert('Terjadi kesalahan saat menyimpan data');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleStartDelete = () => {
@@ -354,24 +405,57 @@ const EtikDisiplin = () => {
     });
   };
 
-  const handleConfirmDelete = () => {
-    const etikIds = deleteTargets.filter((d) => d.scope === 'etik').map((d) => d.id);
-    const disiplinIds = deleteTargets.filter((d) => d.scope === 'disiplin').map((d) => d.id);
-    if (etikIds.length) {
-      setEtikRecords((prev) => prev.filter((item) => !etikIds.includes(item.id)));
+  const handleConfirmDelete = async () => {
+    const idsToDelete = deleteTargets.map((d) => d.id);
+    if (!idsToDelete.length) return;
+
+    setIsSubmitting(true);
+    try {
+      const response = await authenticatedFetch('/api/etik-disiplin/delete-multiple', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: idsToDelete })
+      });
+
+      if (response.ok) {
+        await fetchData(); // Refresh data
+        if (viewItem && idsToDelete.includes(viewItem.id)) {
+          setViewOpen(false);
+        }
+        handleCancelDelete();
+      } else {
+        const error = await response.json();
+        alert(error.message || 'Gagal menghapus data');
+      }
+    } catch (error) {
+      console.error('Error deleting records:', error);
+      alert('Terjadi kesalahan saat menghapus data');
+    } finally {
+      setIsSubmitting(false);
     }
-    if (disiplinIds.length) {
-      setDisiplinRecords((prev) => prev.filter((item) => !disiplinIds.includes(item.id)));
-    }
-    if (viewItem && deleteTargets.some((d) => d.id === viewItem.id)) {
-      setViewOpen(false);
-    }
-    handleCancelDelete();
   };
 
-  const openView = (item) => {
+  const openView = async (item) => {
     setViewItem(item);
     setViewOpen(true);
+    setLoadingPdf(true);
+    setPdfUrl(null);
+
+    try {
+      const response = await authenticatedFetch(`/api/etik-disiplin/view/${item.id}`);
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        setPdfUrl(url);
+      } else {
+        alert('Gagal memuat dokumen PDF');
+      }
+    } catch (error) {
+      console.error('Error loading PDF:', error);
+      alert('Terjadi kesalahan saat memuat dokumen');
+    } finally {
+      setLoadingPdf(false);
+    }
   };
 
   const renderStatusPill = (label, tone = 'neutral') => {
@@ -707,11 +791,11 @@ const EtikDisiplin = () => {
             accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
           />
           <Form.Actions align="right" className={styles.modalActions}>
-            <Button variant="secondary" type="button" onClick={() => setShowEtikModal(false)}>
+            <Button variant="secondary" type="button" onClick={() => setShowEtikModal(false)} disabled={isSubmitting}>
               Batal
             </Button>
-            <Button variant="success" icon={<MdSave />} iconPosition="left" type="submit">
-              Simpan
+            <Button variant="success" icon={<MdSave />} iconPosition="left" type="submit" disabled={isSubmitting}>
+              {isSubmitting ? 'Menyimpan...' : 'Simpan'}
             </Button>
           </Form.Actions>
         </Form>
@@ -806,11 +890,11 @@ const EtikDisiplin = () => {
             accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
           />
           <Form.Actions align="right" className={styles.modalActions}>
-            <Button variant="secondary" type="button" onClick={() => setShowDisiplinModal(false)}>
+            <Button variant="secondary" type="button" onClick={() => setShowDisiplinModal(false)} disabled={isSubmitting}>
               Batal
             </Button>
-            <Button variant="success" icon={<MdSave />} iconPosition="left" type="submit">
-              Simpan
+            <Button variant="success" icon={<MdSave />} iconPosition="left" type="submit" disabled={isSubmitting}>
+              {isSubmitting ? 'Menyimpan...' : 'Simpan'}
             </Button>
           </Form.Actions>
         </Form>
@@ -861,19 +945,27 @@ const EtikDisiplin = () => {
             <p className={styles.metaLabel}>Catatan</p>
             <p className={styles.metaValue}>{viewItem?.catatan || '-'}</p>
           </div>
+          {loadingPdf && (
+            <div className={styles.pdfLoader}>
+              <p>Memuat dokumen...</p>
+            </div>
+          )}
+          {pdfUrl && !loadingPdf && (
+            <div className={styles.pdfViewer}>
+              <iframe src={pdfUrl} title="Dokumen PDF" className={styles.pdfIframe} />
+            </div>
+          )}
           <div className={styles.modalActions}>
             <Button variant="secondary" onClick={() => setViewOpen(false)}>
               Tutup
             </Button>
-            <Button
-              variant="primary"
-              icon={<MdVisibility />}
-              iconPosition="left"
-              disabled={!viewItem?.dokumenUrl}
-              onClick={() => viewItem?.dokumenUrl && window.open(viewItem.dokumenUrl, '_blank')}
-            >
-              Lihat Dokumen
-            </Button>
+            {pdfUrl && (
+              <a href={pdfUrl} download={viewItem?.file_name || 'dokumen.pdf'} style={{ textDecoration: 'none' }}>
+                <Button variant="primary" icon={<MdDownload />} iconPosition="left">
+                  Download
+                </Button>
+              </a>
+            )}
           </div>
         </div>
       </Modal>
@@ -900,11 +992,11 @@ const EtikDisiplin = () => {
             </ul>
           )}
           <div className={styles.modalActions}>
-            <Button variant="secondary" onClick={handleCancelDelete}>
+            <Button variant="secondary" onClick={handleCancelDelete} disabled={isSubmitting}>
               Batal
             </Button>
-            <Button variant="danger" icon={<MdDelete />} iconPosition="left" onClick={handleConfirmDelete}>
-              Hapus
+            <Button variant="danger" icon={<MdDelete />} iconPosition="left" onClick={handleConfirmDelete} disabled={isSubmitting}>
+              {isSubmitting ? 'Menghapus...' : 'Hapus'}
             </Button>
           </div>
         </div>
