@@ -21,6 +21,13 @@ const JENIS_MAPPING = {
   'penghargaan': 'Penghargaan'
 };
 
+const EMPTY_FORM = {
+  judul: '',
+  penyelenggara: '',
+  tahun: '',
+  file: null
+};
+
 const PrestasiPenghargaan = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('prestasi');
@@ -38,13 +45,13 @@ const PrestasiPenghargaan = () => {
   });
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formData, setFormData] = useState({
-    judul: '',
-    penyelenggara: '',
-    tahun: '',
-    file: null
+  const [formDataByTab, setFormDataByTab] = useState({
+    prestasi: { ...EMPTY_FORM },
+    penghargaan: { ...EMPTY_FORM }
   });
   const fileInputRef = useRef(null);
+
+  const formData = formDataByTab[activeTab];
 
   const items = dataByTab[activeTab] || [];
 
@@ -124,23 +131,19 @@ const PrestasiPenghargaan = () => {
   };
 
   const handleAddClick = () => {
-    setFormData({
-      judul: '',
-      penyelenggara: '',
-      tahun: '',
-      file: null
-    });
+    setFormDataByTab(prev => ({
+      ...prev,
+      [activeTab]: { ...EMPTY_FORM }
+    }));
     setShowAddModal(true);
   };
 
   const handleCloseAddModal = () => {
     setShowAddModal(false);
-    setFormData({
-      judul: '',
-      penyelenggara: '',
-      tahun: '',
-      file: null
-    });
+    setFormDataByTab(prev => ({
+      ...prev,
+      [activeTab]: { ...EMPTY_FORM }
+    }));
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -148,9 +151,17 @@ const PrestasiPenghargaan = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    const fieldName = name === 'nama' ? 'judul' : name;
+    const nextValue = fieldName === 'tahun'
+      ? (value || '').replace(/\D/g, '').slice(0, 4)
+      : value;
+
+    setFormDataByTab(prev => ({
       ...prev,
-      [name]: value
+      [activeTab]: {
+        ...prev[activeTab],
+        [fieldName]: nextValue
+      }
     }));
   };
 
@@ -170,9 +181,12 @@ const PrestasiPenghargaan = () => {
         return;
       }
 
-      setFormData(prev => ({
+      setFormDataByTab(prev => ({
         ...prev,
-        file: file
+        [activeTab]: {
+          ...prev[activeTab],
+          file
+        }
       }));
     }
   };
@@ -422,68 +436,79 @@ const PrestasiPenghargaan = () => {
         isOpen={showAddModal}
         onClose={handleCloseAddModal}
         title={`Tambah ${JENIS_MAPPING[activeTab]}`}
+        padding="normal"
+        size="medium"
       >
-        <Form onSubmit={handleSubmit}>
-          <Input
-            label="Nama Prestasi"
-            name="nama"
-            value={formData.judul}
-            onChange={handleInputChange}
-            placeholder={`Masukkan judul ${activeTab}`}
-            required
-          />
-          
-          <Input
-            label="Penyelenggara"
-            name="penyelenggara"
-            value={formData.penyelenggara}
-            onChange={handleInputChange}
-            placeholder="Masukkan nama penyelenggara"
-            required
-          />
-          
-          <Input
-            label="Tahun"
-            name="tahun"
-            type="number"
-            value={formData.tahun}
-            onChange={handleInputChange}
-            placeholder="Contoh: 2024"
-            min="1900"
-            max={new Date().getFullYear()}
-            required
-          />
+        <Form onSubmit={handleSubmit} className={styles.modalContent}>
+        <Input
+          label={activeTab === 'prestasi' ? 'Nama Prestasi' : 'Nama Penghargaan'}
+          name="judul"
+          value={formData.judul}
+          onChange={handleInputChange}
+          placeholder={
+            activeTab === 'prestasi' 
+              ? 'Contoh: Juara 1 Lomba Inovasi Pelayanan'
+              : 'Contoh: Penghargaan Tenaga Kesehatan Teladan'
+          }
+          required
+        />
+        
+        <Input
+          label="Penyelenggara"
+          name="penyelenggara"
+          value={formData.penyelenggara}
+          onChange={handleInputChange}
+          placeholder="Masukkan nama penyelenggara"
+          required
+        />
+        
+        <Input
+          label="Tahun"
+          name="tahun"
+          type="text"
+          inputMode="numeric"
+          pattern="\\d{4}"
+          maxLength={4}
+          value={formData.tahun || ''}
+          onChange={handleInputChange}
+          placeholder="Contoh: 2024"
+          required
+        />
 
-          <div className={styles['file-input-wrapper']}>
-            <label className={styles['file-label']}>
-              Upload Dokumen (PDF) <span className={styles.required}>*</span>
-            </label>
-            <div className={styles['file-input-container']}>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept=".pdf"
-                onChange={handleFileChange}
-                className={styles['file-input']}
-                required
-              />
-              <div className={styles['file-input-display']}>
-                <MdCloudUpload size={24} />
-                <span>{formData.file ? formData.file.name : 'Pilih file PDF (Maks 5MB)'}</span>
-              </div>
+        <div className={styles['file-input-wrapper']}>
+          <label className={styles['file-label']}>
+            Upload Dokumen (PDF) <span className={styles.required}>*</span>
+          </label>
+          <div className={styles['file-input-container']}>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".pdf"
+              onChange={handleFileChange}
+              className={styles['file-input']}
+              required
+            />
+            <div className={styles['file-input-display']}>
+              <MdCloudUpload size={24} />
+              <span className={styles.uploadText}>Seret atau klik untuk pilih dokumen</span>
+              <span className={styles.uploadHint}>Format PDF, maks 5MB</span>
+              {formData.file && (
+                <span className={styles.uploadFileName}>{formData.file.name}</span>
+              )}
             </div>
           </div>
+        </div>
 
-          <div className={styles['modal-actions']}>
-            <Button type="button" variant="secondary" onClick={handleCloseAddModal}>
-              Batal
-            </Button>
-            <Button type="submit" variant="primary" icon={<MdSave />} disabled={isSubmitting}>
-              {isSubmitting ? 'Menyimpan...' : 'Simpan'}
-            </Button>
-          </div>
-        </Form>
-      </Modal>
+        <div className={styles['modal-actions']}>
+          <Button type="button" variant="secondary" onClick={handleCloseAddModal}>
+            Batal
+          </Button>
+          <Button type="submit" variant="success" icon={<MdSave />} disabled={isSubmitting}>
+            {isSubmitting ? 'Menyimpan...' : 'Simpan Perubahan'}
+          </Button>
+        </div>
+      </Form>
+    </Modal>
 
       {/* Delete Confirmation Modal */}
       <Modal
