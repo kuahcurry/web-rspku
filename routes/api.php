@@ -52,4 +52,13 @@ Route::middleware('auth:api')->group(function () {
         Route::get('/view/{id}', [\App\Http\Controllers\Api\EtikDisiplinController::class, 'view']);
         Route::post('/delete-multiple', [\App\Http\Controllers\Api\EtikDisiplinController::class, 'deleteMultiple']);
     });
+    
+    // Kredensial routes
+    Route::prefix('kredensial')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Api\KredensialController::class, 'index']);
+        Route::post('/store', [\App\Http\Controllers\Api\KredensialController::class, 'store']);
+        Route::put('/update/{id}', [\App\Http\Controllers\Api\KredensialController::class, 'update']);
+        Route::get('/view/{id}', [\App\Http\Controllers\Api\KredensialController::class, 'view']);
+        Route::post('/delete-multiple', [\App\Http\Controllers\Api\KredensialController::class, 'deleteMultiple']);
+    });
 });

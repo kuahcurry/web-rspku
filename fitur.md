@@ -46,6 +46,7 @@
 
 1. Kode verifikasi register email
 2. Tools konversi image to PDF
+3. Tools kompress file pdf 
 
 ## Fitur Opsional Tapi Tidak Terlalu Penting
 
