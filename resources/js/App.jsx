@@ -6,6 +6,7 @@ import Pengaturan from "./pages/pengaturan/Pengaturan";
 import Dokumen from "./pages/dokumen/DokumenLegalitas";
 import Kredensial from "./pages/kredensial/Kredensial";
 import Pendidikan from "./pages/pendidikan/RiwayatPendidikan"; 
+import PrestasiPenghargaan from "./pages/prestasi/PrestasiPenghargaan";
 import Penugasan from "./pages/penugasan/Penugasan";
 import EtikDisiplin from "./pages/etik/EtikDisiplin";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -57,6 +58,14 @@ function App() {
           element={
             <ProtectedRoute>
               <Pendidikan />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/prestasi-penghargaan"
+          element={
+            <ProtectedRoute>
+              <PrestasiPenghargaan />
             </ProtectedRoute>
           }
         />
