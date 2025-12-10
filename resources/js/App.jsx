@@ -1,5 +1,6 @@
 import Login from "./pages/login/Login";
 import Register from "./pages/register/Register";
+import VerifyEmail from "./pages/verify-email/VerifyEmail";
 import Beranda from "./pages/beranda/Beranda";
 import Profil from "./pages/profil/ProfilSaya";
 import Pengaturan from "./pages/pengaturan/Pengaturan";
@@ -22,6 +23,7 @@ function App() {
         <Route path="/" element={<Login />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/verify-email" element={<VerifyEmail />} />
         <Route 
           path="/beranda" 
           element={

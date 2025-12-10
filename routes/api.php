@@ -11,6 +11,8 @@ use App\Http\Controllers\Api\RiwayatPendidikanController;
 // Public routes
 Route::post('/register', [RegisterController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
+Route::post('/verify-email', [AuthController::class, 'verifyEmail']);
+Route::post('/resend-verification-code', [AuthController::class, 'resendVerificationCode']);
 
 // Protected routes (require JWT token)
 Route::middleware('auth:api')->group(function () {
