@@ -168,6 +168,8 @@ class ProfileController extends Controller
             ]);
 
             $profileUrl = Storage::disk('public')->url($filePath);
+            // Normalize URL to remove double slashes
+            $profileUrl = preg_replace('#(?<!:)//+#', '/', $profileUrl);
             
             \Log::info('Profile picture uploaded', [
                 'user_id' => $user->id,
@@ -222,6 +224,8 @@ class ProfileController extends Controller
 
             $fileExists = Storage::disk('public')->exists($user->foto_profil);
             $profileUrl = Storage::disk('public')->url($user->foto_profil);
+            // Normalize URL to remove double slashes
+            $profileUrl = preg_replace('#(?<!:)//+#', '/', $profileUrl);
             
             \Log::info('Profile picture details', [
                 'file_path' => $user->foto_profil,
