@@ -8,7 +8,9 @@ import Form from '../../components/form/Form';
 import Input from '../../components/input/Input';
 import Tabs from '../../components/tabs/Tabs';
 import { MdVisibility, MdAdd, MdCloudUpload, MdSave, MdDownload, MdDelete } from 'react-icons/md';
-import { authenticatedFetch, isAuthenticated } from '../../utils/auth';
+import { isAuthenticated } from '../../utils/auth';
+import { cachedFetch } from '../../services/apiService';
+import { cacheConfig } from '../../utils/cache';
 import styles from './RiwayatPendidikan.module.css';
 
 const tabs = [
@@ -62,12 +64,10 @@ const RiwayatPendidikan = () => {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const response = await authenticatedFetch('/api/riwayat-pendidikan');
+      const response = await cachedFetch('/api/riwayat-pendidikan', {}, cacheConfig.TTL.LONG);
       const data = await response.json();
 
       if (response.ok && data.success) {
-        // Map API data to tab structure
-        console.log('Education data received:', data.data);
         setDataByTab({
           ijazah: data.data['Ijazah'] || [],
           pelatihan: data.data['Sertifikat Pelatihan'] || [],

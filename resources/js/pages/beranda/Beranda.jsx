@@ -10,6 +10,7 @@ import { useUser } from '../../contexts/UserContext';
 import { isAuthenticated, authenticatedFetch } from '../../utils/auth';
 import { getDistrictNameById } from '../../services/indonesiaRegion';
 import { formatDateToIndonesian } from '../../utils/dateFormatter';
+import { fetchDashboardData } from '../../services/apiService';
 import styles from './Beranda.module.css';
 
 const getStatusVariant = (status) => {
@@ -93,39 +94,16 @@ const Beranda = () => {
     try {
       setLoading(true);
 
-      // Fetch all data in parallel
-      const [
-        dokumenRes,
-        pendidikanRes,
-        penugasanRes,
-        kredensialRes,
-        kewenanganRes,
-        etikRes,
-        prestasiRes
-      ] = await Promise.all([
-        authenticatedFetch('/api/dokumen-legalitas'),
-        authenticatedFetch('/api/riwayat-pendidikan'),
-        authenticatedFetch('/api/penugasan'),
-        authenticatedFetch('/api/kredensial'),
-        authenticatedFetch('/api/status-kewenangan'),
-        authenticatedFetch('/api/etik-disiplin'),
-        authenticatedFetch('/api/prestasi-penghargaan')
-      ]);
-
-      const dokumenData = await dokumenRes.json();
-      const pendidikanData = await pendidikanRes.json();
-      const penugasanData = await penugasanRes.json();
-      const kredensialData = await kredensialRes.json();
-      const kewenanganData = await kewenanganRes.json();
-      const etikData = await etikRes.json();
-      const prestasiData = await prestasiRes.json();
-
-      // Debug logging
-      console.log('Dokumen Legalitas:', dokumenData);
-      console.log('Pendidikan:', pendidikanData);
-      console.log('Kredensial:', kredensialData);
-      console.log('Kewenangan:', kewenanganData);
-      console.log('Prestasi:', prestasiData);
+      // Fetch all data with caching for better performance
+      const data = await fetchDashboardData();
+      
+      const dokumenData = data.dokumen;
+      const pendidikanData = data.pendidikan;
+      const penugasanData = data.penugasan;
+      const kredensialData = data.kredensial;
+      const kewenanganData = data.kewenangan;
+      const etikData = data.etik;
+      const prestasiData = data.prestasi;
 
       // Calculate Data Pribadi (15 fields, 9 already filled from registration)
       const dataPribadiFieldsMap = {
@@ -146,13 +124,6 @@ const Beranda = () => {
         status_kepegawaian: user?.status_kepegawaian
       };
       
-      console.log('=== DATA PRIBADI DEBUG ===');
-      console.log('All user data:', user);
-      Object.entries(dataPribadiFieldsMap).forEach(([key, value]) => {
-        const isFilled = value !== null && value !== undefined && (typeof value !== 'string' || value.trim() !== '');
-        console.log(`${key}: ${value} [${isFilled ? '✓ FILLED' : '✗ EMPTY'}]`);
-      });
-      
       const dataPribadiFields = Object.values(dataPribadiFieldsMap);
       const filledFields = dataPribadiFields.filter(field => {
         // Consider 0 as a valid value, only filter out null, undefined, and empty strings
@@ -161,9 +132,6 @@ const Beranda = () => {
         return true;
       }).length;
       const dataPribadiPercentage = Math.round((filledFields / 15) * 100);
-      
-      console.log('Data Pribadi filled:', filledFields, '/ 15');
-      console.log('========================');
 
       // Calculate Dokumen Legalitas (3 types: Surat Keterangan, STR, SIP)
       let dokumenCount = 0;
@@ -177,8 +145,6 @@ const Beranda = () => {
         if (hasSIP) dokumenCount++;
       }
       const dokumenPercentage = Math.round((dokumenCount / 3) * 100);
-      
-      console.log('Dokumen Legalitas filled:', dokumenCount, '/ 3');
 
       // Calculate Pendidikan dan Prestasi (5 sections: Ijazah, Sertifikat Pelatihan, Workshop, Prestasi, Penghargaan)
       let pendidikanCount = 0;
@@ -192,8 +158,6 @@ const Beranda = () => {
         if (prestasiData.data.Penghargaan?.length > 0) pendidikanCount++;
       }
       const pendidikanPercentage = Math.round((pendidikanCount / 5) * 100);
-      
-      console.log('Pendidikan & Prestasi filled:', pendidikanCount, '/ 5');
 
       // Calculate Penugasan (2 types: Penugasan, Pengabdian)
       let penugasanCount = 0;
@@ -202,8 +166,6 @@ const Beranda = () => {
         if (penugasanData.data.Pengabdian?.length > 0) penugasanCount++;
       }
       const penugasanPercentage = Math.round((penugasanCount / 2) * 100);
-      
-      console.log('Penugasan filled:', penugasanCount, '/ 2');
 
       // Calculate Kredensial & Kewenangan Klinis (3 sections: Kredensial, SPK, RKK)
       let kredensialCount = 0;
@@ -213,8 +175,6 @@ const Beranda = () => {
         if (kewenanganData.data.RKK?.length > 0) kredensialCount++;
       }
       const kredensialPercentage = Math.round((kredensialCount / 3) * 100);
-      
-      console.log('Kredensial & Kewenangan filled:', kredensialCount, '/ 3');
 
       // Calculate Riwayat Etik & Disiplin (2 types: Etik, Disiplin)
       let etikCount = 0;
@@ -223,8 +183,6 @@ const Beranda = () => {
         if (etikData.data.disiplin?.length > 0) etikCount++;
       }
       const etikPercentage = Math.round((etikCount / 2) * 100);
-      
-      console.log('Etik & Disiplin filled:', etikCount, '/ 2');
 
       setProgressData({
         dataPribadi: dataPribadiPercentage,
