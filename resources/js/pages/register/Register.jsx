@@ -147,8 +147,18 @@ function Register() {
       const data = await response.json();
 
       if (response.ok && data.success) {
-        // Registration successful
-        navigate('/login');
+        // Registration successful, navigate to verification page
+        if (data.data?.requires_verification) {
+          navigate('/verify-email', {
+            state: {
+              email: data.data.email,
+              name: data.data.name
+            }
+          });
+        } else {
+          // Fallback to login if no verification required
+          navigate('/login');
+        }
       } else {
         // Handle validation errors
         if (data.errors) {
