@@ -1,27 +1,53 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import MainLayout from '../../layout/main/MainLayout';
 import Card from '../../components/card/Card';
 import Button from '../../components/button/Button';
-import { MdCloudUpload, MdCompress, MdDelete, MdCheckCircle } from 'react-icons/md';
+import { MdCloudUpload, MdCompress, MdDelete, MdDownload } from 'react-icons/md';
+import { authenticatedFetch, isAuthenticated } from '../../utils/auth';
+import StatusBanner from '../../components/status/StatusBanner';
 import styles from './alat.module.css';
 
 function KompresiPdf() {
+  const navigate = useNavigate();
   const fileInputRef = useRef(null);
   const [file, setFile] = useState(null);
   const [level, setLevel] = useState('medium');
   const [status, setStatus] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [compressedFile, setCompressedFile] = useState(null);
   const [originalSize, setOriginalSize] = useState(0);
   const [compressedSize, setCompressedSize] = useState(0);
   const [elapsedTime, setElapsedTime] = useState(0);
+  const [banner, setBanner] = useState({ message: '', type: 'info' });
+
+  useEffect(() => {
+    if (!isAuthenticated()) {
+      navigate('/login');
+    }
+  }, [navigate]);
 
   const processFile = (fileObj, eventRef) => {
     if (!fileObj) return;
     if (fileObj.type !== 'application/pdf') {
-      alert('Hanya file PDF yang diperbolehkan');
+      setStatus('Hanya file PDF yang diperbolehkan');
       if (eventRef?.target) eventRef.target.value = '';
       return;
     }
+    // Check file size (50MB limit)
+    const maxSize = 50 * 1024 * 1024; // 50MB in bytes
+    if (fileObj.size > maxSize) {
+      setStatus(`File terlalu besar. Maksimal 50MB (ukuran file: ${(fileObj.size / 1024 / 1024).toFixed(2)}MB)`);
+      if (eventRef?.target) eventRef.target.value = '';
+      return;
+    }
+    if (compressedFile?.url) {
+      URL.revokeObjectURL(compressedFile.url);
+    }
+    setCompressedFile(null);
+    setOriginalSize(0);
+    setCompressedSize(0);
+    setElapsedTime(0);
     setFile(fileObj);
     setStatus('');
   };
@@ -50,13 +76,11 @@ function KompresiPdf() {
       formData.append('pdf', file);
       formData.append('level', level);
 
-      // Send to backend API
-      const response = await fetch('/api/compress-pdf', {
+      // Send to backend API with authentication
+      const response = await authenticatedFetch('/api/compress-pdf', {
         method: 'POST',
         body: formData,
-        headers: {
-          'Accept': 'application/json',
-        },
+        headers: {} // Let authenticatedFetch handle headers
       });
 
       // Check if response is JSON
@@ -90,27 +114,48 @@ function KompresiPdf() {
       }
       const compressedBlob = new Blob([bytes], { type: 'application/pdf' });
 
-      // Create download link with original filename
-      const url = URL.createObjectURL(compressedBlob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = result.original_filename;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      if (compressedFile?.url) {
+        URL.revokeObjectURL(compressedFile.url);
+      }
 
-      setStatus(`✓ PDF berhasil dikompres! Pengurangan ukuran: ${result.reduction_percentage}%`);
+      const url = URL.createObjectURL(compressedBlob);
+      setCompressedFile({
+        name: result.original_filename || `${file.name?.replace(/\\.pdf$/i, '') || 'file'}-compressed.pdf`,
+        url,
+        reduction: result.reduction_percentage,
+        originalSize: result.original_size,
+        compressedSize: result.compressed_size,
+        elapsed,
+      });
+
+      setStatus('');
     } catch (error) {
       console.error('Error compressing PDF:', error);
-      setStatus(`✗ Gagal mengompres PDF: ${error.message}`);
+      setStatus(`Gagal mengompres PDF: ${error.message}`);
+      setBanner({ message: `Gagal mengompres PDF: ${error.message}`, type: 'error' });
     } finally {
       setIsProcessing(false);
     }
   };
 
+  const handleDownload = () => {
+    if (!compressedFile?.url) return;
+    const link = document.createElement('a');
+    link.href = compressedFile.url;
+    link.download = compressedFile.name;
+    link.click();
+    setStatus('Mengunduh file terkompresi (simulasi)...');
+  };
+
   return (
     <MainLayout>
+      <div className={styles.bannerArea}>
+        <StatusBanner
+          message={banner.message || status}
+          type={banner.type}
+          onClose={() => setBanner({ message: '', type: 'info' })}
+        />
+      </div>
       {/* Loading Overlay */}
       {isProcessing && (
         <div className={styles.loadingOverlay}>
@@ -140,7 +185,7 @@ function KompresiPdf() {
           >
             <MdCloudUpload size={46} />
             <p className={styles.dropTitle}>Pilih atau seret PDF ke sini</p>
-            <p className={styles.dropHint}>Maks 1 file · PDF</p>
+            <p className={styles.dropHint}>Maks 50MB · PDF</p>
             <Button
               variant="outline"
               icon={<MdCloudUpload />}
@@ -170,7 +215,16 @@ function KompresiPdf() {
                 </div>
                 <button
                   className={styles.iconButton}
-                  onClick={() => setFile(null)}
+                  onClick={() => {
+                    if (compressedFile?.url) {
+                      URL.revokeObjectURL(compressedFile.url);
+                    }
+                    setCompressedFile(null);
+                    setOriginalSize(0);
+                    setCompressedSize(0);
+                    setElapsedTime(0);
+                    setFile(null);
+                  }}
                   aria-label="Hapus"
                 >
                   <MdDelete size={18} />
@@ -219,6 +273,13 @@ function KompresiPdf() {
               size='large'
               icon={<MdDelete />}
               onClick={() => {
+                if (compressedFile?.url) {
+                  URL.revokeObjectURL(compressedFile.url);
+                }
+                setCompressedFile(null);
+                setOriginalSize(0);
+                setCompressedSize(0);
+                setElapsedTime(0);
                 setFile(null);
                 setStatus('');
               }}
@@ -226,9 +287,21 @@ function KompresiPdf() {
             >
               Bersihkan
             </Button>
+            {status && (
+              <div
+                className={`${styles.status} ${
+                  status.toLowerCase().includes('kesalahan') ||
+                  status.toLowerCase().includes('melebihi') ||
+                  status.toLowerCase().includes('gagal')
+                    ? styles.statusError
+                    : ''
+                } ${styles.actionStatus}`}
+              >
+                {status}
+              </div>
+            )}
           </div>
 
-          {status && <div className={styles.status}>{status}</div>}
         </Card>
 
         <Card className={styles.cardShell}>
@@ -258,15 +331,21 @@ function KompresiPdf() {
             </li>
             <li>
               <span>Output</span>
-              <span>1 file PDF</span>
+              <span>{compressedFile ? compressedFile.name : 'Belum ada'}</span>
             </li>
           </ul>
-          <div className={styles.helperBox}>
-            <MdCheckCircle size={18} />
-            <p>
-              Kompresi dilakukan secara lokal di browser Anda. File tidak diunggah ke server.
-            </p>
-          </div>
+          {compressedFile && (
+            <div className={styles.actions}>
+              <Button
+                variant="outline"
+                icon={<MdDownload />}
+                onClick={handleDownload}
+                disabled={isProcessing}
+              >
+                Download PDF
+              </Button>
+            </div>
+          )}
         </Card>
       </div>
     </MainLayout>
