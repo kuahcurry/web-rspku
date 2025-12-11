@@ -263,37 +263,29 @@ function GambarKePdf() {
 
         <Card className={styles.cardShell}>
           <p className={styles.optionLabel}>Ringkasan</p>
-          <div
-            className={styles.summaryDrop}
-            onDragOver={(e) => e.preventDefault()}
-            onDrop={handleDrop}
-            onClick={() => fileInputRef.current?.click()}
-          >
-            <div>
-              <ul className={styles.summaryList}>
-                <li>
-                  <span>Total gambar</span>
-                  <span>{images.length} file</span>
-                </li>
-                <li>
-                  <span>Orientasi</span>
-                  <span>{orientation === 'portrait' ? 'Potret' : 'Landscape'}</span>
-                </li>
-                <li>
-                  <span>Margin</span>
-                  <span>
-                    {margin === 'none' ? 'Tanpa margin' : margin === 'narrow' ? 'Sedikit' : 'Standar'}
-                  </span>
-                </li>
-                <li>
-                  <span>Perkiraan halaman</span>
-                  <span>{Math.max(images.length, 1)} halaman</span>
-                </li>
-              </ul>
-            </div>
-            <div className={styles.summaryHint}>
-              <p>Seret gambar ke sini juga bisa.</p>
-            </div>
+          <ul className={styles.summaryList}>
+            <li>
+              <span>Total gambar</span>
+              <span>{images.length} file</span>
+            </li>
+            <li>
+              <span>Orientasi</span>
+              <span>{orientation === 'portrait' ? 'Potret' : 'Landscape'}</span>
+            </li>
+            <li>
+              <span>Margin</span>
+              <span>
+                {margin === 'none' ? 'Tanpa margin' : margin === 'narrow' ? 'Sedikit' : 'Standar'}
+              </span>
+            </li>
+            <li>
+              <span>Perkiraan halaman</span>
+              <span>{Math.max(images.length, 1)} halaman</span>
+            </li>
+          </ul>
+          <div className={styles.helperBox}>
+            <MdCheckCircle size={18} />
+            <p>Konversi dilakukan secara lokal (simulasi). Unggah gambar setelah fitur backend siap.</p>
           </div>
         </Card>
       </div>
