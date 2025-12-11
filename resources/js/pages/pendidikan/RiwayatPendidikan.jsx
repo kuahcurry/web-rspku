@@ -11,6 +11,7 @@ import { MdVisibility, MdAdd, MdCloudUpload, MdSave, MdDownload, MdDelete } from
 import { isAuthenticated } from '../../utils/auth';
 import { cachedFetch } from '../../services/apiService';
 import { cacheConfig } from '../../utils/cache';
+import StatusBanner from '../../components/status/StatusBanner';
 import styles from './RiwayatPendidikan.module.css';
 
 const tabs = [
@@ -27,6 +28,7 @@ const JENIS_MAPPING = {
 
 const RiwayatPendidikan = () => {
   const navigate = useNavigate();
+  const [banner, setBanner] = useState({ message: '', type: 'info' });
   const [activeTab, setActiveTab] = useState('ijazah');
   const [showViewModal, setShowViewModal] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -52,6 +54,7 @@ const RiwayatPendidikan = () => {
   const fileInputRef = useRef(null);
 
   const items = dataByTab[activeTab] || [];
+  const isModalOpen = showAddModal || showDeleteModal || showViewModal;
 
   useEffect(() => {
     if (!isAuthenticated()) {
@@ -118,11 +121,11 @@ const RiwayatPendidikan = () => {
       } else {
         const errorText = await response.text();
         console.error('Response error:', errorText);
-        alert('Gagal memuat dokumen');
+        setBanner({ message: 'Gagal memuat dokumen', type: 'error' });
       }
     } catch (error) {
       console.error('Error loading PDF:', error);
-      alert('Terjadi kesalahan saat memuat dokumen');
+      setBanner({ message: 'Terjadi kesalahan saat memuat dokumen', type: 'error' });
     } finally {
       setLoadingPdf(false);
     }
@@ -150,10 +153,10 @@ const RiwayatPendidikan = () => {
       if (file.size <= 10 * 1024 * 1024) { // 10MB limit
         setFormData({ ...formData, file });
       } else {
-        alert('File terlalu besar. Maksimal 10MB');
+        setBanner({ message: 'File terlalu besar. Maksimal 10MB', type: 'warning' });
       }
     } else {
-      alert('Hanya file PDF yang diperbolehkan');
+      setBanner({ message: 'Hanya file PDF yang diperbolehkan', type: 'warning' });
     }
   };
 
@@ -218,7 +221,7 @@ const RiwayatPendidikan = () => {
       const data = await response.json();
 
       if (response.ok && data.success) {
-        alert(`${data.deleted_count} data berhasil dihapus`);
+        setBanner({ message: `${data.deleted_count} data berhasil dihapus`, type: 'success' });
         
         // Update local state
         setDataByTab((prev) => ({
@@ -233,11 +236,11 @@ const RiwayatPendidikan = () => {
         
         fetchData(); // Refresh data
       } else {
-        alert(data.message || 'Gagal menghapus data');
+        setBanner({ message: data.message || 'Gagal menghapus data', type: 'error' });
       }
     } catch (error) {
       console.error('Error deleting records:', error);
-      alert('Terjadi kesalahan saat menghapus data');
+      setBanner({ message: 'Terjadi kesalahan saat menghapus data', type: 'error' });
     } finally {
       setDeleteTargets([]);
       setDeleteMode(false);
@@ -249,7 +252,7 @@ const RiwayatPendidikan = () => {
     e.preventDefault();
     
     if (!formData.judul || !formData.institusi || !formData.tahun_lulus || !formData.file) {
-      alert('Mohon lengkapi semua field');
+      setBanner({ message: 'Mohon lengkapi semua field', type: 'warning' });
       return;
     }
 
@@ -272,16 +275,16 @@ const RiwayatPendidikan = () => {
       const data = await response.json();
 
       if (response.ok && data.success) {
-        alert('Data berhasil ditambahkan!');
+        setBanner({ message: 'Data berhasil ditambahkan!', type: 'success' });
         setShowAddModal(false);
         setFormData({ judul: '', institusi: '', tahun_lulus: '', file: null });
         fetchData(); // Refresh data
       } else {
-        alert(data.message || 'Gagal menambahkan data');
+        setBanner({ message: data.message || 'Gagal menambahkan data', type: 'error' });
       }
     } catch (error) {
       console.error('Error adding record:', error);
-      alert('Terjadi kesalahan saat menambahkan data');
+      setBanner({ message: 'Terjadi kesalahan saat menambahkan data', type: 'error' });
     } finally {
       setIsSubmitting(false);
     }
@@ -303,16 +306,25 @@ const RiwayatPendidikan = () => {
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
       } else {
-        alert('Gagal mendownload dokumen');
+        setBanner({ message: 'Gagal mendownload dokumen', type: 'error' });
       }
     } catch (error) {
       console.error('Error downloading PDF:', error);
-      alert('Terjadi kesalahan saat mendownload dokumen');
+      setBanner({ message: 'Terjadi kesalahan saat mendownload dokumen', type: 'error' });
     }
   };
 
   return (
     <MainLayout>
+      {!isModalOpen && (
+        <div className={styles.bannerArea}>
+          <StatusBanner
+            message={banner.message}
+            type={banner.type}
+            onClose={() => setBanner({ message: '', type: 'info' })}
+          />
+        </div>
+      )}
       <header className={styles.pageHeader}>
         <h1 className={styles.pageTitle}>Riwayat Pendidikan</h1>
         <p className={styles.pageSubtitle}>Kelola ijazah, sertifikat pelatihan, dan riwayat workshop</p>
@@ -406,6 +418,13 @@ const RiwayatPendidikan = () => {
         title="Konfirmasi Hapus"
         size="small"
         padding="normal"
+        banner={
+          <StatusBanner
+            message={banner.message}
+            type={banner.type}
+            onClose={() => setBanner({ message: '', type: 'info' })}
+          />
+        }
       >
         <div className={styles.modalContent}>
           <p className={styles.metaValue}>Hapus {deleteTargets.length} data terpilih?</p>
@@ -441,6 +460,13 @@ const RiwayatPendidikan = () => {
         title={selectedItem?.judul || 'Lihat Dokumen'}
         size="large"
         padding="normal"
+        banner={
+          <StatusBanner
+            message={banner.message}
+            type={banner.type}
+            onClose={() => setBanner({ message: '', type: 'info' })}
+          />
+        }
       >
         <div className={styles.modalContent}>
           <div className={styles.metaRow}>
@@ -506,6 +532,13 @@ const RiwayatPendidikan = () => {
         title={`Tambah ${activeTab === 'ijazah' ? 'Ijazah' : activeTab === 'pelatihan' ? 'Sertifikat Pelatihan' : 'Workshop'}`}
         size="medium"
         padding="normal"
+        banner={
+          <StatusBanner
+            message={banner.message}
+            type={banner.type}
+            onClose={() => setBanner({ message: '', type: 'info' })}
+          />
+        }
       >
         <Form onSubmit={handleAddSubmit} className={styles.modalContent}>
           <Input

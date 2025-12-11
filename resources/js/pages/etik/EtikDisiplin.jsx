@@ -10,7 +10,10 @@ import Form from '../../components/form/Form';
 import Input from '../../components/input/Input';
 import { MdAdd, MdSave, MdSearch, MdVisibility, MdDelete, MdEdit, MdDownload, MdCloudUpload } from 'react-icons/md';
 import { isAuthenticated, authenticatedFetch } from '../../utils/auth';
+import { cachedFetch } from '../../services/apiService';
+import { cacheConfig } from '../../utils/cache';
 import { formatDateToIndonesian } from '../../utils/dateFormatter';
+import StatusBanner from '../../components/status/StatusBanner';
 import styles from './EtikDisiplin.module.css';
 
 const TABS = [
@@ -40,6 +43,7 @@ const TINDAKAN_OPTIONS = [
 
 const EtikDisiplin = () => {
   const navigate = useNavigate();
+  const [banner, setBanner] = useState({ message: '', type: 'info' });
   const [activeTab, setActiveTab] = useState('etik');
   const [loading, setLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -107,7 +111,7 @@ const EtikDisiplin = () => {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const response = await authenticatedFetch('/api/etik-disiplin');
+      const response = await cachedFetch('/api/etik-disiplin', {}, cacheConfig.TTL.LONG);
       const data = await response.json();
 
       if (response.ok && data.success) {
@@ -291,7 +295,7 @@ const EtikDisiplin = () => {
 
     // Validate file for new record
     if (!editingEtikId && !etikForm.file) {
-      alert('File dokumen wajib diupload untuk data baru');
+      setBanner({ message: 'File dokumen wajib diupload untuk data baru', type: 'warning' });
       return;
     }
 
@@ -328,11 +332,11 @@ const EtikDisiplin = () => {
         setEditingEtikId(null);
       } else {
         const error = await response.json();
-        alert(error.message || 'Gagal menyimpan data');
+        setBanner({ message: error.message || 'Gagal menyimpan data', type: 'error' });
       }
     } catch (error) {
       console.error('Error saving etik:', error);
-      alert('Terjadi kesalahan saat menyimpan data');
+      setBanner({ message: 'Terjadi kesalahan saat menyimpan data', type: 'error' });
     } finally {
       setIsSubmitting(false);
     }
@@ -344,7 +348,7 @@ const EtikDisiplin = () => {
 
     // Validate file for new record
     if (!editingDisiplinId && !disiplinForm.file) {
-      alert('File dokumen wajib diupload untuk data baru');
+      setBanner({ message: 'File dokumen wajib diupload untuk data baru', type: 'warning' });
       return;
     }
 
@@ -381,11 +385,11 @@ const EtikDisiplin = () => {
         setEditingDisiplinId(null);
       } else {
         const error = await response.json();
-        alert(error.message || 'Gagal menyimpan data');
+        setBanner({ message: error.message || 'Gagal menyimpan data', type: 'error' });
       }
     } catch (error) {
       console.error('Error saving disiplin:', error);
-      alert('Terjadi kesalahan saat menyimpan data');
+      setBanner({ message: 'Terjadi kesalahan saat menyimpan data', type: 'error' });
     } finally {
       setIsSubmitting(false);
     }
@@ -447,11 +451,11 @@ const EtikDisiplin = () => {
         handleCancelDelete();
       } else {
         const error = await response.json();
-        alert(error.message || 'Gagal menghapus data');
+        setBanner({ message: error.message || 'Gagal menghapus data', type: 'error' });
       }
     } catch (error) {
       console.error('Error deleting records:', error);
-      alert('Terjadi kesalahan saat menghapus data');
+      setBanner({ message: 'Terjadi kesalahan saat menghapus data', type: 'error' });
     } finally {
       setIsSubmitting(false);
     }
@@ -470,11 +474,11 @@ const EtikDisiplin = () => {
         const url = URL.createObjectURL(blob);
         setPdfUrl(url);
       } else {
-        alert('Gagal memuat dokumen PDF');
+        setBanner({ message: 'Gagal memuat dokumen PDF', type: 'error' });
       }
     } catch (error) {
       console.error('Error loading PDF:', error);
-      alert('Terjadi kesalahan saat memuat dokumen');
+      setBanner({ message: 'Terjadi kesalahan saat memuat dokumen', type: 'error' });
     } finally {
       setLoadingPdf(false);
     }
@@ -485,9 +489,19 @@ const EtikDisiplin = () => {
   };
 
   const deleteCount = deleteTargets.filter((t) => t.scope === activeTab).length;
+  const isModalOpen = showEtikModal || showDisiplinModal || viewOpen || showDeleteModal;
 
   return (
     <MainLayout>
+      {!isModalOpen && (
+        <div className={styles.bannerArea}>
+          <StatusBanner
+            message={banner.message}
+            type={banner.type}
+            onClose={() => setBanner({ message: '', type: 'info' })}
+          />
+        </div>
+      )}
       <header className={styles.pageHeader}>
         <h1 className={styles.pageTitle}>Etik & Disiplin</h1>
         <p className={styles.pageSubtitle}>
@@ -730,6 +744,13 @@ const EtikDisiplin = () => {
         title={editingEtikId ? 'Edit Catatan Etik' : 'Tambah Catatan Etik'}
         size="large"
         padding="normal"
+        banner={
+          <StatusBanner
+            message={banner.message}
+            type={banner.type}
+            onClose={() => setBanner({ message: '', type: 'info' })}
+          />
+        }
       >
         <Form onSubmit={handleSaveEtik} className={styles.modalContent}>
           <Form.Row columns={2} className={styles.formRow}>
@@ -834,6 +855,13 @@ const EtikDisiplin = () => {
         title={editingDisiplinId ? 'Edit Catatan Disiplin' : 'Tambah Catatan Disiplin'}
         size="large"
         padding="normal"
+        banner={
+          <StatusBanner
+            message={banner.message}
+            type={banner.type}
+            onClose={() => setBanner({ message: '', type: 'info' })}
+          />
+        }
       >
         <Form onSubmit={handleSaveDisiplin} className={styles.modalContent}>
           <Form.Row columns={2} className={styles.formRow}>
@@ -938,6 +966,13 @@ const EtikDisiplin = () => {
         title={viewItem?.jenis || 'Detail Catatan'}
         size="large"
         padding="normal"
+        banner={
+          <StatusBanner
+            message={banner.message}
+            type={banner.type}
+            onClose={() => setBanner({ message: '', type: 'info' })}
+          />
+        }
       >
         <div className={styles.viewContent}>
           <div className={styles.metaGrid}>
@@ -1008,6 +1043,13 @@ const EtikDisiplin = () => {
         title="Konfirmasi Hapus"
         size="small"
         padding="normal"
+        banner={
+          <StatusBanner
+            message={banner.message}
+            type={banner.type}
+            onClose={() => setBanner({ message: '', type: 'info' })}
+          />
+        }
       >
         <div className={styles.modalContent}>
           <p className={styles.metaValue}>Hapus {deleteCount} data terpilih?</p>
