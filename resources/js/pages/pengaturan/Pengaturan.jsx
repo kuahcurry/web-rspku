@@ -11,10 +11,12 @@ import { buildRegionStateUpdate } from '../../utils/regionForm';
 import { MdPerson, MdCameraAlt, MdLock, MdSave } from 'react-icons/md';
 import { useUser } from '../../contexts/UserContext';
 import { authenticatedFetch, isAuthenticated } from '../../utils/auth';
+import StatusBanner from '../../components/status/StatusBanner';
 import styles from './Pengaturan.module.css';
 
 const Pengaturan = () => {
   const navigate = useNavigate();
+  const [banner, setBanner] = useState({ message: '', type: 'info' });
   const { user, loading: userLoading, refreshUser } = useUser();
   const [avatarError, setAvatarError] = useState(false);
   const [profilePicture, setProfilePicture] = useState(null);
@@ -184,13 +186,13 @@ const Pengaturan = () => {
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
-      alert('Hanya file gambar yang diizinkan');
+      setBanner({ message: 'Hanya file gambar yang diizinkan', type: 'warning' });
       return;
     }
 
     // Validate file size (max 2MB)
     if (file.size > 2 * 1024 * 1024) {
-      alert('Ukuran file maksimal 2MB');
+      setBanner({ message: 'Ukuran file maksimal 2MB', type: 'warning' });
       return;
     }
 
@@ -214,14 +216,14 @@ const Pengaturan = () => {
         setProfilePicture(data.data.foto_profil_url);
         setAvatarError(false);
         await refreshUser();
-        alert('Foto profil berhasil diupload');
+        setBanner({ message: 'Foto profil berhasil diupload', type: 'success' });
       } else {
         console.error('[Pengaturan] Upload failed:', data);
         throw new Error(data.message || 'Gagal upload foto profil');
       }
     } catch (error) {
       console.error('[Pengaturan] Error uploading profile picture:', error);
-      alert('Gagal upload foto profil: ' + error.message);
+      setBanner({ message: 'Gagal upload foto profil: ' + error.message, type: 'error' });
     } finally {
       setUploading(false);
     }
@@ -351,6 +353,13 @@ const Pengaturan = () => {
 
   return (
     <MainLayout>
+      <div className={styles.bannerArea}>
+        <StatusBanner
+          message={banner.message}
+          type={banner.type}
+          onClose={() => setBanner({ message: '', type: 'info' })}
+        />
+      </div>
       <header className={styles['page-header']}>
         <h1 className={styles['page-title']}>Pengaturan</h1>
         <p className={styles['page-subtitle']}>Ubah informasi profil dan pengaturan akun Anda.</p>

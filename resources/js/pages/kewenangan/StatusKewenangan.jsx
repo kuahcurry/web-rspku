@@ -8,7 +8,10 @@ import Form from '../../components/form/Form';
 import Input from '../../components/input/Input';
 import { MdVisibility, MdAdd, MdCloudUpload, MdSave, MdDownload, MdDelete, MdPrint } from 'react-icons/md';
 import { authenticatedFetch, isAuthenticated } from '../../utils/auth';
+import { cachedFetch } from '../../services/apiService';
+import { cacheConfig } from '../../utils/cache';
 import { formatDateToIndonesian } from '../../utils/dateFormatter';
+import StatusBanner from '../../components/status/StatusBanner';
 import styles from './StatusKewenangan.module.css';
 
 const JENIS_MAPPING = {
@@ -18,6 +21,7 @@ const JENIS_MAPPING = {
 
 const StatusKewenangan = () => {
   const navigate = useNavigate();
+  const [banner, setBanner] = useState({ message: '', type: 'info' });
   const [showViewModal, setShowViewModal] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -53,7 +57,7 @@ const StatusKewenangan = () => {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const response = await authenticatedFetch('/api/status-kewenangan');
+      const response = await cachedFetch('/api/status-kewenangan', {}, cacheConfig.TTL.LONG);
       const data = await response.json();
 
       if (response.ok && data.success) {
@@ -95,7 +99,7 @@ const StatusKewenangan = () => {
       setPdfUrl(url);
     } catch (error) {
       console.error('Error fetching PDF:', error);
-      alert('Gagal memuat dokumen');
+      setBanner({ message: 'Gagal memuat dokumen', type: 'error' });
     } finally {
       setLoadingPdf(false);
     }
@@ -159,14 +163,14 @@ const StatusKewenangan = () => {
   const processFile = (file, eventRef) => {
     if (!file) return;
     if (file.type !== 'application/pdf') {
-      alert('Hanya file PDF yang diperbolehkan');
+      setBanner({ message: 'Hanya file PDF yang diperbolehkan', type: 'warning' });
       if (eventRef?.target) eventRef.target.value = '';
       return;
     }
     
     const maxSize = 5 * 1024 * 1024; // 5MB
     if (file.size > maxSize) {
-      alert('Ukuran file maksimal 5MB');
+      setBanner({ message: 'Ukuran file maksimal 5MB', type: 'warning' });
       if (eventRef?.target) eventRef.target.value = '';
       return;
     }
@@ -185,7 +189,7 @@ const StatusKewenangan = () => {
     e.preventDefault();
     
     if (!formData.nomor_dokumen || !formData.tanggal_terbit || !formData.masa_berlaku || !formData.file) {
-      alert('Semua field harus diisi');
+      setBanner({ message: 'Semua field harus diisi', type: 'warning' });
       return;
     }
 
@@ -208,7 +212,7 @@ const StatusKewenangan = () => {
       const data = await response.json();
 
       if (response.ok && data.success) {
-        alert('Data berhasil ditambahkan');
+        setBanner({ message: 'Data berhasil ditambahkan', type: 'success' });
         handleCloseAddModal();
         fetchData();
       } else {
@@ -216,7 +220,7 @@ const StatusKewenangan = () => {
       }
     } catch (error) {
       console.error('Error adding authority:', error);
-      alert(error.message || 'Gagal menambahkan data');
+      setBanner({ message: error.message || 'Gagal menambahkan data', type: 'error' });
     } finally {
       setIsSubmitting(false);
     }
@@ -241,7 +245,7 @@ const StatusKewenangan = () => {
       URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Error downloading file:', error);
-      alert('Gagal mengunduh file');
+      setBanner({ message: 'Gagal mengunduh file', type: 'error' });
     }
   };
 
@@ -257,7 +261,7 @@ const StatusKewenangan = () => {
 
   const handleConfirmDelete = () => {
     if (deleteTargets.length === 0) {
-      alert('Pilih minimal satu item untuk dihapus');
+      setBanner({ message: 'Pilih minimal satu item untuk dihapus', type: 'warning' });
       return;
     }
     setShowDeleteModal(true);
@@ -276,7 +280,7 @@ const StatusKewenangan = () => {
       const data = await response.json();
 
       if (response.ok && data.success) {
-        alert('Data berhasil dihapus');
+        setBanner({ message: 'Data berhasil dihapus', type: 'success' });
         setShowDeleteModal(false);
         setDeleteMode(false);
         setDeleteTargets([]);
@@ -286,7 +290,7 @@ const StatusKewenangan = () => {
       }
     } catch (error) {
       console.error('Error deleting authorities:', error);
-      alert(error.message || 'Gagal menghapus data');
+      setBanner({ message: error.message || 'Gagal menghapus data', type: 'error' });
     }
   };
 
@@ -306,7 +310,7 @@ const StatusKewenangan = () => {
       const url = URL.createObjectURL(blob);
       const printWindow = window.open(url);
       if (!printWindow) {
-        alert('Pop-up diblokir, izinkan pop-up untuk mencetak');
+        setBanner({ message: 'Pop-up diblokir, izinkan pop-up untuk mencetak', type: 'warning' });
         URL.revokeObjectURL(url);
         return;
       }
@@ -316,7 +320,7 @@ const StatusKewenangan = () => {
       };
     } catch (error) {
       console.error('Error printing file:', error);
-      alert('Gagal menyiapkan cetak dokumen');
+      setBanner({ message: 'Gagal menyiapkan cetak dokumen', type: 'error' });
     }
   };
 
@@ -325,8 +329,19 @@ const StatusKewenangan = () => {
     ...(dataByTab.rkk || []).map((item) => ({ ...item, jenis: 'RKK' }))
   ];
 
+  const isModalOpen = showViewModal || showAddModal || showDeleteModal;
+
   return (
     <MainLayout>
+      {!isModalOpen && (
+        <div className={styles.bannerArea}>
+          <StatusBanner
+            message={banner.message}
+            type={banner.type}
+            onClose={() => setBanner({ message: '', type: 'info' })}
+          />
+        </div>
+      )}
       <header className={styles.pageHeader}>
         <h1 className={styles.pageTitle}>Status Kewenangan Klinis</h1>
         <p className={styles.pageSubtitle}>Preview dokumen SPK dan RKK kewenangan klinis</p>
@@ -464,6 +479,13 @@ const StatusKewenangan = () => {
         title={selectedItem?.nomor_dokumen || 'Detail Dokumen'}
         size="large"
         padding="normal"
+        banner={
+          <StatusBanner
+            message={banner.message}
+            type={banner.type}
+            onClose={() => setBanner({ message: '', type: 'info' })}
+          />
+        }
       >
         <div className={styles.modalContent}>
           {loadingPdf ? (
@@ -508,6 +530,13 @@ const StatusKewenangan = () => {
         title={`Tambah ${JENIS_MAPPING[selectedJenis]}`}
         padding="normal"
         size="medium"
+        banner={
+          <StatusBanner
+            message={banner.message}
+            type={banner.type}
+            onClose={() => setBanner({ message: '', type: 'info' })}
+          />
+        }
       >
         <Form onSubmit={handleSubmit} className={styles.modalContent}>
         <div className={styles['form-group']}>
@@ -597,6 +626,13 @@ const StatusKewenangan = () => {
         onClose={() => setShowDeleteModal(false)}
         title="Konfirmasi Hapus"
         padding="normal"
+        banner={
+          <StatusBanner
+            message={banner.message}
+            type={banner.type}
+            onClose={() => setBanner({ message: '', type: 'info' })}
+          />
+        }
       >
         <div className={styles['delete-confirmation']}>
           <p>Apakah Anda yakin ingin menghapus {deleteTargets.length} data yang dipilih?</p>
