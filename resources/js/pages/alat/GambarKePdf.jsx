@@ -3,6 +3,7 @@ import MainLayout from '../../layout/main/MainLayout';
 import Card from '../../components/card/Card';
 import Button from '../../components/button/Button';
 import { MdCloudUpload, MdDelete, MdCheckCircle } from 'react-icons/md';
+import { jsPDF } from 'jspdf';
 import styles from './alat.module.css';
 
 function GambarKePdf() {
@@ -38,17 +39,105 @@ function GambarKePdf() {
     setImages((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const handleConvert = () => {
+  const handleConvert = async () => {
     if (!images.length) {
       setStatus('Tambahkan minimal 1 gambar untuk dikonversi.');
       return;
     }
+    
     setIsProcessing(true);
     setStatus('Mengonversi gambar menjadi PDF...');
-    setTimeout(() => {
+    
+    try {
+      // Page dimensions based on orientation
+      const isPortrait = orientation === 'portrait';
+      const pageWidth = isPortrait ? 210 : 297;  // A4 in mm
+      const pageHeight = isPortrait ? 297 : 210;
+      
+      // Margin values in mm
+      const marginValues = {
+        none: 0,
+        narrow: 10,
+        normal: 20
+      };
+      const marginSize = marginValues[margin];
+      
+      // Create PDF
+      const pdf = new jsPDF({
+        orientation: orientation === 'portrait' ? 'p' : 'l',
+        unit: 'mm',
+        format: 'a4'
+      });
+      
+      // Remove first page (jsPDF creates one by default)
+      pdf.deletePage(1);
+      
+      // Process each image
+      for (let i = 0; i < images.length; i++) {
+        const img = images[i];
+        
+        // Read image as data URL
+        const dataUrl = await new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onload = (e) => resolve(e.target.result);
+          reader.readAsDataURL(img);
+        });
+        
+        // Get image dimensions
+        const imgDimensions = await new Promise((resolve) => {
+          const image = new Image();
+          image.onload = () => {
+            resolve({ width: image.width, height: image.height });
+          };
+          image.src = dataUrl;
+        });
+        
+        // Add new page
+        pdf.addPage('a4', orientation === 'portrait' ? 'p' : 'l');
+        
+        // Calculate available space
+        const availableWidth = pageWidth - (2 * marginSize);
+        const availableHeight = pageHeight - (2 * marginSize);
+        
+        // Calculate scaling to fit image in available space
+        const imgRatio = imgDimensions.width / imgDimensions.height;
+        const availableRatio = availableWidth / availableHeight;
+        
+        let finalWidth, finalHeight;
+        if (imgRatio > availableRatio) {
+          // Image is wider - fit to width
+          finalWidth = availableWidth;
+          finalHeight = availableWidth / imgRatio;
+        } else {
+          // Image is taller - fit to height
+          finalHeight = availableHeight;
+          finalWidth = availableHeight * imgRatio;
+        }
+        
+        // Center image on page
+        const x = marginSize + (availableWidth - finalWidth) / 2;
+        const y = marginSize + (availableHeight - finalHeight) / 2;
+        
+        // Add image to PDF
+        pdf.addImage(dataUrl, 'JPEG', x, y, finalWidth, finalHeight);
+        
+        setStatus(`Memproses gambar ${i + 1} dari ${images.length}...`);
+      }
+      
+      // Generate filename with timestamp
+      const timestamp = new Date().toISOString().slice(0, 19).replace(/[:-]/g, '').replace('T', '_');
+      const filename = `images_to_pdf_${timestamp}.pdf`;
+      
+      // Save PDF
+      pdf.save(filename);
+      
+      setStatus(`✓ Berhasil! PDF dengan ${images.length} gambar telah diunduh.`);
+    } catch (error) {
+      console.error('Error converting images to PDF:', error);
+      setStatus('✗ Terjadi kesalahan saat konversi. Silakan coba lagi.');
+    } finally {
       setIsProcessing(false);
-      setStatus('Selesai! PDF siap diunduh (simulasi).');
-    }, 1200);
+    }
   };
 
   return (
