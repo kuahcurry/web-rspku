@@ -11,6 +11,9 @@ function KompresiPdf() {
   const [level, setLevel] = useState('medium');
   const [status, setStatus] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [originalSize, setOriginalSize] = useState(0);
+  const [compressedSize, setCompressedSize] = useState(0);
+  const [elapsedTime, setElapsedTime] = useState(0);
 
   const processFile = (fileObj, eventRef) => {
     if (!fileObj) return;
@@ -32,21 +35,96 @@ function KompresiPdf() {
     processFile(e.dataTransfer?.files?.[0]);
   };
 
-  const handleCompress = () => {
+  const handleCompress = async () => {
     if (!file) {
       setStatus('Pilih satu PDF untuk dikompresi.');
       return;
     }
     setIsProcessing(true);
     setStatus('Mengompresi PDF...');
-    setTimeout(() => {
+    const startTime = Date.now();
+
+    try {
+      // Create form data
+      const formData = new FormData();
+      formData.append('pdf', file);
+      formData.append('level', level);
+
+      // Send to backend API
+      const response = await fetch('/api/compress-pdf', {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'Accept': 'application/json',
+        },
+      });
+
+      // Check if response is JSON
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        const text = await response.text();
+        console.error('Non-JSON response:', text.substring(0, 500));
+        throw new Error('Server error: Expected JSON response');
+      }
+
+      const result = await response.json();
+
+      if (!response.ok || result.error) {
+        const errorMsg = result.error || result.message || 'Compression failed';
+        const details = result.details ? JSON.stringify(result.details) : '';
+        throw new Error(`${errorMsg} ${details}`);
+      }
+
+      const endTime = Date.now();
+      const elapsed = ((endTime - startTime) / 1000).toFixed(1);
+      setElapsedTime(elapsed);
+      
+      setOriginalSize(result.original_size);
+      setCompressedSize(result.compressed_size);
+
+      // Convert base64 to blob
+      const binaryString = atob(result.compressed_pdf);
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+      const compressedBlob = new Blob([bytes], { type: 'application/pdf' });
+
+      // Create download link with original filename
+      const url = URL.createObjectURL(compressedBlob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = result.original_filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      setStatus(`✓ PDF berhasil dikompres! Pengurangan ukuran: ${result.reduction_percentage}%`);
+    } catch (error) {
+      console.error('Error compressing PDF:', error);
+      setStatus(`✗ Gagal mengompres PDF: ${error.message}`);
+    } finally {
       setIsProcessing(false);
-      setStatus('Berhasil dikompresi (simulasi). Siap diunduh.');
-    }, 1100);
+    }
   };
 
   return (
     <MainLayout>
+      {/* Loading Overlay */}
+      {isProcessing && (
+        <div className={styles.loadingOverlay}>
+          <div className={styles.loadingModal}>
+            <div className={styles.loadingSpinner}></div>
+            <h3 className={styles.loadingTitle}>Mengompresi PDF...</h3>
+            <p className={styles.loadingText}>Mohon tunggu, proses ini mungkin memakan waktu beberapa saat.</p>
+            <div className={styles.progressBarContainer}>
+              <div className={styles.progressBarFill}></div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <header className={styles.pageHeader}>
         <h1 className={styles.pageTitle}>Kompresi File PDF</h1>
         <p className={styles.pageSubtitle}>Perkecil ukuran file PDF tanpa mengubah struktur.</p>
@@ -167,10 +245,16 @@ function KompresiPdf() {
               </span>
             </li>
             <li>
-              <span>Estimasi pengurangan</span>
-              <span>
-                {level === 'light' ? '≈15%' : level === 'medium' ? '≈30%' : '≈45%'} (simulasi)
-              </span>
+              <span>Ukuran asli</span>
+              <span>{originalSize > 0 ? `${(originalSize / 1024).toFixed(1)} KB` : '-'}</span>
+            </li>
+            <li>
+              <span>Ukuran kompres</span>
+              <span>{compressedSize > 0 ? `${(compressedSize / 1024).toFixed(1)} KB` : '-'}</span>
+            </li>
+            <li>
+              <span>Waktu proses</span>
+              <span>{elapsedTime > 0 ? `${elapsedTime} detik` : '-'}</span>
             </li>
             <li>
               <span>Output</span>
@@ -180,7 +264,7 @@ function KompresiPdf() {
           <div className={styles.helperBox}>
             <MdCheckCircle size={18} />
             <p>
-              Kompresi dilakukan secara lokal (simulasi UI). Unggah file setelah fitur backend siap.
+              Kompresi dilakukan secara lokal di browser Anda. File tidak diunggah ke server.
             </p>
           </div>
         </Card>
