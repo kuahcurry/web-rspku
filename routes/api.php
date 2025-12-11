@@ -10,7 +10,6 @@ use App\Http\Controllers\Api\RiwayatPendidikanController;
 use App\Http\Controllers\PdfCompressionController;
 
 // Public routes
-Route::post('/compress-pdf', [PdfCompressionController::class, 'compress']);
 Route::post('/register', [RegisterController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/verify-email', [AuthController::class, 'verifyEmail']);
@@ -21,6 +20,9 @@ Route::middleware('auth:api')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::post('/refresh', [AuthController::class, 'refresh']);
     Route::get('/me', [AuthController::class, 'me']);
+    
+    // PDF Compression (authenticated)
+    Route::post('/compress-pdf', [PdfCompressionController::class, 'compress']);
     Route::put('/profile', [ProfileController::class, 'updateProfile']);
     Route::put('/account', [ProfileController::class, 'updateAccount']);
     

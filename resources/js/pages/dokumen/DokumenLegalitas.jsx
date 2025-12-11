@@ -8,7 +8,10 @@ import Form from '../../components/form/Form';
 import Input from '../../components/input/Input';
 import { MdCloudUpload, MdDownload, MdUpload, MdVisibility, MdSave } from 'react-icons/md';
 import { authenticatedFetch, isAuthenticated } from '../../utils/auth';
+import { cachedFetch } from '../../services/apiService';
+import { cacheConfig } from '../../utils/cache';
 import { formatDateToIndonesian } from '../../utils/dateFormatter';
+import StatusBanner from '../../components/status/StatusBanner';
 import styles from './DokumenLegalitas.module.css';
 
 const DOCUMENT_TYPES = [
@@ -40,6 +43,7 @@ const getDocumentStatus = (tanggalBerlaku) => {
 
 const DokumenLegalitas = () => {
   const navigate = useNavigate();
+  const [banner, setBanner] = useState({ message: '', type: 'info' });
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showUploadModal, setShowUploadModal] = useState(false);
@@ -68,7 +72,7 @@ const DokumenLegalitas = () => {
   const fetchDocuments = async () => {
     try {
       setLoading(true);
-      const response = await authenticatedFetch('/api/dokumen-legalitas');
+      const response = await cachedFetch('/api/dokumen-legalitas', {}, cacheConfig.TTL.LONG);
       const data = await response.json();
       
       if (response.ok && data.success) {
@@ -107,11 +111,11 @@ const DokumenLegalitas = () => {
         const url = URL.createObjectURL(blob);
         setPdfUrl(url);
       } else {
-        alert('Gagal memuat dokumen');
+        setBanner({ message: 'Gagal memuat dokumen', type: 'error' });
       }
     } catch (error) {
       console.error('Error loading PDF:', error);
-      alert('Terjadi kesalahan saat memuat dokumen');
+      setBanner({ message: 'Terjadi kesalahan saat memuat dokumen', type: 'error' });
     } finally {
       setLoadingPdf(false);
     }
@@ -143,11 +147,11 @@ const DokumenLegalitas = () => {
       if (file.size <= 10 * 1024 * 1024) { // 10MB limit
         setUploadFile(file);
       } else {
-        alert('File terlalu besar. Maksimal 10MB');
+        setBanner({ message: 'File terlalu besar. Maksimal 10MB', type: 'warning' });
         if (eventRef?.target) eventRef.target.value = '';
       }
     } else {
-      alert('Hanya file PDF yang diperbolehkan');
+      setBanner({ message: 'Hanya file PDF yang diperbolehkan', type: 'warning' });
       if (eventRef?.target) eventRef.target.value = '';
     }
   };
@@ -160,7 +164,7 @@ const DokumenLegalitas = () => {
     e.preventDefault();
     
     if (!uploadFile || !uploadData.jenis_dokumen) {
-      alert('Mohon lengkapi semua field yang diperlukan');
+      setBanner({ message: 'Mohon lengkapi semua field yang diperlukan', type: 'warning' });
       return;
     }
 
@@ -183,15 +187,15 @@ const DokumenLegalitas = () => {
       const data = await response.json();
 
       if (response.ok && data.success) {
-        alert('Dokumen berhasil diupload!');
+        setBanner({ message: 'Dokumen berhasil diupload!', type: 'success' });
         setShowUploadModal(false);
         fetchDocuments(); // Refresh the list
       } else {
-        alert(data.message || 'Gagal mengupload dokumen');
+        setBanner({ message: data.message || 'Gagal mengupload dokumen', type: 'error' });
       }
     } catch (error) {
       console.error('Error uploading document:', error);
-      alert('Terjadi kesalahan saat mengupload dokumen');
+      setBanner({ message: 'Terjadi kesalahan saat mengupload dokumen', type: 'error' });
     } finally {
       setIsSubmitting(false);
     }
@@ -216,23 +220,25 @@ const DokumenLegalitas = () => {
       const response = await authenticatedFetch(`/api/dokumen-legalitas/view/${doc.id}`);
       
       if (response.ok) {
-        const blob = await response.blob();
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${doc.jenis_dokumen}_${doc.nomor_sk || 'dokumen'}.pdf`;
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${doc.jenis_dokumen}_${doc.nomor_sk || 'dokumen'}.pdf`;
         document.body.appendChild(a);
         a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-      } else {
-        alert('Gagal mendownload dokumen');
-      }
-    } catch (error) {
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } else {
+        setBanner({ message: 'Gagal mendownload dokumen', type: 'error' });
+    }
+  } catch (error) {
       console.error('Error downloading PDF:', error);
-      alert('Terjadi kesalahan saat mendownload dokumen');
+      setBanner({ message: 'Terjadi kesalahan saat mendownload dokumen', type: 'error' });
     }
   };
+
+  const isModalOpen = showUploadModal || showViewModal;
 
   if (loading) {
     return (
@@ -248,6 +254,15 @@ const DokumenLegalitas = () => {
 
   return (
     <MainLayout>
+        {!isModalOpen && (
+          <div className={styles.bannerArea}>
+            <StatusBanner
+              message={banner.message}
+              type={banner.type}
+              onClose={() => setBanner({ message: '', type: 'info' })}
+            />
+          </div>
+        )}
         <div className={styles['dokumen-header']}>
           <h1 className={styles['dokumen-title']}>Dokumen Legalitas</h1>
           <p className={styles['dokumen-subtitle']}>
@@ -338,6 +353,13 @@ const DokumenLegalitas = () => {
           title="Upload Dokumen Legalitas"
           size="medium"
           padding="normal"
+          banner={
+            <StatusBanner
+              message={banner.message}
+              type={banner.type}
+              onClose={() => setBanner({ message: '', type: 'info' })}
+            />
+          }
         >
           <Form onSubmit={handleUploadSubmit} className={styles['modal-content']}>
             <Input
@@ -419,6 +441,13 @@ const DokumenLegalitas = () => {
           title={selectedDoc?.jenis_dokumen || 'Detail Dokumen'}
           size="large"
           padding="normal"
+          banner={
+            <StatusBanner
+              message={banner.message}
+              type={banner.type}
+              onClose={() => setBanner({ message: '', type: 'info' })}
+            />
+          }
         >
           <div className={styles.modalContent}>
             <div className={styles.metaRow}>
