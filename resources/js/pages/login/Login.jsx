@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { FiCreditCard, FiLock } from 'react-icons/fi';
 import Input from '../../components/input/Input';
 import Button from '../../components/button/Button';
@@ -137,7 +137,7 @@ function Login() {
               {errors.general && <div className={styles['login-error']}>{errors.general}</div>}
 
               <div className={styles['forgot-password']}>
-                <a href="/forgot-password">Lupa Password?</a>
+                <Link to="/forgot-password">Lupa Password?</Link>
               </div>
 
               <Button 
@@ -150,8 +150,11 @@ function Login() {
                 {isSubmitting ? 'Masuk...' : 'Login'}
               </Button>
 
-              <div className={styles['register-link']}>
-                <a href="/register">Belum Punya Akun?</a>
+              <div className={styles['auth-links']}>
+                <div className={styles['auth-row']}>
+                  <p>Belum punya akun?</p>
+                  <Link to="/register" className={styles['auth-link']}>Buat di sini</Link>
+                </div>
               </div>
             </Form>
 

@@ -32,7 +32,7 @@
   background: var(--bg-main);
   border-radius: var(--radius-xl);
   box-shadow: 0 10px 32px rgba(0, 0, 0, 0.08);
-  padding: 2rem 1.75rem 2rem 1.75rem;
+  padding: 1rem 1.75rem 1rem 1.75rem;
   border: 1px solid var(--border-grey);
 }
 
@@ -245,41 +245,27 @@
   z-index: 1;
 }
 
-.file-input-display {
+.upload-drop {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
   gap: 0.5rem;
-  padding: 1.5rem 1.25rem;
-  border: 1px dashed color-mix(in srgb, var(--primary-main) 28%, transparent);
+  padding: 1.5rem;
+  border: 1px dashed var(--border-grey);
   border-radius: var(--radius-lg);
   background: color-mix(in srgb, var(--primary-main) 6%, transparent);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  color: var(--text-main);
   text-align: center;
 }
 
-.file-input-display:hover {
-  border-color: var(--primary-main);
-  background: color-mix(in srgb, var(--primary-main) 10%, transparent);
-}
-
-.uploadText {
-  font-weight: 600;
-}
-
-.uploadHint {
+.upload-hint {
   font-size: 0.9rem;
   color: var(--text-secondary);
 }
 
-.uploadFileName {
-  margin-top: 0.35rem;
-  font-weight: 700;
+.upload-file-name {
+  margin-top: 0.25rem;
+  font-weight: 600;
   color: var(--text-main);
-  word-break: break-word;
 }
 
 .delete-confirmation {

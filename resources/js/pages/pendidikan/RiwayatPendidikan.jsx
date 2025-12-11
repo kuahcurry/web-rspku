@@ -135,7 +135,18 @@ const RiwayatPendidikan = () => {
 
   const handleFileChange = (e) => {
     const file = e.target.files?.[0];
-    if (file && file.type === 'application/pdf') {
+    processFile(file);
+  };
+
+  const handleFileDrop = (e) => {
+    e.preventDefault();
+    const file = e.dataTransfer?.files?.[0];
+    processFile(file);
+  };
+
+  const processFile = (file) => {
+    if (!file) return;
+    if (file.type === 'application/pdf') {
       if (file.size <= 10 * 1024 * 1024) { // 10MB limit
         setFormData({ ...formData, file });
       } else {
@@ -321,7 +332,7 @@ const RiwayatPendidikan = () => {
               <Button variant="success" size="small" icon={<MdAdd />} iconPosition="left" onClick={handleAddClick}>
                 Tambah
               </Button>
-              <Button variant="danger" size="small" onClick={handleDeleteButtonClick}>
+              <Button variant="danger" size="small" icon={<MdDelete />} onClick={handleDeleteButtonClick}>
                 {deleteMode
                   ? deleteTargets.length
                     ? `Hapus (${deleteTargets.length})`
@@ -536,7 +547,11 @@ const RiwayatPendidikan = () => {
             placeholder="Contoh: 2020"
             required
           />
-          <div className={styles['upload-drop']}>
+          <div
+            className={styles['upload-drop']}
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={handleFileDrop}
+          >
             <MdCloudUpload size={48} />
             <p>Pilih atau seret file ke sini</p>
             <span className={styles['upload-hint']}>PDF, maks 5MB</span>

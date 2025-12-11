@@ -7,7 +7,7 @@ import Modal from '../../components/modal/Modal';
 import Form from '../../components/form/Form';
 import Input from '../../components/input/Input';
 import Tabs from '../../components/tabs/Tabs';
-import { MdVisibility, MdAdd, MdCloudUpload, MdSave, MdDownload } from 'react-icons/md';
+import { MdVisibility, MdAdd, MdCloudUpload, MdSave, MdDownload, MdDelete } from 'react-icons/md';
 import { authenticatedFetch, isAuthenticated } from '../../utils/auth';
 import styles from './PrestasiPenghargaan.module.css';
 
@@ -167,28 +167,41 @@ const PrestasiPenghargaan = () => {
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
-    if (file) {
-      if (file.type !== 'application/pdf') {
-        alert('Hanya file PDF yang diperbolehkan');
-        e.target.value = '';
-        return;
-      }
-      
-      const maxSize = 5 * 1024 * 1024; // 5MB
-      if (file.size > maxSize) {
-        alert('Ukuran file maksimal 5MB');
-        e.target.value = '';
-        return;
-      }
+    processFile(file, e);
+  };
 
-      setFormDataByTab(prev => ({
-        ...prev,
-        [activeTab]: {
-          ...prev[activeTab],
-          file
-        }
-      }));
+  const handleFileDrop = (e) => {
+    e.preventDefault();
+    const file = e.dataTransfer?.files?.[0];
+    processFile(file);
+  };
+
+  const processFile = (file, eventRef) => {
+    if (!file) return;
+    if (file.type !== 'application/pdf') {
+      alert('Hanya file PDF yang diperbolehkan');
+      if (eventRef?.target) eventRef.target.value = '';
+      return;
     }
+    
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    if (file.size > maxSize) {
+      alert('Ukuran file maksimal 5MB');
+      if (eventRef?.target) eventRef.target.value = '';
+      return;
+    }
+
+    setFormDataByTab(prev => ({
+      ...prev,
+      [activeTab]: {
+        ...prev[activeTab],
+        file
+      }
+    }));
+  };
+
+  const handleChooseFile = () => {
+    fileInputRef.current?.click();
   };
 
   const handleSubmit = async (e) => {
@@ -347,7 +360,7 @@ const PrestasiPenghargaan = () => {
               <Button variant="success" size="small" icon={<MdAdd />} iconPosition="left" onClick={handleAddClick}>
                 Tambah
               </Button>
-              <Button variant="danger" size="small" onClick={handleDeleteButtonClick}>
+              <Button variant="danger" size="small" icon={<MdDelete />} onClick={handleDeleteButtonClick}>
                 {deleteMode
                   ? deleteTargets.length
                     ? `Hapus (${deleteTargets.length})`
@@ -452,13 +465,17 @@ const PrestasiPenghargaan = () => {
         padding="normal"
         size="medium"
       >
-        <Form onSubmit={handleSubmit}>
+        <Form onSubmit={handleSubmit} className={styles.modalContent}>
           <Input
             label={activeTab === 'prestasi' ? 'Nama Prestasi' : 'Nama Penghargaan'}
             name="judul"
             value={formData.judul}
             onChange={handleInputChange}
-            placeholder={`Masukkan judul ${activeTab}`}
+            placeholder={
+              activeTab === 'prestasi'
+                ? 'Contoh: Juara 1 Lomba Inovasi Pelayanan Publik'
+                : 'Contoh: Penghargaan Tenaga Kesehatan Teladan'
+            }
             required
           />
           
@@ -467,50 +484,50 @@ const PrestasiPenghargaan = () => {
             name="penyelenggara"
             value={formData.penyelenggara}
             onChange={handleInputChange}
-            placeholder="Masukkan nama penyelenggara"
+            placeholder="Contoh: Kementerian Kesehatan"
             required
           />
           
           <Input
             label="Tahun"
             name="tahun"
-            type="number"
+            type="text"
             value={formData.tahun}
             onChange={handleInputChange}
             placeholder="Contoh: 2024"
-            min="1900"
-            max={new Date().getFullYear()}
             required
           />
 
-          <div className={styles['file-input-wrapper']}>
-            <label className={styles['file-label']}>
-              Upload Dokumen (PDF) <span className={styles.required}>*</span>
-            </label>
-            <div className={styles['file-input-container']}>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept=".pdf"
-                onChange={handleFileChange}
-                className={styles['file-input']}
-                required
-              />
-              <div className={styles['file-input-display']}>
-                <MdCloudUpload size={24} />
-                <span>{formData.file ? formData.file.name : 'Pilih file PDF (Maks 5MB)'}</span>
-              </div>
-            </div>
+          <div
+            className={styles['upload-drop']}
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={handleFileDrop}
+          >
+            <MdCloudUpload size={48} />
+            <p>Pilih atau seret file ke sini</p>
+            <span className={styles['upload-hint']}>PDF, maks 5MB</span>
+            <input
+              type="file"
+              accept=".pdf"
+              onChange={handleFileChange}
+              ref={fileInputRef}
+              style={{ display: 'none' }}
+              required
+            />
+            <Button variant="outline" icon={<MdCloudUpload />} onClick={handleChooseFile}>
+              Pilih File
+            </Button>
+            {formData.file && <div className={styles['upload-file-name']}>{formData.file.name}</div>}
           </div>
 
-          <div className={styles['modal-actions']}>
-            <Button type="button" variant="secondary" onClick={handleCloseAddModal}>
+          <Form.Actions align="right" className={styles.modalActions}>
+            <Button type="button" variant="danger" onClick={handleCloseAddModal}>
               Batal
             </Button>
-            <Button type="submit" variant="success" icon={<MdSave />} disabled={isSubmitting}>
+            <Button type="submit" variant="success" icon={<MdSave />} disabled={isSubmitting || !formData.judul || !formData.penyelenggara || !formData.tahun || !formData.file}>
               {isSubmitting ? 'Menyimpan...' : 'Simpan Perubahan'}
             </Button>
-          </div>
+          </Form.Actions>
         </Form>
       </Modal>
 

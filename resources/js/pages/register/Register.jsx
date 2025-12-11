@@ -386,8 +386,11 @@ function Register() {
                 {isSubmitting ? 'Mendaftar...' : 'Daftar'}
             </Button>
 
-            <div className={styles['login-link']}>
-              <a href="/login">Sudah Punya Akun?</a>
+            <div className={styles['auth-links']}>
+              <div className={styles['auth-row']}>
+                <p>Sudah punya akun?</p>
+                <a href="/login" className={styles['auth-link']}>Masuk di sini</a>
+              </div>
             </div>
 
             <div className={styles['register-footer']}>
