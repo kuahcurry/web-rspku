@@ -128,14 +128,27 @@ const DokumenLegalitas = () => {
 
   const handleFileChange = (e) => {
     const file = e.target.files?.[0];
-    if (file && file.type === 'application/pdf') {
+    processFile(file, e);
+  };
+
+  const handleFileDrop = (e) => {
+    e.preventDefault();
+    const file = e.dataTransfer?.files?.[0];
+    processFile(file);
+  };
+
+  const processFile = (file, eventRef) => {
+    if (!file) return;
+    if (file.type === 'application/pdf') {
       if (file.size <= 10 * 1024 * 1024) { // 10MB limit
         setUploadFile(file);
       } else {
         alert('File terlalu besar. Maksimal 10MB');
+        if (eventRef?.target) eventRef.target.value = '';
       }
     } else {
       alert('Hanya file PDF yang diperbolehkan');
+      if (eventRef?.target) eventRef.target.value = '';
     }
   };
 
@@ -363,7 +376,11 @@ const DokumenLegalitas = () => {
                 required
               />
             </Form.Row>
-            <div className={styles['upload-drop']}>
+            <div
+              className={styles['upload-drop']}
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={handleFileDrop}
+            >
               <MdCloudUpload size={48} />
               <p>Pilih atau seret file ke sini</p>
               <span className={styles['upload-hint']}>PDF, maks 10MB</span>

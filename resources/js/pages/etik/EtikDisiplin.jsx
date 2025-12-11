@@ -183,22 +183,44 @@ const EtikDisiplin = () => {
 
   const handleEtikFile = (e) => {
     const file = e.target.files?.[0];
+    processEtikFile(file, e);
+  };
+
+  const handleEtikDrop = (e) => {
+    e.preventDefault();
+    const file = e.dataTransfer?.files?.[0];
+    processEtikFile(file);
+  };
+
+  const processEtikFile = (file, eventRef) => {
     if (!file) return;
     const blobUrl = URL.createObjectURL(file);
     setEtikForm((prev) => {
       if (prev.fileUrl) URL.revokeObjectURL(prev.fileUrl);
       return { ...prev, file, fileUrl: blobUrl };
     });
+    if (eventRef?.target) eventRef.target.value = '';
   };
 
   const handleDisiplinFile = (e) => {
     const file = e.target.files?.[0];
+    processDisiplinFile(file, e);
+  };
+
+  const handleDisiplinDrop = (e) => {
+    e.preventDefault();
+    const file = e.dataTransfer?.files?.[0];
+    processDisiplinFile(file);
+  };
+
+  const processDisiplinFile = (file, eventRef) => {
     if (!file) return;
     const blobUrl = URL.createObjectURL(file);
     setDisiplinForm((prev) => {
       if (prev.fileUrl) URL.revokeObjectURL(prev.fileUrl);
       return { ...prev, file, fileUrl: blobUrl };
     });
+    if (eventRef?.target) eventRef.target.value = '';
   };
 
   const openEtikModal = (item = null) => {
@@ -767,7 +789,12 @@ const EtikDisiplin = () => {
               placeholder="Tambahan"
             />
           </Form.Row>
-          <div className={styles.fileDrop} onClick={() => fileEtikRef.current?.click()}>
+          <div
+            className={styles.fileDrop}
+            onClick={() => fileEtikRef.current?.click()}
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={handleEtikDrop}
+          >
             <p className={styles.fileDropTitle}>Upload dokumen pendukung (opsional)</p>
             <p className={styles.fileDropHint}>PDF, DOC, atau gambar</p>
             <Button
@@ -866,7 +893,12 @@ const EtikDisiplin = () => {
               placeholder="Tambahan"
             />
           </Form.Row>
-          <div className={styles.fileDrop} onClick={() => fileDisiplinRef.current?.click()}>
+          <div
+            className={styles.fileDrop}
+            onClick={() => fileDisiplinRef.current?.click()}
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={handleDisiplinDrop}
+          >
             <p className={styles.fileDropTitle}>Upload dokumen (opsional)</p>
             <p className={styles.fileDropHint}>PDF, DOC, atau gambar</p>
             <Button

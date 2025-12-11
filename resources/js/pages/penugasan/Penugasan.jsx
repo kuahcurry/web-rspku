@@ -217,11 +217,22 @@ const Penugasan = () => {
 
   const handleFileChange = (e) => {
     const file = e.target.files?.[0];
-    if (file && file.type === 'application/pdf' && file.size <= 10 * 1024 * 1024) {
+    processFile(file, e);
+  };
+
+  const handleFileDrop = (e) => {
+    e.preventDefault();
+    const file = e.dataTransfer?.files?.[0];
+    processFile(file);
+  };
+
+  const processFile = (file, eventRef) => {
+    if (!file) return;
+    if (file.type === 'application/pdf' && file.size <= 10 * 1024 * 1024) {
       setFormData({ ...formData, file });
-    } else if (file) {
+    } else {
       alert('File harus berformat PDF dan maksimal 10MB');
-      e.target.value = null;
+      if (eventRef?.target) eventRef.target.value = null;
     }
   };
 
@@ -606,7 +617,12 @@ const Penugasan = () => {
             />
           </Form.Row>
 
-          <div className={styles.fileDrop} onClick={() => document.getElementById('penugasanFile').click()}>
+          <div
+            className={styles.fileDrop}
+            onClick={() => document.getElementById('penugasanFile').click()}
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={handleFileDrop}
+          >
             <MdCloudUpload size={40} />
             <div className={styles.fileDropText}>
               <p className={styles.fileDropTitle}>Pilih atau seret file ke sini</p>

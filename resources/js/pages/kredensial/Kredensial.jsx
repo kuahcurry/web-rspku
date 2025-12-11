@@ -234,13 +234,25 @@ const Kredensial = () => {
 
   const handleFileChange = (e) => {
     const file = e.target.files?.[0];
+    processFile(file, e);
+  };
+
+  const handleFileDrop = (e) => {
+    e.preventDefault();
+    const file = e.dataTransfer?.files?.[0];
+    processFile(file);
+  };
+
+  const processFile = (file, eventRef) => {
     if (!file) return;
     if (file.type !== 'application/pdf') {
       alert('Hanya file PDF yang diperbolehkan');
+      if (eventRef?.target) eventRef.target.value = '';
       return;
     }
     if (file.size > 5 * 1024 * 1024) {
       alert('File terlalu besar. Maksimal 5MB');
+      if (eventRef?.target) eventRef.target.value = '';
       return;
     }
     const blobUrl = URL.createObjectURL(file);
@@ -728,7 +740,12 @@ const Kredensial = () => {
             onChange={(e) => setFormData({ ...formData, catatan: e.target.value })}
             placeholder="Contoh: Sesuai BA rapat tanggal 10-11-2024"
           />
-          <div className={styles.fileDrop} onClick={() => fileInputRef.current?.click()}>
+          <div
+            className={styles.fileDrop}
+            onClick={() => fileInputRef.current?.click()}
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={handleFileDrop}
+          >
             <MdCloudUpload size={40} />
             <div className={styles.fileDropText}>
               <p className={styles.fileDropTitle}>Upload Sertifikat (opsional)</p>
@@ -761,7 +778,7 @@ const Kredensial = () => {
               Batal
             </Button>
             <Button variant="success" icon={<MdSave />} iconPosition="left" type="submit" disabled={!isFormValid || isSubmitting}>
-              {isSubmitting ? 'Menyimpan...' : 'Simpan'}
+              {isSubmitting ? 'Menyimpan...' : 'Simpan Perubahan'}
             </Button>
           </Form.Actions>
         </Form>

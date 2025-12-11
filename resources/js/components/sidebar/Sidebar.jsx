@@ -8,6 +8,7 @@ import {
   MdAssignment, 
   MdEmojiEvents, 
   MdGavel,
+  MdPictureAsPdf,
   MdKeyboardArrowDown,
   MdKeyboardArrowRight
 } from 'react-icons/md';
@@ -42,7 +43,18 @@ const Sidebar = ({ isOpen, onClose }) => {
         { path: '/kredensial', label: 'Kredensial/Rekredensial' }
       ]
     },
-    { path: '/riwayat-etik', icon: MdGavel, label: 'Riwayat Etik & Disiplin' }
+    
+    { path: '/riwayat-etik', icon: MdGavel, label: 'Riwayat Etik & Disiplin' },
+    { 
+      key: 'alat',
+      icon: MdPictureAsPdf, 
+      label: 'Alat PDF',
+      subMenus: [
+        { path: '/alat/gambar-ke-pdf', label: 'Gambar ke PDF' },
+        { path: '/alat/kompresi-pdf', label: 'Kompresi File PDF' },
+        { path: '/alat/cetak-pdf', label: 'Cetak PDF' }
+      ]
+    }
   ];
 
   // Auto-expand menu when page is active

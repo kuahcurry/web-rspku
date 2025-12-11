@@ -1,0 +1,230 @@
+.pageHeader {
+  margin-bottom: 1rem;
+}
+
+.pageTitle {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--heading-main);
+  margin: 0 0 0.35rem 0;
+}
+
+.pageSubtitle {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.cardShell {
+  background: var(--bg-main);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.06);
+}
+
+.placeholderText {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 1rem;
+}
+
+.dropzone {
+  border: 1px dashed color-mix(in srgb, var(--primary-main) 30%, transparent);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  text-align: center;
+  background: color-mix(in srgb, var(--primary-main) 5%, transparent);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.dropzone:hover {
+  border-color: var(--primary-main);
+  background: color-mix(in srgb, var(--primary-main) 9%, transparent);
+}
+
+.dropTitle {
+  margin: 0;
+  font-weight: 700;
+  color: var(--heading-main);
+}
+
+.dropHint {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+}
+
+.fileList {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.fileItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid var(--border-grey);
+  border-radius: var(--radius-md);
+  background: var(--bg-soft);
+}
+
+.fileInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.fileName {
+  font-weight: 600;
+  color: var(--heading-main);
+}
+
+.fileMeta {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.iconButton {
+  border: none;
+  background: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.optionsRow {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin: 1rem 0 0.5rem;
+}
+
+.optionBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.optionLabel {
+  margin: 0;
+  color: var(--text-secondary);
+  font-weight: 700;
+}
+
+.chipGroup {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.chip {
+  border: 1px solid var(--border-grey);
+  background: var(--bg-soft);
+  padding: 0.45rem 0.85rem;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.chipActive {
+  border-color: var(--primary-main);
+  background: color-mix(in srgb, var(--primary-main) 12%, transparent);
+  color: var(--heading-main);
+}
+
+.select {
+  width: 100%;
+  padding: 0.75rem 0.85rem;
+  border: 1px solid var(--border-grey);
+  border-radius: var(--radius-md);
+  background: var(--bg-main);
+  color: var(--text-main);
+}
+
+.actions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+
+.status {
+  margin-top: 0.85rem;
+  padding: 0.75rem 0.9rem;
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--primary-main) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--primary-main) 25%, transparent);
+  color: var(--heading-main);
+  font-weight: 600;
+}
+
+.summaryList {
+  list-style: none;
+  padding: 0;
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.summaryList li {
+  display: flex;
+  justify-content: space-between;
+  color: var(--text-secondary);
+}
+
+.helperBox {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-start;
+  padding: 0.85rem;
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--primary-main) 6%, transparent);
+  color: var(--text-main);
+}
+
+.summaryDrop {
+  border: 1px dashed color-mix(in srgb, var(--primary-main) 30%, transparent);
+  border-radius: var(--radius-lg);
+  padding: 1rem;
+  background: color-mix(in srgb, var(--primary-main) 4%, transparent);
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.summaryDrop:hover {
+  border-color: var(--primary-main);
+  background: color-mix(in srgb, var(--primary-main) 8%, transparent);
+}
+
+.summaryHint {
+  align-self: center;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  text-align: right;
+}
+
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}

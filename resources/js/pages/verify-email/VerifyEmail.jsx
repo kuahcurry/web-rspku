@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import Button from '../../components/button/Button';
-import Card from '../../components/card/Card';
+import Form from '../../components/form/Form';
+import { MdRefresh } from 'react-icons/md';
 import styles from './VerifyEmail.module.css';
 
 function VerifyEmail() {
@@ -30,12 +31,10 @@ function VerifyEmail() {
     } else if (storedEmail) {
       setEmail(storedEmail);
     } else {
-      // No email found, redirect to register
       navigate('/register');
     }
   }, [location, navigate]);
 
-  // Countdown timer
   useEffect(() => {
     if (timeLeft <= 0) {
       setCanResend(true);
@@ -55,7 +54,6 @@ function VerifyEmail() {
     return () => clearInterval(timer);
   }, [timeLeft]);
 
-  // Format time as MM:SS
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -63,31 +61,26 @@ function VerifyEmail() {
   };
 
   const handleInputChange = (index, value) => {
-    // Only allow digits
     if (!/^\d*$/.test(value)) return;
 
     const newCode = [...code];
-    newCode[index] = value.slice(-1); // Only take last character
+    newCode[index] = value.slice(-1);
     setCode(newCode);
     setError('');
 
-    // Auto-focus next input
     if (value && index < 5) {
       inputRefs.current[index + 1]?.focus();
     }
 
-    // Auto-submit when all 6 digits are entered
     if (index === 5 && value && newCode.every((digit) => digit !== '')) {
       handleVerify(newCode.join(''));
     }
   };
 
   const handleKeyDown = (index, e) => {
-    // Handle backspace
     if (e.key === 'Backspace' && !code[index] && index > 0) {
       inputRefs.current[index - 1]?.focus();
     }
-    // Handle paste
     if (e.key === 'v' && (e.ctrlKey || e.metaKey)) {
       e.preventDefault();
       handlePaste(e);
@@ -103,7 +96,6 @@ function VerifyEmail() {
       const newCode = digits.split('');
       setCode(newCode);
       inputRefs.current[5]?.focus();
-      // Auto-submit
       handleVerify(digits);
     }
   };
@@ -135,13 +127,8 @@ function VerifyEmail() {
       const data = await response.json();
 
       if (response.ok && data.success) {
-        // Clear stored email
         localStorage.removeItem('pending_verification_email');
-        
-        // Show success message
         alert('Email berhasil diverifikasi! Silakan login.');
-        
-        // Redirect to login
         navigate('/login');
       } else {
         setError(data.message || 'Kode verifikasi tidak valid');
@@ -176,7 +163,7 @@ function VerifyEmail() {
 
       if (response.ok && data.success) {
         alert('Kode verifikasi baru telah dikirim ke email Anda');
-        setTimeLeft(15 * 60); // Reset timer
+        setTimeLeft(15 * 60);
         setCanResend(false);
         setCode(['', '', '', '', '', '']);
         inputRefs.current[0]?.focus();
@@ -193,20 +180,28 @@ function VerifyEmail() {
 
   return (
     <div className={styles['verify-page']}>
-      <div className={styles['verify-container']}>
-        <div className={styles['verify-header']}>
-          <div className={styles['icon']}>✉️</div>
-          <h1>Verifikasi Email</h1>
+      <div className={styles.overlay}></div>
+      <div className={styles.card}>
+        <div className={styles['header-row']}>
+          <div className={styles['top-bar']}>
+            <p className={styles['eyebrow']}>Verifikasi Email</p>
+          </div>
+          <h1>Masukkan Kode Verifikasi</h1>
           <p className={styles['subtitle']}>
             {userName && `Halo ${userName}! `}
-            Kami telah mengirim kode verifikasi ke
+            Kami telah mengirim 6 digit kode ke <strong>{email}</strong>
           </p>
-          <p className={styles['email']}>{email}</p>
         </div>
 
-        <Card variant="primary" padding="large" className={styles['verify-card']}>
+        <Form
+          className={styles.form}
+          onSubmit={(e) => { e.preventDefault(); handleVerify(); }}
+        >
+          <p className={styles['helper-note']}>
+            Masukkan kode yang baru saja dikirim. Tempel langsung jika Anda menyalin kode.
+          </p>
           <div className={styles['code-section']}>
-            <label className={styles['label']}>Masukkan Kode Verifikasi</label>
+            <label className={styles['label']}>Kode 6 Digit</label>
             
             <div className={styles['code-inputs']}>
               {code.map((digit, index) => (
@@ -236,43 +231,46 @@ function VerifyEmail() {
             <div className={styles['timer']}>
               {timeLeft > 0 ? (
                 <>
-                  ⏰ Kode akan kedaluwarsa dalam <strong>{formatTime(timeLeft)}</strong>
+                  Kode akan kedaluwarsa dalam <strong>{formatTime(timeLeft)}</strong>
                 </>
               ) : (
-                <span className={styles['expired']}>⚠️ Kode telah kedaluwarsa</span>
+                <span className={styles['expired']}>Kode telah kedaluwarsa</span>
               )}
             </div>
           </div>
 
           <div className={styles['actions']}>
             <Button
-              variant="primary"
+              type="submit"
+              variant="success"
               size="large"
-              onClick={() => handleVerify()}
+              fullWidth
               disabled={code.some((digit) => digit === '') || isSubmitting}
-              className={styles['verify-button']}
             >
               {isSubmitting ? 'Memverifikasi...' : 'Verifikasi'}
             </Button>
 
             <div className={styles['resend-section']}>
-              <p>Tidak menerima kode?</p>
+              <span className={styles['resend-text']}>Tidak menerima kode?</span>
               <Button
-                variant="outline"
+                type="button"
+                variant="inverse"
                 size="small"
                 onClick={handleResendCode}
                 disabled={!canResend || isResending}
-                className={styles['resend-button']}
+                icon={<MdRefresh />}
               >
-                {isResending ? 'Mengirim...' : 'Kirim Ulang Kode'}
+                {isResending ? 'Mengirim...' : 'Kirim Ulang'}
               </Button>
             </div>
           </div>
-        </Card>
+        </Form>
 
         <div className={styles['footer']}>
-          <p>Sudah punya akun terverifikasi?</p>
-          <a href="/login" className={styles['login-link']}>Masuk di sini</a>
+          <div className={styles['footer-row']}>
+            <p>Belum punya akun?</p>
+            <Link to="/register" className={styles['login-link']}>Buat di sini</Link>
+          </div>
         </div>
       </div>
     </div>

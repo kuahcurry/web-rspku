@@ -175,6 +175,17 @@
   border-top: 1px solid var(--border-grey);
 }
 
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  padding-top: 1.25rem;
+  margin-top: 0.5rem;
+  border-top: 1px solid var(--border-grey);
+}
+
 .file-input-wrapper {
   display: flex;
   flex-direction: column;
@@ -239,6 +250,30 @@
   font-weight: 700;
   color: var(--text-main);
   word-break: break-word;
+}
+
+/* Upload drop-in styles to match pendidikan/pelatihan */
+.upload-drop {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1.5rem;
+  border: 1px dashed var(--border-grey);
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--primary-main) 6%, transparent);
+  text-align: center;
+}
+
+.upload-hint {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.upload-file-name {
+  margin-top: 0.25rem;
+  font-weight: 600;
+  color: var(--text-main);
 }
 
 .delete-confirmation {
