@@ -10,6 +10,7 @@ export const UserProvider = ({ children }) => {
 
   const fetchUser = async () => {
     if (!isAuthenticated()) {
+      setUser(null);
       setLoading(false);
       return;
     }
@@ -21,9 +22,11 @@ export const UserProvider = ({ children }) => {
       if (response.ok && data.success) {
         setUser(data.data);
       } else {
+        setUser(null);
         setError('Failed to fetch user data');
       }
     } catch (err) {
+      setUser(null);
       setError(err.message);
       console.error('Error fetching user data:', err);
     } finally {
@@ -36,12 +39,17 @@ export const UserProvider = ({ children }) => {
     await fetchUser();
   };
 
+  const clearUser = () => {
+    setUser(null);
+    setError(null);
+  };
+
   useEffect(() => {
     fetchUser();
   }, []);
 
   return (
-    <UserContext.Provider value={{ user, loading, error, refreshUser }}>
+    <UserContext.Provider value={{ user, loading, error, refreshUser, clearUser }}>
       {children}
     </UserContext.Provider>
   );

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { 
   MdMenu,
   MdClose,
@@ -9,17 +9,25 @@ import {
   MdSettings
 } from 'react-icons/md';
 import { useUser } from '../../contexts/UserContext';
-import { authenticatedFetch } from '../../utils/auth';
+import { authenticatedFetch, logout } from '../../utils/auth';
 import './Navbar.css';
 
 const Navbar = ({ onMenuToggle, sidebarOpen }) => {
+  const navigate = useNavigate();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [avatarError, setAvatarError] = useState(false);
   const [profilePicture, setProfilePicture] = useState(null);
-  const { user } = useUser();
+  const { user, clearUser } = useUser();
 
   const userName = user?.name || 'Nama Lengkap';
   const userRole = user?.jabatan || 'Belum ada jabatan!';
+
+  const handleLogout = async () => {
+    setDropdownOpen(false);
+    await logout();
+    clearUser();
+    navigate('/login');
+  };
 
   useEffect(() => {
     const fetchProfilePicture = async () => {
@@ -82,10 +90,10 @@ const Navbar = ({ onMenuToggle, sidebarOpen }) => {
                 <span>Pengaturan</span>
               </Link>
               <div className="dropdown-divider"></div>
-              <Link to="/login" className="dropdown-item logout" onClick={() => setDropdownOpen(false)}>
+              <button className="dropdown-item logout" onClick={handleLogout}>
                 <MdLogout size={18} />
                 <span>Keluar</span>
-              </Link>
+              </button>
             </div>
           )}
         </div>

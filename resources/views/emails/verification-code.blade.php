@@ -34,7 +34,7 @@
                                     </td>
                                     <td align="right" valign="middle">
                                         <span style="display:inline-block;padding:6px 10px;border-radius:8px;background-color:#E7E9FF;color:#2020A0;font-size:11px;font-weight:700;letter-spacing:0.4px;">
-                                            OTP • 15 MENIT
+                                            OTP - 15 MENIT
                                         </span>
                                     </td>
                                 </tr>
