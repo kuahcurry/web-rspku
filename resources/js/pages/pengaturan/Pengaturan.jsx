@@ -8,14 +8,14 @@ import Card from '../../components/card/Card';
 import Tabs from '../../components/tabs/Tabs';
 import { useIndonesiaRegion } from '../../hooks/useIndonesiaRegion';
 import { buildRegionStateUpdate } from '../../utils/regionForm';
-import { MdPerson, MdCameraAlt, MdLock, MdSave } from 'react-icons/md';
+import { MdPerson, MdCameraAlt, MdLock, MdSave, MdWarning, MdDeleteForever } from 'react-icons/md';
 import { useUser } from '../../contexts/UserContext';
-import { authenticatedFetch, isAuthenticated } from '../../utils/auth';
+import { authenticatedFetch, isAuthenticated, clearAuth } from '../../utils/auth';
 import styles from './Pengaturan.module.css';
 
 const Pengaturan = () => {
   const navigate = useNavigate();
-  const { user, loading: userLoading, refreshUser } = useUser();
+  const { user, loading: userLoading, refreshUser, clearUser } = useUser();
   const [avatarError, setAvatarError] = useState(false);
   const [profilePicture, setProfilePicture] = useState(null);
   const [uploading, setUploading] = useState(false);
@@ -24,6 +24,13 @@ const Pengaturan = () => {
   const [profileErrors, setProfileErrors] = useState({});
   const [accountErrors, setAccountErrors] = useState({});
   const isRegionId = (value) => !!value && /^\d+$/.test(String(value));
+
+  // Delete account states
+  const [deleteStep, setDeleteStep] = useState(0); // 0: hidden, 1: first confirm, 2: second confirm, 3: final confirm
+  const [deletePassword, setDeletePassword] = useState('');
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [deleteErrors, setDeleteErrors] = useState({});
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const { provinces, regencies, districts, villages, fetchRegencies, fetchDistricts, fetchVillages } =
     useIndonesiaRegion();
@@ -324,6 +331,62 @@ const Pengaturan = () => {
       console.error('Error updating account:', error);
       setAccountErrors({ general: 'Terjadi kesalahan saat memperbarui akun' });
     }
+  };
+
+  const handleDeleteAccount = async () => {
+    setDeleteErrors({});
+
+    if (deleteConfirmText !== 'HAPUS AKUN SAYA') {
+      setDeleteErrors({ confirmText: 'Teks konfirmasi tidak sesuai' });
+      return;
+    }
+
+    if (!deletePassword) {
+      setDeleteErrors({ password: 'Password wajib diisi' });
+      return;
+    }
+
+    setIsDeleting(true);
+
+    try {
+      const response = await authenticatedFetch('/api/account', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          password: deletePassword,
+          confirmation_text: deleteConfirmText,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        // Clear auth and redirect to login
+        clearAuth();
+        if (clearUser) clearUser();
+        navigate('/login', { state: { message: 'Akun Anda telah berhasil dihapus.' } });
+      } else {
+        if (data.errors) {
+          setDeleteErrors(data.errors);
+        } else {
+          setDeleteErrors({ general: data.message || 'Gagal menghapus akun' });
+        }
+      }
+    } catch (error) {
+      console.error('Error deleting account:', error);
+      setDeleteErrors({ general: 'Terjadi kesalahan saat menghapus akun' });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const resetDeleteModal = () => {
+    setDeleteStep(0);
+    setDeletePassword('');
+    setDeleteConfirmText('');
+    setDeleteErrors({});
   };
 
   if (userLoading) {
@@ -735,6 +798,26 @@ const Pengaturan = () => {
                   </Form.Row>
                 </div>
               </div>
+
+              {/* Danger Zone - Delete Account */}
+              <div className={styles['danger-zone']}>
+                <div className={styles['danger-zone-header']}>
+                  <MdWarning className={styles['danger-icon']} />
+                  <h3 className={styles['danger-zone-title']}>Hapus Akun?</h3>
+                </div>
+                <p className={styles['danger-zone-description']}>
+                  Setelah akun dihapus, semua data Anda akan hilang secara permanen dan tidak dapat dipulihkan.
+                </p>
+                <Button 
+                  variant="danger" 
+                  size="medium" 
+                  type="button" 
+                  icon={<MdDeleteForever />}
+                  onClick={() => setDeleteStep(1)}
+                >
+                  Hapus Akun Saya
+                </Button>
+              </div>
             </div>
 
             {accountErrors.general && (
@@ -754,6 +837,129 @@ const Pengaturan = () => {
           </Form>
         )}
       </div>
+
+      {/* Delete Account Modal - Triple Confirmation */}
+      {deleteStep > 0 && (
+        <div className={styles['modal-overlay']} onClick={resetDeleteModal}>
+          <div className={styles['modal-content']} onClick={(e) => e.stopPropagation()}>
+            {/* Step 1: First Confirmation */}
+            {deleteStep === 1 && (
+              <>
+                <div className={styles['modal-header-danger']}>
+                  <MdWarning className={styles['modal-warning-icon']} />
+                  <h2>Hapus Akun?</h2>
+                </div>
+                <div className={styles['modal-body']}>
+                  <p>Apakah Anda yakin ingin menghapus akun Anda?</p>
+                  <p className={styles['warning-text']}>
+                    Tindakan ini akan menghapus semua data Anda termasuk:
+                  </p>
+                  <ul className={styles['warning-list']}>
+                    <li>Profil dan informasi pribadi</li>
+                    <li>Foto profil</li>
+                    <li>Dokumen yang telah diunggah</li>
+                    <li>Riwayat pendidikan</li>
+                    <li>Data penugasan</li>
+                  </ul>
+                </div>
+                <div className={styles['modal-actions']}>
+                  <Button variant="secondary" size="medium" onClick={resetDeleteModal}>
+                    Batal
+                  </Button>
+                  <Button variant="danger" size="medium" onClick={() => setDeleteStep(2)}>
+                    Ya, Lanjutkan
+                  </Button>
+                </div>
+              </>
+            )}
+
+            {/* Step 2: Second Confirmation */}
+            {deleteStep === 2 && (
+              <>
+                <div className={styles['modal-header-danger']}>
+                  <MdWarning className={styles['modal-warning-icon']} />
+                  <h2>Konfirmasi</h2>
+                </div>
+                <div className={styles['modal-body']}>
+                  <p className={styles['warning-text-bold']}>
+                    Apakah Anda yakin? Data tidak dapat dipulihkan!
+                  </p>
+                  <p>
+                    Langkah selanjutnya akan meminta Anda untuk memasukkan password dan konfirmasi teks.
+                  </p>
+                </div>
+                <div className={styles['modal-actions']}>
+                  <Button variant="secondary" size="medium" onClick={resetDeleteModal}>
+                    Batal
+                  </Button>
+                  <Button variant="danger" size="medium" onClick={() => setDeleteStep(3)}>
+                    Ya, Saya Mengerti
+                  </Button>
+                </div>
+              </>
+            )}
+
+            {/* Step 3: Final Confirmation with Password */}
+            {deleteStep === 3 && (
+              <>
+                <div className={styles['modal-header-danger']}>
+                  <MdDeleteForever className={styles['modal-warning-icon']} />
+                  <h2>Konfirmasi Akhir</h2>
+                </div>
+                <div className={styles['modal-body']}>
+                  <p className={styles['warning-text-bold']}>
+                    Ini adalah langkah terakhir. Tidak ada jalan kembali!
+                  </p>
+                  
+                  <div className={styles['delete-form']}>
+                    <Input
+                      label="Password Anda"
+                      name="deletePassword"
+                      type="password"
+                      value={deletePassword}
+                      onChange={(e) => setDeletePassword(e.target.value)}
+                      placeholder="Masukkan password untuk konfirmasi"
+                      error={Array.isArray(deleteErrors.password) ? deleteErrors.password[0] : deleteErrors.password}
+                      allowPasswordToggle
+                    />
+
+                    <div className={styles['confirm-text-section']}>
+                      <p>Ketik <strong>HAPUS AKUN SAYA</strong> untuk mengkonfirmasi:</p>
+                      <Input
+                        name="deleteConfirmText"
+                        type="text"
+                        value={deleteConfirmText}
+                        onChange={(e) => setDeleteConfirmText(e.target.value.toUpperCase())}
+                        placeholder="HAPUS AKUN SAYA"
+                        error={deleteErrors.confirmText}
+                      />
+                    </div>
+                  </div>
+
+                  {deleteErrors.general && (
+                    <div className={styles['delete-error']}>
+                      {Array.isArray(deleteErrors.general) ? deleteErrors.general[0] : deleteErrors.general}
+                    </div>
+                  )}
+                </div>
+                <div className={styles['modal-actions']}>
+                  <Button variant="secondary" size="medium" onClick={resetDeleteModal} disabled={isDeleting}>
+                    Batal
+                  </Button>
+                  <Button 
+                    variant="danger" 
+                    size="medium" 
+                    onClick={handleDeleteAccount}
+                    disabled={isDeleting || deleteConfirmText !== 'HAPUS AKUN SAYA'}
+                  >
+                    {isDeleting ? 'Menghapus...' : 'Hapus Akun Permanen'}
+                  </Button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </MainLayout>
   );
 };

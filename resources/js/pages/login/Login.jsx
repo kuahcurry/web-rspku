@@ -6,6 +6,7 @@ import Button from '../../components/button/Button';
 import Form from '../../components/form/Form';
 import { useUser } from '../../contexts/UserContext';
 import styles from './Login.module.css';
+import logoImg from '../../assets/logo.webp';
 
 function Login() {
   const navigate = useNavigate();
@@ -168,7 +169,7 @@ function Login() {
         {/* Right Side Image with Logo */}
         <div className={styles['right-panel']}>
           <div className={styles['logo-container']}>
-            <img src="favicon.ico" alt="Logo Muhammadiyah" className={styles.logo} />
+            <img src={logoImg} alt="Logo Muhammadiyah" className={styles.logo} />
           </div>
           <div className={styles['building-image']}></div>
         </div>
