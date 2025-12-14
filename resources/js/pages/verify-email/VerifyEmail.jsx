@@ -3,11 +3,13 @@ import { useNavigate, useLocation, Link } from 'react-router-dom';
 import Button from '../../components/button/Button';
 import Form from '../../components/form/Form';
 import { MdRefresh } from 'react-icons/md';
+import StatusBanner from '../../components/status/StatusBanner';
 import styles from './VerifyEmail.module.css';
 
 function VerifyEmail() {
   const navigate = useNavigate();
   const location = useLocation();
+  const [banner, setBanner] = useState({ message: '', type: 'info' });
   const [code, setCode] = useState(['', '', '', '', '', '']);
   const [email, setEmail] = useState('');
   const [userName, setUserName] = useState('');
@@ -128,8 +130,8 @@ function VerifyEmail() {
 
       if (response.ok && data.success) {
         localStorage.removeItem('pending_verification_email');
-        alert('Email berhasil diverifikasi! Silakan login.');
-        navigate('/login');
+        setBanner({ message: 'Email berhasil diverifikasi! Silakan login.', type: 'success' });
+        setTimeout(() => navigate('/login'), 700);
       } else {
         setError(data.message || 'Kode verifikasi tidak valid');
         setCode(['', '', '', '', '', '']);
@@ -162,7 +164,7 @@ function VerifyEmail() {
       const data = await response.json();
 
       if (response.ok && data.success) {
-        alert('Kode verifikasi baru telah dikirim ke email Anda');
+        setBanner({ message: 'Kode verifikasi baru telah dikirim ke email Anda', type: 'success' });
         setTimeLeft(15 * 60);
         setCanResend(false);
         setCode(['', '', '', '', '', '']);
@@ -180,6 +182,13 @@ function VerifyEmail() {
 
   return (
     <div className={styles['verify-page']}>
+      <div className={styles.bannerArea}>
+        <StatusBanner
+          message={banner.message}
+          type={banner.type}
+          onClose={() => setBanner({ message: '', type: 'info' })}
+        />
+      </div>
       <div className={styles.overlay}></div>
       <div className={styles.card}>
         <div className={styles['header-row']}>

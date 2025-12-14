@@ -1,23 +1,56 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import MainLayout from '../../layout/main/MainLayout';
 import Card from '../../components/card/Card';
 import Button from '../../components/button/Button';
-import { MdCloudUpload, MdDelete, MdCheckCircle } from 'react-icons/md';
+import { MdCloudUpload, MdDelete, MdCheckCircle, MdDownload } from 'react-icons/md';
 import { jsPDF } from 'jspdf';
+import { isAuthenticated } from '../../utils/auth';
+import StatusBanner from '../../components/status/StatusBanner';
 import styles from './alat.module.css';
 
 function GambarKePdf() {
+  const navigate = useNavigate();
   const fileInputRef = useRef(null);
   const [images, setImages] = useState([]);
   const [orientation, setOrientation] = useState('portrait');
   const [margin, setMargin] = useState('normal');
   const [status, setStatus] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [outputPdf, setOutputPdf] = useState(null);
+  const [elapsedTime, setElapsedTime] = useState(0);
+  const [banner, setBanner] = useState({ message: '', type: 'info' });
+
+  useEffect(() => {
+    if (!isAuthenticated()) {
+      navigate('/login');
+    }
+  }, [navigate]);
 
   const handleFiles = (fileList) => {
-    const accepted = Array.from(fileList || []).filter((file) =>
-      ['image/jpeg', 'image/png', 'image/webp'].includes(file.type)
-    );
+    const incoming = Array.from(fileList || []);
+    if (!incoming.length) return;
+
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    const MAX_TOTAL = 50 * 1024 * 1024; // 50MB total
+    let currentTotal = images.reduce((sum, file) => sum + (file?.size || 0), 0);
+
+    const accepted = [];
+
+    for (const file of incoming) {
+      if (!allowedTypes.includes(file.type)) {
+        setStatus('Format tidak didukung. Gunakan JPG, PNG, atau WEBP.');
+        continue;
+      }
+
+      if (file.size + currentTotal > MAX_TOTAL) {
+        setStatus('Total ukuran file melebihi batas 50MB. Kurangi file yang dipilih.');
+        continue;
+      }
+
+      currentTotal += file.size;
+      accepted.push(file);
+    }
 
     if (!accepted.length) return;
 
@@ -44,46 +77,44 @@ function GambarKePdf() {
       setStatus('Tambahkan minimal 1 gambar untuk dikonversi.');
       return;
     }
-    
+    if (outputPdf?.url) {
+      URL.revokeObjectURL(outputPdf.url);
+    }
+
     setIsProcessing(true);
     setStatus('Mengonversi gambar menjadi PDF...');
-    
+    setElapsedTime(0);
+    const startTime = Date.now();
+
     try {
-      // Page dimensions based on orientation
       const isPortrait = orientation === 'portrait';
       const pageWidth = isPortrait ? 210 : 297;  // A4 in mm
       const pageHeight = isPortrait ? 297 : 210;
-      
-      // Margin values in mm
+
       const marginValues = {
         none: 0,
         narrow: 10,
         normal: 20
       };
       const marginSize = marginValues[margin];
-      
-      // Create PDF
+
       const pdf = new jsPDF({
         orientation: orientation === 'portrait' ? 'p' : 'l',
         unit: 'mm',
         format: 'a4'
       });
-      
-      // Remove first page (jsPDF creates one by default)
+
       pdf.deletePage(1);
-      
-      // Process each image
+
       for (let i = 0; i < images.length; i++) {
         const img = images[i];
-        
-        // Read image as data URL
+
         const dataUrl = await new Promise((resolve) => {
           const reader = new FileReader();
-          reader.onload = (e) => resolve(e.target.result);
+          reader.onload = (event) => resolve(event.target.result);
           reader.readAsDataURL(img);
         });
-        
-        // Get image dimensions
+
         const imgDimensions = await new Promise((resolve) => {
           const image = new Image();
           image.onload = () => {
@@ -91,57 +122,96 @@ function GambarKePdf() {
           };
           image.src = dataUrl;
         });
-        
-        // Add new page
+
         pdf.addPage('a4', orientation === 'portrait' ? 'p' : 'l');
-        
-        // Calculate available space
+
         const availableWidth = pageWidth - (2 * marginSize);
         const availableHeight = pageHeight - (2 * marginSize);
-        
-        // Calculate scaling to fit image in available space
+
         const imgRatio = imgDimensions.width / imgDimensions.height;
         const availableRatio = availableWidth / availableHeight;
-        
-        let finalWidth, finalHeight;
+
+        let finalWidth;
+        let finalHeight;
         if (imgRatio > availableRatio) {
-          // Image is wider - fit to width
           finalWidth = availableWidth;
           finalHeight = availableWidth / imgRatio;
         } else {
-          // Image is taller - fit to height
           finalHeight = availableHeight;
           finalWidth = availableHeight * imgRatio;
         }
-        
-        // Center image on page
+
         const x = marginSize + (availableWidth - finalWidth) / 2;
         const y = marginSize + (availableHeight - finalHeight) / 2;
-        
-        // Add image to PDF
+
         pdf.addImage(dataUrl, 'JPEG', x, y, finalWidth, finalHeight);
-        
+
         setStatus(`Memproses gambar ${i + 1} dari ${images.length}...`);
       }
-      
-      // Generate filename with timestamp
+
+      const endTime = Date.now();
+      setElapsedTime(((endTime - startTime) / 1000).toFixed(1));
+
       const timestamp = new Date().toISOString().slice(0, 19).replace(/[:-]/g, '').replace('T', '_');
       const filename = `images_to_pdf_${timestamp}.pdf`;
-      
-      // Save PDF
-      pdf.save(filename);
-      
-      setStatus(`✓ Berhasil! PDF dengan ${images.length} gambar telah diunduh.`);
+
+      const blob = pdf.output('blob');
+      const downloadUrl = URL.createObjectURL(blob);
+      setOutputPdf({
+        name: filename,
+        pages: images.length,
+        sizeKb: (blob.size / 1024).toFixed(1),
+        url: downloadUrl
+      });
+
+      const successMsg = `Berhasil! PDF dengan ${images.length} gambar siap diunduh dari panel ringkasan.`;
+      setStatus(successMsg);
+      setBanner({ message: successMsg, type: 'success' });
     } catch (error) {
       console.error('Error converting images to PDF:', error);
-      setStatus('✗ Terjadi kesalahan saat konversi. Silakan coba lagi.');
+      setStatus('Terjadi kesalahan saat konversi. Silakan coba lagi.');
+      setBanner({ message: 'Terjadi kesalahan saat konversi.', type: 'error' });
     } finally {
       setIsProcessing(false);
     }
   };
 
+  const handleDownload = () => {
+    if (!outputPdf?.url) return;
+    const link = document.createElement('a');
+    link.href = outputPdf.url;
+    link.download = outputPdf.name;
+    link.click();
+    setStatus('Mengunduh PDF (simulasi)...');
+  };
+
+  const totalSizeKb = images.reduce((sum, file) => sum + (file?.size || 0), 0) / 1024;
+
   return (
     <MainLayout>
+      <div className={styles.bannerArea}>
+        <StatusBanner
+          message={banner.message || status}
+          type={banner.type}
+          onClose={() => {
+            setBanner({ message: '', type: 'info' });
+            setStatus('');
+          }}
+        />
+      </div>
+      {isProcessing && (
+        <div className={styles.loadingOverlay}>
+          <div className={styles.loadingModal}>
+            <div className={styles.loadingSpinner}></div>
+            <h3 className={styles.loadingTitle}>Mengonversi gambar...</h3>
+            <p className={styles.loadingText}>Mohon tunggu, kami sedang menyiapkan PDF.</p>
+            <div className={styles.progressBarContainer}>
+              <div className={styles.progressBarFill}></div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <header className={styles.pageHeader}>
         <h1 className={styles.pageTitle}>Gambar ke PDF</h1>
         <p className={styles.pageSubtitle}>Ubah kumpulan gambar menjadi satu file PDF.</p>
@@ -157,7 +227,7 @@ function GambarKePdf() {
           >
             <MdCloudUpload size={46} />
             <p className={styles.dropTitle}>Pilih atau seret gambar ke sini</p>
-            <p className={styles.dropHint}>JPG, PNG, atau WEBP · multiple files</p>
+            <p className={styles.dropHint}>JPG, PNG, atau WEBP • multiple files • maks 50MB total</p>
             <Button
               variant="outline"
               icon={<MdCloudUpload />}
@@ -251,6 +321,11 @@ function GambarKePdf() {
               onClick={() => {
                 setImages([]);
                 setStatus('');
+                setElapsedTime(0);
+                if (outputPdf?.url) {
+                  URL.revokeObjectURL(outputPdf.url);
+                }
+                setOutputPdf(null);
               }}
               disabled={!images.length || isProcessing}
             >
@@ -258,43 +333,63 @@ function GambarKePdf() {
             </Button>
           </div>
 
-          {status && <div className={styles.status}>{status}</div>}
+          {status && (
+            <div className={`${styles.status} ${status.toLowerCase().includes('kesalahan') || status.toLowerCase().includes('melebihi') ? styles.statusError : ''}`}>
+              {status}
+            </div>
+          )}
         </Card>
 
         <Card className={styles.cardShell}>
           <p className={styles.optionLabel}>Ringkasan</p>
-          <div
-            className={styles.summaryDrop}
-            onDragOver={(e) => e.preventDefault()}
-            onDrop={handleDrop}
-            onClick={() => fileInputRef.current?.click()}
-          >
-            <div>
-              <ul className={styles.summaryList}>
-                <li>
-                  <span>Total gambar</span>
-                  <span>{images.length} file</span>
-                </li>
-                <li>
-                  <span>Orientasi</span>
-                  <span>{orientation === 'portrait' ? 'Potret' : 'Landscape'}</span>
-                </li>
-                <li>
-                  <span>Margin</span>
-                  <span>
-                    {margin === 'none' ? 'Tanpa margin' : margin === 'narrow' ? 'Sedikit' : 'Standar'}
-                  </span>
-                </li>
-                <li>
-                  <span>Perkiraan halaman</span>
-                  <span>{Math.max(images.length, 1)} halaman</span>
-                </li>
-              </ul>
+          <ul className={styles.summaryList}>
+            <li>
+              <span>Status file</span>
+              <span>{images.length ? 'Siap dikonversi' : 'Belum ada file'}</span>
+            </li>
+            <li>
+              <span>Total gambar</span>
+              <span>{images.length} file</span>
+            </li>
+            <li>
+              <span>Total ukuran</span>
+              <span>{totalSizeKb ? `${totalSizeKb.toFixed(1)} KB` : '-'}</span>
+            </li>
+            <li>
+              <span>Orientasi</span>
+              <span>{orientation === 'portrait' ? 'Potret' : 'Landscape'}</span>
+            </li>
+            <li>
+              <span>Margin</span>
+              <span>
+                {margin === 'none' ? 'Tanpa margin' : margin === 'narrow' ? 'Sedikit' : 'Standar'}
+              </span>
+            </li>
+            <li>
+              <span>Perkiraan halaman</span>
+              <span>{Math.max(images.length, 1)} halaman</span>
+            </li>
+            <li>
+              <span>Waktu proses</span>
+              <span>{elapsedTime > 0 ? `${elapsedTime} detik` : '-'}</span>
+            </li>
+            <li>
+              <span>Output</span>
+              <span>{outputPdf ? outputPdf.name : 'Belum ada file hasil konversi.'}</span>
+            </li>
+          </ul>
+          {outputPdf && (
+            <div className={styles.actions}>
+              <Button
+                variant="outline"
+                icon={<MdDownload />}
+                onClick={handleDownload}
+                disabled={isProcessing}
+              >
+                Download PDF
+              </Button>
             </div>
-            <div className={styles.summaryHint}>
-              <p>Seret gambar ke sini juga bisa.</p>
-            </div>
-          </div>
+          )}
         </Card>
       </div>
     </MainLayout>
