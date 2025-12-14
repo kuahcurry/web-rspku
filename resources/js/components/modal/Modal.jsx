@@ -15,8 +15,7 @@ const Modal = ({
   glass = false,
   closeOnEscape = true,
   closeOnOverlay = true,
-  className = '',
-  banner = null
+  className = ''
 }) => {
   useEffect(() => {
     if (!isOpen || !closeOnEscape) return;
@@ -63,7 +62,6 @@ const Modal = ({
             )}
           </div>
         )}
-        {banner && <div className="modal-banner">{banner}</div>}
         <div className="modal-body">
           {children}
         </div>
