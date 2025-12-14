@@ -31,6 +31,7 @@ Route::middleware('auth:api')->group(function () {
     Route::post('/compress-pdf', [PdfCompressionController::class, 'compress']);
     Route::put('/profile', [ProfileController::class, 'updateProfile']);
     Route::put('/account', [ProfileController::class, 'updateAccount']);
+    Route::delete('/account', [ProfileController::class, 'deleteAccount']);
     
     // Profile Picture routes
     Route::post('/profile/foto-profil', [ProfileController::class, 'uploadProfilePicture']);

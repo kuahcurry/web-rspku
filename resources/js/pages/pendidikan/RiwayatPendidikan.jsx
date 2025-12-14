@@ -8,7 +8,7 @@ import Form from '../../components/form/Form';
 import Input from '../../components/input/Input';
 import Tabs from '../../components/tabs/Tabs';
 import { MdVisibility, MdAdd, MdCloudUpload, MdSave, MdDownload, MdDelete } from 'react-icons/md';
-import { isAuthenticated } from '../../utils/auth';
+import { isAuthenticated, authenticatedFetch } from '../../utils/auth';
 import { cachedFetch } from '../../services/apiService';
 import { cacheConfig } from '../../utils/cache';
 import StatusBanner from '../../components/status/StatusBanner';
