@@ -1,4 +1,5 @@
 // Authentication utility functions
+import { clearCache } from './cache';
 
 /**
  * Get the stored JWT token
@@ -52,13 +53,15 @@ export const isAuthenticated = () => {
 };
 
 /**
- * Clear all authentication data
+ * Clear all authentication data and cache
  */
 export const clearAuth = () => {
   localStorage.removeItem('access_token');
   localStorage.removeItem('token_type');
   localStorage.removeItem('user');
   localStorage.removeItem('token_expires_at');
+  // Clear all cached API responses to prevent data leakage between accounts
+  clearCache();
 };
 
 /**

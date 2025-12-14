@@ -37,7 +37,7 @@
             margin-bottom: 30px;
         }
         .code-box {
-            background: linear-gradient(135deg, #0D9488 0%, #065F46 100%);
+            background: linear-gradient(135deg, #DC2626 0%, #991B1B 100%);
             padding: 30px;
             text-align: center;
             border-radius: 10px;
@@ -51,9 +51,9 @@
             font-family: 'Courier New', monospace;
         }
         .info {
-            background: #f8f9fa;
+            background: #FEF2F2;
             padding: 15px;
-            border-left: 4px solid #0D9488;
+            border-left: 4px solid #DC2626;
             margin: 20px 0;
             border-radius: 4px;
         }
@@ -69,6 +69,23 @@
             color: #dc2626;
             font-weight: bold;
         }
+        .security-notice {
+            background: #FFFBEB;
+            border: 1px solid #F59E0B;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        .security-notice h4 {
+            color: #B45309;
+            margin: 0 0 10px 0;
+            font-size: 14px;
+        }
+        .security-notice p {
+            margin: 0;
+            font-size: 13px;
+            color: #92400E;
+        }
     </style>
 </head>
 <body>
@@ -76,13 +93,13 @@
         <div class="header">
             <img src="https://i.ibb.co.com/vCXfmN5b/GOMBONG.png" alt="Logo PKU" style="width: 80px; height: auto; margin-bottom: 10px;">
             <h1>{{ config('app.name') }}</h1>
-            <p style="color: #666; margin-top: 5px;">Verifikasi Email Anda</p>
+            <p style="color: #666; margin-top: 5px;">Reset Password</p>
         </div>
         
         <div class="content">
             <p>Halo <strong>{{ $userName }}</strong>,</p>
             
-            <p>Terima kasih telah mendaftar di {{ config('app.name') }}. Untuk menyelesaikan pendaftaran, silakan gunakan kode verifikasi berikut:</p>
+            <p>Kami menerima permintaan untuk mereset password akun Anda. Gunakan kode berikut untuk melanjutkan:</p>
             
             <div class="code-box">
                 <div class="code">{{ $code }}</div>
@@ -90,15 +107,16 @@
             
             <div class="info">
                 <p style="margin: 0;">
-                    Kode ini akan <span class="warning">kedaluwarsa dalam 15 menit</span>
+                    ⏰ Kode ini akan <span class="warning">kedaluwarsa dalam 15 menit</span>
                 </p>
             </div>
             
-            <p>Masukkan kode ini di halaman verifikasi untuk mengaktifkan akun Anda.</p>
+            <p>Masukkan kode ini di halaman reset password untuk membuat password baru.</p>
             
-            <p style="color: #666; font-size: 14px;">
-                <strong>Catatan:</strong> Jika Anda tidak melakukan pendaftaran ini, abaikan email ini. Akun tidak akan dibuat tanpa verifikasi.
-            </p>
+            <div class="security-notice">
+                <h4>🔒 Peringatan Keamanan</h4>
+                <p>Jika Anda tidak meminta reset password ini, abaikan email ini dan pastikan akun Anda aman. Password Anda tidak akan berubah tanpa memasukkan kode di atas.</p>
+            </div>
         </div>
         
         <div class="footer">

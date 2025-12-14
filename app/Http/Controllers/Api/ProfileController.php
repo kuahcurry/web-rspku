@@ -281,6 +281,67 @@ class ProfileController extends Controller
     }
 
     /**
+     * Delete user account permanently
+     */
+    public function deleteAccount(Request $request)
+    {
+        try {
+            $user = auth()->user();
+            
+            $validator = Validator::make($request->all(), [
+                'password' => 'required|string',
+                'confirmation_text' => 'required|string|in:HAPUS AKUN SAYA',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validation error',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            // Verify password
+            if (!Hash::check($request->password, $user->password)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Password salah',
+                    'errors' => ['password' => ['Password yang Anda masukkan salah']]
+                ], 401);
+            }
+
+            // Delete user's profile picture if exists
+            if ($user->foto_profil) {
+                Storage::disk('public')->delete($user->foto_profil);
+            }
+
+            // Delete user's folder if exists
+            $folderName = $this->sanitizeFolderName($user->name) . '_' . $user->id;
+            $folderPath = 'users/' . $folderName;
+            if (Storage::disk('public')->exists($folderPath)) {
+                Storage::disk('public')->deleteDirectory($folderPath);
+            }
+
+            // Invalidate the JWT token
+            auth()->logout();
+
+            // Delete the user
+            $user->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Akun berhasil dihapus secara permanen',
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menghapus akun',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Sanitize folder name to remove special characters
      */
     private function sanitizeFolderName($name)

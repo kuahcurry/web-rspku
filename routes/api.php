@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\DokumenLegalitasController;
 use App\Http\Controllers\Api\RiwayatPendidikanController;
+use App\Http\Controllers\Api\PasswordResetController;
 use App\Http\Controllers\PdfCompressionController;
 
 // Public routes
@@ -14,6 +15,11 @@ Route::post('/register', [RegisterController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/verify-email', [AuthController::class, 'verifyEmail']);
 Route::post('/resend-verification-code', [AuthController::class, 'resendVerificationCode']);
+
+// Password Reset routes
+Route::post('/forgot-password', [PasswordResetController::class, 'forgotPassword']);
+Route::post('/verify-reset-code', [PasswordResetController::class, 'verifyResetCode']);
+Route::post('/reset-password', [PasswordResetController::class, 'resetPassword']);
 
 // Protected routes (require JWT token)
 Route::middleware('auth:api')->group(function () {
@@ -25,6 +31,7 @@ Route::middleware('auth:api')->group(function () {
     Route::post('/compress-pdf', [PdfCompressionController::class, 'compress']);
     Route::put('/profile', [ProfileController::class, 'updateProfile']);
     Route::put('/account', [ProfileController::class, 'updateAccount']);
+    Route::delete('/account', [ProfileController::class, 'deleteAccount']);
     
     // Profile Picture routes
     Route::post('/profile/foto-profil', [ProfileController::class, 'uploadProfilePicture']);
