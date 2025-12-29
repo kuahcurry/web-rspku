@@ -145,6 +145,17 @@
   color: var(--text-inverse);
   font-size: 4rem;
   font-weight: 700;
+  margin: 0 0 0rem 0;
+  text-align: center;
+  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
+  letter-spacing: 0.02em;
+  position: relative;
+}
+
+.register-header h2 {
+  color: var(--text-inverse);
+  font-size: 1.5rem;
+  font-weight: 700;
   margin: 0 0 1rem 0;
   text-align: center;
   text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);

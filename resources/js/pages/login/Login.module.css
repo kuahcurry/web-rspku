@@ -87,6 +87,17 @@
   position: relative;
 }
 
+.login-container .login-header h2 {
+  color: var(--text-inverse);
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0 0 1rem 0;
+  text-align: center;
+  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
+  letter-spacing: 0.02em;
+  position: relative;
+}
+
 .login-container :global(.input-label){
   color: var(--text-inverse);
   margin-bottom: 0.5rem;
