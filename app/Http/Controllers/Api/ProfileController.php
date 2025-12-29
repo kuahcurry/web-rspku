@@ -7,11 +7,13 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Cache;
 
 class ProfileController extends Controller
 {
     /**
-     * Update user profile
+     * Update user profile (merged profile + account updates)
+     * Handles: profile data, email, password changes in one endpoint
      */
     public function updateProfile(Request $request)
     {
@@ -19,6 +21,7 @@ class ProfileController extends Controller
             $user = auth()->user();
             
             $validator = Validator::make($request->all(), [
+                // Profile fields
                 'nip' => 'sometimes|string|max:18|unique:users_registration,nip,' . $user->id,
                 'nik' => 'sometimes|string|max:16|unique:users_registration,nik,' . $user->id,
                 'name' => 'sometimes|string|max:255',
@@ -36,6 +39,9 @@ class ProfileController extends Controller
                 'jabatan' => 'sometimes|string|max:100',
                 'unit_kerja' => 'sometimes|string|max:100',
                 'tanggal_mulai_kerja' => 'sometimes|date',
+                // Account fields
+                'email' => 'sometimes|email|max:255|unique:users_registration,email,' . $user->id,
+                'password' => 'sometimes|string|min:8',
             ]);
 
             if ($validator->fails()) {
@@ -46,7 +52,7 @@ class ProfileController extends Controller
                 ], 422);
             }
 
-            $user->update($request->only([
+            $updateData = $request->only([
                 'nip',
                 'nik',
                 'name',
@@ -64,7 +70,18 @@ class ProfileController extends Controller
                 'jabatan',
                 'unit_kerja',
                 'tanggal_mulai_kerja',
-            ]));
+                'email',
+            ]);
+            
+            // Hash password if provided
+            if ($request->has('password') && !empty($request->password)) {
+                $updateData['password'] = Hash::make($request->password);
+            }
+
+            $user->update($updateData);
+
+            // Clear user cache after update
+            Cache::forget("user_profile_{$user->id}");
 
             return response()->json([
                 'success' => true,
@@ -75,55 +92,6 @@ class ProfileController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to update profile',
-                'error' => $e->getMessage()
-            ], 500);
-        }
-    }
-
-    /**
-     * Update user account (email and password)
-     */
-    public function updateAccount(Request $request)
-    {
-        try {
-            $user = auth()->user();
-            
-            $validator = Validator::make($request->all(), [
-                'email' => 'sometimes|email|max:255|unique:users_registration,email,' . $user->id,
-                'password' => 'sometimes|string|min:8',
-            ]);
-
-            if ($validator->fails()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Validation error',
-                    'errors' => $validator->errors()
-                ], 422);
-            }
-
-            $updateData = [];
-            
-            if ($request->has('email')) {
-                $updateData['email'] = $request->email;
-            }
-            
-            if ($request->has('password') && !empty($request->password)) {
-                $updateData['password'] = Hash::make($request->password);
-            }
-
-            if (!empty($updateData)) {
-                $user->update($updateData);
-            }
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Account updated successfully',
-                'data' => $user
-            ], 200);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to update account',
                 'error' => $e->getMessage()
             ], 500);
         }

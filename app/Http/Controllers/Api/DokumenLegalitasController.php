@@ -15,15 +15,38 @@ class DokumenLegalitasController extends Controller
     /**
      * Get all documents for authenticated user
      */
-    public function index()
+    public function index(Request $request)
     {
         try {
             $user = auth()->user();
-            $documents = DokumenLegalitas::where('user_id', $user->id)->get();
+            $perPage = $request->get('per_page', 15); // Default 15 items per page
+            
+            // If per_page is 'all', return all records
+            if ($perPage === 'all') {
+                $documents = DokumenLegalitas::where('user_id', $user->id)
+                    ->orderBy('created_at', 'desc')
+                    ->get();
+                
+                return response()->json([
+                    'success' => true,
+                    'data' => $documents
+                ], 200);
+            }
+            
+            // Otherwise return paginated results
+            $documents = DokumenLegalitas::where('user_id', $user->id)
+                ->orderBy('created_at', 'desc')
+                ->paginate($perPage);
 
             return response()->json([
                 'success' => true,
-                'data' => $documents
+                'data' => $documents->items(),
+                'meta' => [
+                    'current_page' => $documents->currentPage(),
+                    'last_page' => $documents->lastPage(),
+                    'per_page' => $documents->perPage(),
+                    'total' => $documents->total(),
+                ]
             ], 200);
         } catch (\Exception $e) {
             return response()->json([

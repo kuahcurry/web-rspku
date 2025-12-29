@@ -43,6 +43,7 @@ const RiwayatPendidikan = () => {
   });
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [banner, setBanner] = useState({ message: '', type: '' });
   const [formData, setFormData] = useState({
     judul: '',
     institusi: '',
@@ -81,6 +82,16 @@ const RiwayatPendidikan = () => {
     }
   };
 
+  // Auto-dismiss banner after 5 seconds
+  useEffect(() => {
+    if (banner.message) {
+      const timer = setTimeout(() => {
+        setBanner({ message: '', type: '' });
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [banner]);
+
   // Cleanup PDF URL
   useEffect(() => {
     return () => {
@@ -105,8 +116,8 @@ const RiwayatPendidikan = () => {
     setPdfUrl(null);
 
     try {
-      console.log('Fetching PDF from:', `/api/riwayat-pendidikan/view/${item.id}`); // Debug log
-      const response = await authenticatedFetch(`/api/riwayat-pendidikan/view/${item.id}`);
+      console.log('Fetching PDF from:', `/api/riwayat-pendidikan/${item.id}`); // Debug log
+      const response = await authenticatedFetch(`/api/riwayat-pendidikan/${item.id}`);
       
       console.log('Response status:', response.status, 'OK:', response.ok); // Debug log
       
@@ -118,11 +129,11 @@ const RiwayatPendidikan = () => {
       } else {
         const errorText = await response.text();
         console.error('Response error:', errorText);
-        alert('Gagal memuat dokumen');
+        setBanner({ message: 'Gagal memuat dokumen', type: 'error' });
       }
     } catch (error) {
       console.error('Error loading PDF:', error);
-      alert('Terjadi kesalahan saat memuat dokumen');
+      setBanner({ message: 'Terjadi kesalahan saat memuat dokumen', type: 'error' });
     } finally {
       setLoadingPdf(false);
     }
@@ -150,10 +161,10 @@ const RiwayatPendidikan = () => {
       if (file.size <= 10 * 1024 * 1024) { // 10MB limit
         setFormData({ ...formData, file });
       } else {
-        alert('File terlalu besar. Maksimal 10MB');
+        setBanner({ message: 'File terlalu besar. Maksimal 10MB', type: 'error' });
       }
     } else {
-      alert('Hanya file PDF yang diperbolehkan');
+      setBanner({ message: 'Hanya file PDF yang diperbolehkan', type: 'error' });
     }
   };
 
@@ -207,18 +218,17 @@ const RiwayatPendidikan = () => {
     try {
       const idsToDelete = deleteTargets.map((entry) => entry.id);
       
-      const response = await authenticatedFetch('/api/riwayat-pendidikan/delete-multiple', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ ids: idsToDelete }),
-      });
+      // Delete each item individually using REST endpoint
+      let successCount = 0;
+      for (const id of idsToDelete) {
+        const response = await authenticatedFetch(`/api/riwayat-pendidikan/${id}`, {
+          method: 'DELETE'
+        });
+        if (response.ok) successCount++;
+      }
 
-      const data = await response.json();
-
-      if (response.ok && data.success) {
-        alert(`${data.deleted_count} data berhasil dihapus`);
+      if (successCount > 0) {
+        setBanner({ message: `${successCount} data berhasil dihapus`, type: 'success' });
         
         // Update local state
         setDataByTab((prev) => ({
@@ -233,11 +243,11 @@ const RiwayatPendidikan = () => {
         
         fetchData(); // Refresh data
       } else {
-        alert(data.message || 'Gagal menghapus data');
+        setBanner({ message: 'Gagal menghapus data', type: 'error' });
       }
     } catch (error) {
       console.error('Error deleting records:', error);
-      alert('Terjadi kesalahan saat menghapus data');
+      setBanner({ message: 'Terjadi kesalahan saat menghapus data', type: 'error' });
     } finally {
       setDeleteTargets([]);
       setDeleteMode(false);
@@ -249,7 +259,7 @@ const RiwayatPendidikan = () => {
     e.preventDefault();
     
     if (!formData.judul || !formData.institusi || !formData.tahun_lulus || !formData.file) {
-      alert('Mohon lengkapi semua field');
+      setBanner({ message: 'Mohon lengkapi semua field', type: 'error' });
       return;
     }
 
@@ -263,7 +273,7 @@ const RiwayatPendidikan = () => {
       apiFormData.append('institusi', formData.institusi);
       apiFormData.append('tahun_lulus', formData.tahun_lulus);
 
-      const response = await authenticatedFetch('/api/riwayat-pendidikan/store', {
+      const response = await authenticatedFetch('/api/riwayat-pendidikan', {
         method: 'POST',
         body: apiFormData,
         headers: {} // Let browser set Content-Type with boundary
@@ -272,16 +282,16 @@ const RiwayatPendidikan = () => {
       const data = await response.json();
 
       if (response.ok && data.success) {
-        alert('Data berhasil ditambahkan!');
+        setBanner({ message: 'Data berhasil ditambahkan!', type: 'success' });
         setShowAddModal(false);
         setFormData({ judul: '', institusi: '', tahun_lulus: '', file: null });
         fetchData(); // Refresh data
       } else {
-        alert(data.message || 'Gagal menambahkan data');
+        setBanner({ message: data.message || 'Gagal menambahkan data', type: 'error' });
       }
     } catch (error) {
       console.error('Error adding record:', error);
-      alert('Terjadi kesalahan saat menambahkan data');
+      setBanner({ message: 'Terjadi kesalahan saat menambahkan data', type: 'error' });
     } finally {
       setIsSubmitting(false);
     }
@@ -303,16 +313,29 @@ const RiwayatPendidikan = () => {
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
       } else {
-        alert('Gagal mendownload dokumen');
+        setBanner({ message: 'Gagal mendownload dokumen', type: 'error' });
       }
     } catch (error) {
       console.error('Error downloading PDF:', error);
-      alert('Terjadi kesalahan saat mendownload dokumen');
+      setBanner({ message: 'Terjadi kesalahan saat mendownload dokumen', type: 'error' });
     }
   };
 
   return (
     <MainLayout>
+      {/* Banner Notification */}
+      {banner.message && (
+        <div className={`${styles.banner} ${styles[banner.type]}`}>
+          <span>{banner.message}</span>
+          <button 
+            className={styles.bannerClose} 
+            onClick={() => setBanner({ message: '', type: '' })}
+          >
+            ×
+          </button>
+        </div>
+      )}
+
       <header className={styles.pageHeader}>
         <h1 className={styles.pageTitle}>Riwayat Pendidikan</h1>
         <p className={styles.pageSubtitle}>Kelola ijazah, sertifikat pelatihan, dan riwayat workshop</p>

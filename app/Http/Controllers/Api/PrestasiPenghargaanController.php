@@ -14,7 +14,7 @@ class PrestasiPenghargaanController extends Controller
     /**
      * Get all prestasi and penghargaan records for authenticated user
      */
-    public function index()
+    public function index(Request $request)
     {
         try {
             $user = auth()->user();
@@ -31,7 +31,10 @@ class PrestasiPenghargaanController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data' => $grouped
+                'data' => $grouped,
+                'meta' => [
+                    'total' => $records->count()
+                ]
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
@@ -107,7 +110,7 @@ class PrestasiPenghargaanController extends Controller
     /**
      * View/serve a document (inline PDF viewer)
      */
-    public function viewFile($id)
+    public function view($id)
     {
         try {
             $user = auth()->user();
@@ -145,7 +148,46 @@ class PrestasiPenghargaanController extends Controller
     }
 
     /**
-     * Delete multiple prestasi/penghargaan records
+     * Delete a single prestasi/penghargaan record
+     */
+    public function delete($id)
+    {
+        try {
+            $user = auth()->user();
+            $record = PrestasiPenghargaan::where('user_id', $user->id)
+                ->where('id', $id)
+                ->first();
+
+            if (!$record) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Record not found'
+                ], 404);
+            }
+
+            // Delete file from storage
+            if ($record->file_path && Storage::disk('public')->exists($record->file_path)) {
+                Storage::disk('public')->delete($record->file_path);
+            }
+
+            $record->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Record deleted successfully'
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to delete record',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Delete multiple prestasi/penghargaan records (legacy support)
+     * @deprecated Use DELETE /{id} for single deletions
      */
     public function bulkDelete(Request $request)
     {

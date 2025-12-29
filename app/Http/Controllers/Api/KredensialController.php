@@ -14,7 +14,7 @@ class KredensialController extends Controller
     /**
      * Get all kredensial records for authenticated user
      */
-    public function index()
+    public function index(Request $request)
     {
         try {
             $user = auth()->user();
@@ -30,7 +30,10 @@ class KredensialController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data' => $grouped
+                'data' => $grouped,
+                'meta' => [
+                    'total' => $records->count()
+                ]
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
@@ -230,7 +233,46 @@ class KredensialController extends Controller
     }
 
     /**
-     * Delete multiple kredensial records
+     * Delete a single kredensial record
+     */
+    public function delete($id)
+    {
+        try {
+            $user = auth()->user();
+            $record = Kredensial::where('user_id', $user->id)
+                ->where('id', $id)
+                ->first();
+
+            if (!$record) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Record not found'
+                ], 404);
+            }
+
+            // Delete file from storage
+            if (Storage::disk('public')->exists($record->file_path)) {
+                Storage::disk('public')->delete($record->file_path);
+            }
+
+            $record->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Record deleted successfully'
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to delete record',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Delete multiple kredensial records (legacy support)
+     * @deprecated Use DELETE /{id} for single deletions
      */
     public function deleteMultiple(Request $request)
     {

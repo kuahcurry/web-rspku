@@ -1,3 +1,54 @@
+/* Banner Notification */
+.banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.875rem 1.25rem;
+  border-radius: var(--radius-md);
+  margin-bottom: 1rem;
+  font-weight: 500;
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.banner.success {
+  background: color-mix(in srgb, var(--success-main) 15%, transparent);
+  color: var(--success-dark);
+  border: 1px solid color-mix(in srgb, var(--success-main) 30%, transparent);
+}
+
+.banner.error {
+  background: color-mix(in srgb, var(--error-main) 15%, transparent);
+  color: var(--error-dark);
+  border: 1px solid color-mix(in srgb, var(--error-main) 30%, transparent);
+}
+
+.bannerClose {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: inherit;
+  opacity: 0.7;
+  padding: 0;
+  line-height: 1;
+  transition: opacity 0.2s ease;
+}
+
+.bannerClose:hover {
+  opacity: 1;
+}
+
 .container {
   display: flex;
   flex-direction: column;

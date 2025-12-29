@@ -15,10 +15,13 @@ class RiwayatPendidikanController extends Controller
     /**
      * Get all education records for authenticated user
      */
-    public function index()
+    public function index(Request $request)
     {
         try {
             $user = auth()->user();
+            $perPage = $request->get('per_page', 'all'); // Default to all for grouped data
+            
+            // For grouped data, we'll always return all records
             $records = RiwayatPendidikan::where('user_id', $user->id)
                 ->orderBy('tahun_lulus', 'desc')
                 ->get();
@@ -32,7 +35,10 @@ class RiwayatPendidikanController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data' => $grouped
+                'data' => $grouped,
+                'meta' => [
+                    'total' => $records->count()
+                ]
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
@@ -137,7 +143,46 @@ class RiwayatPendidikanController extends Controller
     }
 
     /**
-     * Delete multiple education records
+     * Delete a single education record
+     */
+    public function delete($id)
+    {
+        try {
+            $user = auth()->user();
+            $record = RiwayatPendidikan::where('user_id', $user->id)
+                ->where('id', $id)
+                ->first();
+
+            if (!$record) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Record not found'
+                ], 404);
+            }
+
+            // Delete file from storage
+            if (Storage::disk('public')->exists($record->file_path)) {
+                Storage::disk('public')->delete($record->file_path);
+            }
+
+            $record->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Record deleted successfully'
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to delete record',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Delete multiple education records (legacy support)
+     * @deprecated Use DELETE /{id} for single deletions
      */
     public function deleteMultiple(Request $request)
     {
