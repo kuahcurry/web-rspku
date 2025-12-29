@@ -27,72 +27,71 @@ Route::middleware('auth:api')->group(function () {
     Route::post('/refresh', [AuthController::class, 'refresh']);
     Route::get('/me', [AuthController::class, 'me']);
     
-    // PDF Compression (authenticated)
+    // PDF Compression
     Route::post('/compress-pdf', [PdfCompressionController::class, 'compress']);
-    Route::put('/profile', [ProfileController::class, 'updateProfile']);
-    Route::put('/account', [ProfileController::class, 'updateAccount']);
-    Route::delete('/account', [ProfileController::class, 'deleteAccount']);
     
-    // Profile Picture routes
+    // Profile routes (merged profile + account)
+    Route::put('/profile', [ProfileController::class, 'updateProfile']);
+    Route::delete('/profile', [ProfileController::class, 'deleteAccount']);
     Route::post('/profile/foto-profil', [ProfileController::class, 'uploadProfilePicture']);
     Route::get('/profile/foto-profil', [ProfileController::class, 'getProfilePicture']);
     Route::delete('/profile/foto-profil', [ProfileController::class, 'deleteProfilePicture']);
     
-    // Dokumen Legalitas routes
+    // Dokumen Legalitas (RESTful)
     Route::prefix('dokumen-legalitas')->group(function () {
         Route::get('/', [DokumenLegalitasController::class, 'index']);
-        Route::post('/upload', [DokumenLegalitasController::class, 'upload']);
-        Route::get('/view/{id}', [DokumenLegalitasController::class, 'view']);
+        Route::post('/', [DokumenLegalitasController::class, 'upload']);
+        Route::get('/{id}', [DokumenLegalitasController::class, 'view']);
         Route::delete('/{id}', [DokumenLegalitasController::class, 'delete']);
     });
     
-    // Riwayat Pendidikan routes
+    // Riwayat Pendidikan (RESTful)
     Route::prefix('riwayat-pendidikan')->group(function () {
         Route::get('/', [RiwayatPendidikanController::class, 'index']);
-        Route::post('/store', [RiwayatPendidikanController::class, 'store']);
-        Route::get('/view/{id}', [RiwayatPendidikanController::class, 'view']);
-        Route::post('/delete-multiple', [RiwayatPendidikanController::class, 'deleteMultiple']);
+        Route::post('/', [RiwayatPendidikanController::class, 'store']);
+        Route::get('/{id}', [RiwayatPendidikanController::class, 'view']);
+        Route::delete('/{id}', [RiwayatPendidikanController::class, 'delete']);
     });
     
-    // Penugasan routes
+    // Penugasan (RESTful)
     Route::prefix('penugasan')->group(function () {
         Route::get('/', [\App\Http\Controllers\Api\PenugasanController::class, 'index']);
-        Route::post('/store', [\App\Http\Controllers\Api\PenugasanController::class, 'store']);
-        Route::get('/view/{id}', [\App\Http\Controllers\Api\PenugasanController::class, 'view']);
-        Route::post('/delete-multiple', [\App\Http\Controllers\Api\PenugasanController::class, 'deleteMultiple']);
+        Route::post('/', [\App\Http\Controllers\Api\PenugasanController::class, 'store']);
+        Route::get('/{id}', [\App\Http\Controllers\Api\PenugasanController::class, 'view']);
+        Route::delete('/{id}', [\App\Http\Controllers\Api\PenugasanController::class, 'delete']);
     });
     
-    // Etik & Disiplin routes
+    // Etik & Disiplin (RESTful)
     Route::prefix('etik-disiplin')->group(function () {
         Route::get('/', [\App\Http\Controllers\Api\EtikDisiplinController::class, 'index']);
-        Route::post('/store', [\App\Http\Controllers\Api\EtikDisiplinController::class, 'store']);
-        Route::put('/update/{id}', [\App\Http\Controllers\Api\EtikDisiplinController::class, 'update']);
-        Route::get('/view/{id}', [\App\Http\Controllers\Api\EtikDisiplinController::class, 'view']);
-        Route::post('/delete-multiple', [\App\Http\Controllers\Api\EtikDisiplinController::class, 'deleteMultiple']);
+        Route::post('/', [\App\Http\Controllers\Api\EtikDisiplinController::class, 'store']);
+        Route::get('/{id}', [\App\Http\Controllers\Api\EtikDisiplinController::class, 'view']);
+        Route::put('/{id}', [\App\Http\Controllers\Api\EtikDisiplinController::class, 'update']);
+        Route::delete('/{id}', [\App\Http\Controllers\Api\EtikDisiplinController::class, 'delete']);
     });
     
-    // Kredensial routes
+    // Kredensial (RESTful)
     Route::prefix('kredensial')->group(function () {
         Route::get('/', [\App\Http\Controllers\Api\KredensialController::class, 'index']);
-        Route::post('/store', [\App\Http\Controllers\Api\KredensialController::class, 'store']);
-        Route::put('/update/{id}', [\App\Http\Controllers\Api\KredensialController::class, 'update']);
-        Route::get('/view/{id}', [\App\Http\Controllers\Api\KredensialController::class, 'view']);
-        Route::post('/delete-multiple', [\App\Http\Controllers\Api\KredensialController::class, 'deleteMultiple']);
+        Route::post('/', [\App\Http\Controllers\Api\KredensialController::class, 'store']);
+        Route::get('/{id}', [\App\Http\Controllers\Api\KredensialController::class, 'view']);
+        Route::put('/{id}', [\App\Http\Controllers\Api\KredensialController::class, 'update']);
+        Route::delete('/{id}', [\App\Http\Controllers\Api\KredensialController::class, 'delete']);
     });
     
-    // Prestasi & Penghargaan routes
+    // Prestasi & Penghargaan (RESTful)
     Route::prefix('prestasi-penghargaan')->group(function () {
         Route::get('/', [\App\Http\Controllers\Api\PrestasiPenghargaanController::class, 'index']);
         Route::post('/', [\App\Http\Controllers\Api\PrestasiPenghargaanController::class, 'store']);
-        Route::get('/{id}/file', [\App\Http\Controllers\Api\PrestasiPenghargaanController::class, 'viewFile']);
-        Route::post('/bulk-delete', [\App\Http\Controllers\Api\PrestasiPenghargaanController::class, 'bulkDelete']);
+        Route::get('/{id}', [\App\Http\Controllers\Api\PrestasiPenghargaanController::class, 'view']);
+        Route::delete('/{id}', [\App\Http\Controllers\Api\PrestasiPenghargaanController::class, 'delete']);
     });
     
-    // Status Kewenangan routes
+    // Status Kewenangan (RESTful)
     Route::prefix('status-kewenangan')->group(function () {
         Route::get('/', [\App\Http\Controllers\Api\StatusKewenanganController::class, 'index']);
         Route::post('/', [\App\Http\Controllers\Api\StatusKewenanganController::class, 'store']);
-        Route::get('/{id}/file', [\App\Http\Controllers\Api\StatusKewenanganController::class, 'viewFile']);
-        Route::post('/bulk-delete', [\App\Http\Controllers\Api\StatusKewenanganController::class, 'bulkDelete']);
+        Route::get('/{id}', [\App\Http\Controllers\Api\StatusKewenanganController::class, 'view']);
+        Route::delete('/{id}', [\App\Http\Controllers\Api\StatusKewenanganController::class, 'delete']);
     });
 });

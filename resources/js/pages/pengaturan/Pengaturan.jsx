@@ -351,7 +351,7 @@ const Pengaturan = () => {
     setIsDeleting(true);
 
     try {
-      const response = await authenticatedFetch('/api/account', {
+      const response = await authenticatedFetch('/api/profile', {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',

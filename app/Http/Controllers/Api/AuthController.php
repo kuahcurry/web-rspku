@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Cache;
 use App\Models\UserRegistration;
 use App\Mail\VerificationCodeMail;
 use Tymon\JWTAuth\Facades\JWTAuth;
@@ -78,7 +79,12 @@ class AuthController extends Controller
     public function me()
     {
         try {
-            $user = auth()->user();
+            $userId = auth()->id();
+            
+            // Cache user data for 15 minutes
+            $user = Cache::remember("user_profile_{$userId}", 900, function () {
+                return auth()->user();
+            });
             
             return response()->json([
                 'success' => true,
