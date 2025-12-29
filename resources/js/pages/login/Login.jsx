@@ -106,6 +106,7 @@ function Login() {
             <Form onSubmit={handleLogin} className={styles['login-form']}>
               <div className={styles['login-header']}>
                 <h1>Selamat Datang</h1>
+                <h2>Keperawatan dan Kebidanan</h2>
               </div>
               <Input
                 label="NIK"

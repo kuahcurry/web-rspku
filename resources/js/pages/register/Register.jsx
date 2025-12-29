@@ -198,6 +198,7 @@ function Register() {
           <div className={styles['register-content']}>
             <div className={styles['register-header']}>
               <h1>Daftar Akun</h1>
+              <h2>Keperawatan dan Kebidanan</h2>
             </div>
             
             <Form onSubmit={handleRegister} className={styles['register-form']}>
