@@ -9,9 +9,6 @@ import Input from '../../components/input/Input';
 import Tabs from '../../components/tabs/Tabs';
 import { MdVisibility, MdAdd, MdCloudUpload, MdSave, MdDownload, MdDelete } from 'react-icons/md';
 import { authenticatedFetch, isAuthenticated } from '../../utils/auth';
-import { cachedFetch } from '../../services/apiService';
-import { cacheConfig } from '../../utils/cache';
-import StatusBanner from '../../components/status/StatusBanner';
 import styles from './PrestasiPenghargaan.module.css';
 
 const tabs = [
@@ -33,7 +30,6 @@ const EMPTY_FORM = {
 
 const PrestasiPenghargaan = () => {
   const navigate = useNavigate();
-  const [banner, setBanner] = useState({ message: '', type: 'info' });
   const [activeTab, setActiveTab] = useState('prestasi');
   const [showViewModal, setShowViewModal] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -70,7 +66,7 @@ const PrestasiPenghargaan = () => {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const response = await cachedFetch('/api/prestasi-penghargaan', {}, cacheConfig.TTL.LONG);
+      const response = await authenticatedFetch('/api/prestasi-penghargaan');
       const data = await response.json();
 
       if (response.ok && data.success) {
@@ -119,7 +115,7 @@ const PrestasiPenghargaan = () => {
       setPdfUrl(url);
     } catch (error) {
       console.error('Error fetching PDF:', error);
-      setBanner({ message: 'Gagal memuat dokumen', type: 'error' });
+      alert('Gagal memuat dokumen');
     } finally {
       setLoadingPdf(false);
     }
@@ -183,14 +179,14 @@ const PrestasiPenghargaan = () => {
   const processFile = (file, eventRef) => {
     if (!file) return;
     if (file.type !== 'application/pdf') {
-      setBanner({ message: 'Hanya file PDF yang diperbolehkan', type: 'warning' });
+      alert('Hanya file PDF yang diperbolehkan');
       if (eventRef?.target) eventRef.target.value = '';
       return;
     }
     
     const maxSize = 5 * 1024 * 1024; // 5MB
     if (file.size > maxSize) {
-      setBanner({ message: 'Ukuran file maksimal 5MB', type: 'warning' });
+      alert('Ukuran file maksimal 5MB');
       if (eventRef?.target) eventRef.target.value = '';
       return;
     }
@@ -212,7 +208,7 @@ const PrestasiPenghargaan = () => {
     e.preventDefault();
     
     if (!formData.judul || !formData.penyelenggara || !formData.tahun || !formData.file) {
-      setBanner({ message: 'Semua field harus diisi', type: 'warning' });
+      alert('Semua field harus diisi');
       return;
     }
 
@@ -243,7 +239,7 @@ const PrestasiPenghargaan = () => {
       const data = await response.json();
 
       if (response.ok && data.success) {
-        setBanner({ message: 'Data berhasil ditambahkan', type: 'success' });
+        alert('Data berhasil ditambahkan');
         handleCloseAddModal();
         fetchData();
       } else {
@@ -255,7 +251,7 @@ const PrestasiPenghargaan = () => {
       }
     } catch (error) {
       console.error('Error adding achievement:', error);
-      setBanner({ message: error.message || 'Gagal menambahkan data', type: 'error' });
+      alert(error.message || 'Gagal menambahkan data');
     } finally {
       setIsSubmitting(false);
     }
@@ -280,7 +276,7 @@ const PrestasiPenghargaan = () => {
       URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Error downloading file:', error);
-      setBanner({ message: 'Gagal mengunduh file', type: 'error' });
+      alert('Gagal mengunduh file');
     }
   };
 
@@ -331,7 +327,7 @@ const PrestasiPenghargaan = () => {
       const data = await response.json();
 
       if (response.ok && data.success) {
-        setBanner({ message: 'Data berhasil dihapus', type: 'success' });
+        alert('Data berhasil dihapus');
         setShowDeleteModal(false);
         setDeleteMode(false);
         setDeleteTargets([]);
@@ -341,21 +337,12 @@ const PrestasiPenghargaan = () => {
       }
     } catch (error) {
       console.error('Error deleting achievements:', error);
-      setBanner({ message: error.message || 'Gagal menghapus data', type: 'error' });
+      alert(error.message || 'Gagal menghapus data');
     }
   };
 
   return (
     <MainLayout>
-      {!showAddModal && !showDeleteModal && !showViewModal && (
-        <div className={styles.bannerArea}>
-          <StatusBanner
-            message={banner.message}
-            type={banner.type}
-            onClose={() => setBanner({ message: '', type: 'info' })}
-          />
-        </div>
-      )}
       <header className={styles.pageHeader}>
         <h1 className={styles.pageTitle}>Prestasi & Penghargaan</h1>
         <p className={styles.pageSubtitle}>Kelola prestasi dan penghargaan yang pernah diraih</p>
@@ -454,13 +441,6 @@ const PrestasiPenghargaan = () => {
         onClose={handleCloseViewModal}
         title={selectedItem?.judul || 'Detail Dokumen'}
         size="large"
-        banner={
-          <StatusBanner
-            message={banner.message}
-            type={banner.type}
-            onClose={() => setBanner({ message: '', type: 'info' })}
-          />
-        }
       >
         <div className={styles['modal-content']}>
           {loadingPdf ? (
@@ -484,13 +464,6 @@ const PrestasiPenghargaan = () => {
         title={`Tambah ${JENIS_MAPPING[activeTab]}`}
         padding="normal"
         size="medium"
-        banner={
-          <StatusBanner
-            message={banner.message}
-            type={banner.type}
-            onClose={() => setBanner({ message: '', type: 'info' })}
-          />
-        }
       >
         <Form onSubmit={handleSubmit} className={styles.modalContent}>
           <Input
@@ -563,13 +536,6 @@ const PrestasiPenghargaan = () => {
         isOpen={showDeleteModal}
         onClose={handleCancelDelete}
         title="Konfirmasi Hapus"
-        banner={
-          <StatusBanner
-            message={banner.message}
-            type={banner.type}
-            onClose={() => setBanner({ message: '', type: 'info' })}
-          />
-        }
       >
         <div className={styles['delete-confirmation']}>
           <p>Apakah Anda yakin ingin menghapus {deleteTargets.length} data yang dipilih?</p>

@@ -74,13 +74,22 @@
 .login-container .login-header {
   position: relative;
   text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.login-container .header-logo {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  margin-bottom: 0.75rem;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15));
 }
 
 .login-container .login-header h1 {
   color: var(--text-inverse);
   font-size: 3.3rem;
   font-weight: 700;
-  margin: 0 0 0.5rem 0;
+  margin: 0 0 0.25rem 0;
   text-align: center;
   text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
   letter-spacing: 0.02em;
@@ -89,13 +98,11 @@
 
 .login-container .login-header h2 {
   color: var(--text-inverse);
-  font-size: 1.5rem;
-  font-weight: 700;
-  margin: 0 0 1rem 0;
+  font-size: 1.35rem;
+  font-weight: 500;
+  margin-bottom: 30px;
   text-align: center;
-  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
-  letter-spacing: 0.02em;
-  position: relative;
+  opacity: 0.95;
 }
 
 .login-container :global(.input-label){
@@ -189,19 +196,6 @@
   z-index: 1;
 }
 
-.login-container .logo-container {
-  position: absolute;
-  top: 2rem;
-  right: 2rem;
-  z-index: 2;
-}
-
-.login-container .logo {
-  width: 80px;
-  height: 80px;
-  object-fit: contain;
-  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
-}
 
 .login-container .building-image {
   width: 100%;
@@ -233,7 +227,16 @@
   }
   .login-container .login-header h1 {
     font-size: 3.2rem;
-    margin: 0 0 2.5rem 0;
+    margin: 0 0 0.25rem 0;
+  }
+
+  .login-container .login-header h2 {
+    font-size: 1.25rem;
+  }
+
+  .login-container .header-logo {
+    width: 70px;
+    height: 70px;
   }
 
   .login-container .login-content {
@@ -254,7 +257,16 @@
 
   .login-container .login-header h1 {
     font-size: 3rem;
-    margin: 0 0 2.5rem 0;
+    margin: 0 0 0.25rem 0;
+  }
+
+  .login-container .login-header h2 {
+    font-size: 1.15rem;
+  }
+
+  .login-container .header-logo {
+    width: 65px;
+    height: 65px;
   }
 }
 
@@ -270,6 +282,15 @@
 
   .login-container .login-header h1 {
     font-size: 2rem;
-    margin: 0 0 2rem 0;
+    margin: 0 0 0.2rem 0;
+  }
+
+  .login-container .login-header h2 {
+    font-size: 1rem;
+  }
+
+  .login-container .header-logo {
+    width: 55px;
+    height: 55px;
   }
 }

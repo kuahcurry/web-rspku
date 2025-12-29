@@ -9,9 +9,6 @@ import Input from '../../components/input/Input';
 import Tabs from '../../components/tabs/Tabs';
 import { MdAdd, MdVisibility, MdCloudUpload, MdSave, MdDownload, MdDelete } from 'react-icons/md';
 import { authenticatedFetch, isAuthenticated } from '../../utils/auth';
-import { cachedFetch } from '../../services/apiService';
-import { cacheConfig } from '../../utils/cache';
-import StatusBanner from '../../components/status/StatusBanner';
 import styles from './Penugasan.module.css';
 
 const formatDate = (value) => {
@@ -45,7 +42,6 @@ const tabs = [
 const Penugasan = () => {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
-  const [banner, setBanner] = useState({ message: '', type: 'info' });
   
   const [assignments, setAssignments] = useState({ Penugasan: [], Pengabdian: [] });
   const [activeTab, setActiveTab] = useState('penugasan');
@@ -79,7 +75,7 @@ const Penugasan = () => {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const response = await cachedFetch('/api/penugasan', {}, cacheConfig.TTL.LONG);
+      const response = await authenticatedFetch('/api/penugasan');
       const data = await response.json();
 
       if (response.ok && data.success) {
@@ -106,11 +102,11 @@ const Penugasan = () => {
         const url = URL.createObjectURL(blob);
         setPdfUrl(url);
       } else {
-        setBanner({ message: 'Gagal memuat dokumen', type: 'error' });
+        alert('Gagal memuat dokumen');
       }
     } catch (error) {
       console.error('Error loading PDF:', error);
-      setBanner({ message: 'Terjadi kesalahan saat memuat dokumen', type: 'error' });
+      alert('Terjadi kesalahan saat memuat dokumen');
     } finally {
       setLoadingPdf(false);
     }
@@ -179,7 +175,7 @@ const Penugasan = () => {
       const data = await response.json();
 
       if (response.ok && data.success) {
-        setBanner({ message: `${data.deleted_count} penugasan berhasil dihapus`, type: 'success' });
+        alert(`${data.deleted_count} penugasan berhasil dihapus`);
         
         setAssignments((prev) => prev.filter((item) => !idsToDelete.includes(item.id)));
         
@@ -190,11 +186,11 @@ const Penugasan = () => {
         
         fetchData();
       } else {
-        setBanner({ message: data.message || 'Gagal menghapus data', type: 'error' });
+        alert(data.message || 'Gagal menghapus data');
       }
     } catch (error) {
       console.error('Error deleting records:', error);
-      setBanner({ message: 'Terjadi kesalahan saat menghapus data', type: 'error' });
+      alert('Terjadi kesalahan saat menghapus data');
     } finally {
       setDeleteTargets([]);
       setDeleteMode(false);
@@ -235,7 +231,7 @@ const Penugasan = () => {
     if (file.type === 'application/pdf' && file.size <= 10 * 1024 * 1024) {
       setFormData({ ...formData, file });
     } else {
-      setBanner({ message: 'File harus berformat PDF dan maksimal 10MB', type: 'warning' });
+      alert('File harus berformat PDF dan maksimal 10MB');
       if (eventRef?.target) eventRef.target.value = null;
     }
   };
@@ -244,7 +240,7 @@ const Penugasan = () => {
     e.preventDefault();
     
     if (!formData.unit || !formData.penanggung_jawab || !formData.tanggal_mulai || !formData.file) {
-      setBanner({ message: 'Mohon lengkapi field yang wajib diisi', type: 'warning' });
+      alert('Mohon lengkapi field yang wajib diisi');
       return;
     }
 
@@ -273,7 +269,7 @@ const Penugasan = () => {
       const data = await response.json();
 
       if (response.ok && data.success) {
-        setBanner({ message: `${formData.jenis || 'Penugasan'} berhasil ditambahkan!`, type: 'success' });
+        alert(`${formData.jenis || 'Penugasan'} berhasil ditambahkan!`);
         setShowAddModal(false);
         setFormData({
           unit: '',
@@ -285,11 +281,11 @@ const Penugasan = () => {
         });
         fetchData();
       } else {
-        setBanner({ message: data.message || 'Gagal menambahkan data', type: 'error' });
+        alert(data.message || 'Gagal menambahkan data');
       }
     } catch (error) {
       console.error('Error adding assignment:', error);
-      setBanner({ message: 'Terjadi kesalahan saat menambahkan data', type: 'error' });
+      alert('Terjadi kesalahan saat menambahkan data');
     } finally {
       setIsSubmitting(false);
     }
@@ -310,30 +306,20 @@ const Penugasan = () => {
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
       } else {
-        setBanner({ message: 'Gagal mendownload dokumen', type: 'error' });
+        alert('Gagal mendownload dokumen');
       }
     } catch (error) {
       console.error('Error downloading PDF:', error);
-      setBanner({ message: 'Terjadi kesalahan saat mendownload dokumen', type: 'error' });
+      alert('Terjadi kesalahan saat mendownload dokumen');
     }
   };
 
   // Get assignments for current tab
   const currentTabKey = activeTab === 'penugasan' ? 'Penugasan' : 'Pengabdian';
   const filteredAssignments = assignments[currentTabKey] || [];
-  const isModalOpen = showViewModal || showDeleteModal || showAddModal;
 
   return (
     <MainLayout>
-      {!isModalOpen && (
-        <div className={styles.bannerArea}>
-          <StatusBanner
-            message={banner.message}
-            type={banner.type}
-            onClose={() => setBanner({ message: '', type: 'info' })}
-          />
-        </div>
-      )}
       <header className={styles.pageHeader}>
         <h1 className={styles.pageTitle}>Penugasan & Pengabdian</h1>
         <p className={styles.pageSubtitle}>Riwayat penugasan, penempatan unit kerja, dan pengabdian</p>
@@ -480,13 +466,6 @@ const Penugasan = () => {
         title={selectedItem?.unit || 'Detail Penugasan'}
         size="large"
         padding="normal"
-        banner={
-          <StatusBanner
-            message={banner.message}
-            type={banner.type}
-            onClose={() => setBanner({ message: '', type: 'info' })}
-          />
-        }
       >
         <div className={styles.modalContent}>
           <div className={styles.metaRow}>
@@ -550,13 +529,6 @@ const Penugasan = () => {
         title="Konfirmasi Hapus"
         size="small"
         padding="normal"
-        banner={
-          <StatusBanner
-            message={banner.message}
-            type={banner.type}
-            onClose={() => setBanner({ message: '', type: 'info' })}
-          />
-        }
       >
         <div className={styles.modalContent}>
           <p className={styles.metaValue}>
@@ -596,13 +568,6 @@ const Penugasan = () => {
         title={`Tambah ${activeTab === 'pengabdian' ? 'Pengabdian' : 'Penugasan'}`}
         size="medium"
         padding="normal"
-        banner={
-          <StatusBanner
-            message={banner.message}
-            type={banner.type}
-            onClose={() => setBanner({ message: '', type: 'info' })}
-          />
-        }
       >
         <Form onSubmit={handleSubmit} className={styles.modalForm}>
           <Form.Row columns={2} className={styles.formRow}>

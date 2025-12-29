@@ -20,10 +20,7 @@ import {
   MdArrowForward
 } from 'react-icons/md';
 import { isAuthenticated, authenticatedFetch } from '../../utils/auth';
-import { cachedFetch } from '../../services/apiService';
-import { cacheConfig } from '../../utils/cache';
 import { formatDateToIndonesian } from '../../utils/dateFormatter';
-import StatusBanner from '../../components/status/StatusBanner';
 import styles from './Kredensial.module.css';
 
 const JENIS_TAHAP = [
@@ -78,7 +75,6 @@ const calculateMonthsDifference = (startDate, endDate) => {
 
 const Kredensial = () => {
   const navigate = useNavigate();
-  const [banner, setBanner] = useState({ message: '', type: 'info' });
   const [activities, setActivities] = useState([]);
   const [activeTab, setActiveTab] = useState('riwayat');
   const [loading, setLoading] = useState(false);
@@ -129,7 +125,7 @@ const Kredensial = () => {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const response = await cachedFetch('/api/kredensial', {}, cacheConfig.TTL.LONG);
+      const response = await authenticatedFetch('/api/kredensial');
       const data = await response.json();
 
       if (response.ok && data.success) {
@@ -203,7 +199,6 @@ const Kredensial = () => {
     if (!kompetenWithDate.length) return 'Belum diatur';
     return `Berlaku s.d. ${formatDateToIndonesian(kompetenWithDate[0].masa_berlaku)}`;
   }, [activities]);
-  const isModalOpen = showModal || showDeleteModal || showViewModal;
 
   const openAddModal = () => {
     setEditingId(null);
@@ -251,12 +246,12 @@ const Kredensial = () => {
   const processFile = (file, eventRef) => {
     if (!file) return;
     if (file.type !== 'application/pdf') {
-      setBanner({ message: 'Hanya file PDF yang diperbolehkan', type: 'warning' });
+      alert('Hanya file PDF yang diperbolehkan');
       if (eventRef?.target) eventRef.target.value = '';
       return;
     }
     if (file.size > 5 * 1024 * 1024) {
-      setBanner({ message: 'File terlalu besar. Maksimal 5MB', type: 'warning' });
+      alert('File terlalu besar. Maksimal 5MB');
       if (eventRef?.target) eventRef.target.value = '';
       return;
     }
@@ -270,7 +265,7 @@ const Kredensial = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.nama_kegiatan || !formData.tanggal_berlaku || !formData.jenis_kegiatan || !formData.hasil_penilaian) {
-      setBanner({ message: 'Mohon lengkapi minimal nama, tanggal, jenis, dan hasil.', type: 'warning' });
+      alert('Mohon lengkapi minimal nama, tanggal, jenis, dan hasil.');
       return;
     }
 
@@ -317,11 +312,11 @@ const Kredensial = () => {
         });
       } else {
         const error = await response.json();
-        setBanner({ message: error.message || 'Gagal menyimpan data', type: 'error' });
+        alert(error.message || 'Gagal menyimpan data');
       }
     } catch (error) {
       console.error('Error saving kredensial:', error);
-      setBanner({ message: 'Terjadi kesalahan saat menyimpan data', type: 'error' });
+      alert('Terjadi kesalahan saat menyimpan data');
     } finally {
       setIsSubmitting(false);
     }
@@ -329,7 +324,7 @@ const Kredensial = () => {
 
   const handleViewFile = async (item) => {
     if (!item.fileName && !item.fileUrl) {
-      setBanner({ message: 'Sertifikat belum diupload.', type: 'warning' });
+      alert('Sertifikat belum diupload.');
       return;
     }
 
@@ -344,12 +339,12 @@ const Kredensial = () => {
         const url = URL.createObjectURL(blob);
         setPdfUrl(url);
       } else {
-        setBanner({ message: 'Gagal memuat dokumen', type: 'error' });
+        alert('Gagal memuat dokumen');
         setShowViewModal(false);
       }
     } catch (error) {
       console.error('Error viewing file:', error);
-      setBanner({ message: 'Terjadi kesalahan saat memuat dokumen', type: 'error' });
+      alert('Terjadi kesalahan saat memuat dokumen');
       setShowViewModal(false);
     } finally {
       setLoadingPdf(false);
@@ -415,11 +410,11 @@ const Kredensial = () => {
         setShowDeleteModal(false);
       } else {
         const error = await response.json();
-        setBanner({ message: error.message || 'Gagal menghapus data', type: 'error' });
+        alert(error.message || 'Gagal menghapus data');
       }
     } catch (error) {
       console.error('Error deleting records:', error);
-      setBanner({ message: 'Terjadi kesalahan saat menghapus data', type: 'error' });
+      alert('Terjadi kesalahan saat menghapus data');
     }
   };
 
@@ -463,15 +458,6 @@ const Kredensial = () => {
 
   return (
     <MainLayout>
-      {!isModalOpen && (
-        <div className={styles.bannerArea}>
-          <StatusBanner
-            message={banner.message}
-            type={banner.type}
-            onClose={() => setBanner({ message: '', type: 'info' })}
-          />
-        </div>
-      )}
       <header className={styles.pageHeader}>
         <h1 className={styles.pageTitle}>Kredensial & Rekredensial</h1>
         <p className={styles.pageSubtitle}>
@@ -658,13 +644,6 @@ const Kredensial = () => {
         title="Konfirmasi Hapus"
         size="small"
         padding="normal"
-        banner={
-          <StatusBanner
-            message={banner.message}
-            type={banner.type}
-            onClose={() => setBanner({ message: '', type: 'info' })}
-          />
-        }
       >
         <div className={styles.modalContent}>
           <p className={styles.metaValue}>Hapus {deleteTargets.length} data terpilih?</p>
@@ -695,13 +674,6 @@ const Kredensial = () => {
         title={editingId ? 'Edit Kegiatan Kredensial' : 'Tambah Kegiatan Kredensial'}
         size="large"
         padding="normal"
-        banner={
-          <StatusBanner
-            message={banner.message}
-            type={banner.type}
-            onClose={() => setBanner({ message: '', type: 'info' })}
-          />
-        }
       >
         <Form onSubmit={handleSubmit} className={styles.modalContent}>
           <Form.Row columns={2} className={styles.formRow}>
@@ -821,13 +793,6 @@ const Kredensial = () => {
         title={selectedItem?.nama_kegiatan || 'Detail Kegiatan'}
         size="large"
         padding="normal"
-        banner={
-          <StatusBanner
-            message={banner.message}
-            type={banner.type}
-            onClose={() => setBanner({ message: '', type: 'info' })}
-          />
-        }
       >
         <div className={styles.modalContent}>
           <div className={styles.metaRow}>

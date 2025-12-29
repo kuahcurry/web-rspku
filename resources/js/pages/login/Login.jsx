@@ -105,6 +105,7 @@ function Login() {
           <div className={styles['login-content']}>
             <Form onSubmit={handleLogin} className={styles['login-form']}>
               <div className={styles['login-header']}>
+                <img src={logoImg} alt="Logo Muhammadiyah" className={styles['header-logo']} />
                 <h1>Selamat Datang</h1>
                 <h2>Keperawatan dan Kebidanan</h2>
               </div>
@@ -169,9 +170,6 @@ function Login() {
 
         {/* Right Side Image with Logo */}
         <div className={styles['right-panel']}>
-          <div className={styles['logo-container']}>
-            <img src={logoImg} alt="Logo Muhammadiyah" className={styles.logo} />
-          </div>
           <div className={styles['building-image']}></div>
         </div>
       </div>

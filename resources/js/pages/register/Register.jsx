@@ -5,6 +5,7 @@ import Input from '../../components/input/Input';
 import Button from '../../components/button/Button';
 import { useIndonesiaRegion } from '../../hooks/useIndonesiaRegion';
 import styles from './Register.module.css';
+import logoImg from '../../assets/logo.webp';
 
 function Register() {
   const navigate = useNavigate();
@@ -182,9 +183,6 @@ function Register() {
       <div className={styles['register-container']}>
         {/* Left Side Image with Logo */}
         <div className={styles['left-panel']}>
-          <div className={styles['logo-container']}>
-            <img src="favicon.ico" alt="Logo Muhammadiyah" className={styles.logo} />
-          </div>
           <div className={styles['building-image']}></div>
         </div>
 
@@ -196,9 +194,13 @@ function Register() {
         {/* Register Card */}
         <div className={styles['register-card']}>
           <div className={styles['register-content']}>
+            {/* Logo */}
+            <div className={styles['header-logo-container']}>
+              <img src={logoImg} alt="Logo Muhammadiyah" className={styles['header-logo']} />
+            </div>
+            
             <div className={styles['register-header']}>
               <h1>Daftar Akun</h1>
-              <h2>Keperawatan dan Kebidanan</h2>
             </div>
             
             <Form onSubmit={handleRegister} className={styles['register-form']}>

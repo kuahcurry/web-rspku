@@ -8,7 +8,7 @@
 <body style="margin:0;padding:0;background-color:#F2F4F7;font-family:Arial,Helvetica,sans-serif;color:#1D1E20;">
     <!-- Preheader -->
     <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">
-        Kode verifikasi untuk {{ config('app.name') }} (berlaku 15 menit).
+        Kode OTP reset password untuk {{ config('app.name') }} (berlaku 15 menit).
     </div>
 
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F2F4F7;padding:28px 0;">
@@ -29,12 +29,12 @@
                                             {{ config('app.name') }}
                                         </div>
                                         <div style="font-size:12px;color:#6E7277;margin-top:2px;">
-                                            Kode OTP Verifikasi Email
+                                            Kode OTP Reset Password
                                         </div>
                                     </td>
                                     <td align="right" valign="middle">
                                         <span style="display:inline-block;padding:6px 10px;border-radius:8px;background-color:#E7E9FF;color:#2020A0;font-size:11px;font-weight:700;letter-spacing:0.4px;">
-                                            OTP - 15 MENIT
+                                            OTP • 15 MENIT
                                         </span>
                                     </td>
                                 </tr>
@@ -46,9 +46,9 @@
                     <tr>
                         <td style="padding:22px;">
                             <div style="font-size:14px;line-height:1.7;">
-                                <p style="margin:0 0 10px;">Yth. <strong>{{ $userName ?? 'Rekan' }}</strong>,</p>
-                                <p style="margin:0 0 12px;color:#2F3135;">Berikut kode OTP untuk memverifikasi akun Anda.</p>
-                                <p style="margin:0 0 12px;color:#6E7277;">Kode kedaluwarsa dalam <strong style="color:#1D1E20;">15 menit</strong>. Masukkan kode ini pada halaman verifikasi untuk melanjutkan.</p>
+                                <p style="margin:0 0 10px;">Halo <strong>{{ $userName ?? 'Rekan' }}</strong>,</p>
+                                <p style="margin:0 0 12px;color:#2F3135;">Kami menerima permintaan untuk mengatur ulang password akun Anda.</p>
+                                <p style="margin:0 0 12px;color:#6E7277;">Gunakan kode OTP di bawah ini dan selesaikan proses reset dalam <strong style="color:#1D1E20;">15 menit</strong>.</p>
 
                                 <!-- OTP -->
                                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:16px 0 18px;">
@@ -61,8 +61,8 @@
                                     </tr>
                                 </table>
 
-                                <p style="margin:0 0 10px;color:#6E7277;">Demi keamanan, jangan membagikan kode ini kepada siapa pun.</p>
-                                <p style="margin:0;color:#2F3135;">Terima kasih,<br><strong>Tim {{ config('app.name') }}</strong></p>
+                                <p style="margin:0 0 10px;color:#6E7277;">Jika Anda tidak meminta reset password, abaikan email ini dan akun Anda tetap aman.</p>
+                                <p style="margin:0;color:#2F3135;">Salam hangat,<br><strong>Tim {{ config('app.name') }}</strong></p>
                             </div>
                         </td>
                     </tr>
