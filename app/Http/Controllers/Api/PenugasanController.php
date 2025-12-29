@@ -15,7 +15,7 @@ class PenugasanController extends Controller
     /**
      * Get all assignments for authenticated user
      */
-    public function index()
+    public function index(Request $request)
     {
         try {
             $user = auth()->user();
@@ -31,7 +31,10 @@ class PenugasanController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data' => $grouped
+                'data' => $grouped,
+                'meta' => [
+                    'total' => $assignments->count()
+                ]
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
@@ -138,7 +141,46 @@ class PenugasanController extends Controller
     }
 
     /**
-     * Delete multiple assignments
+     * Delete a single assignment
+     */
+    public function delete($id)
+    {
+        try {
+            $user = auth()->user();
+            $record = Penugasan::where('user_id', $user->id)
+                ->where('id', $id)
+                ->first();
+
+            if (!$record) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Record not found'
+                ], 404);
+            }
+
+            // Delete file from storage
+            if (Storage::disk('public')->exists($record->file_path)) {
+                Storage::disk('public')->delete($record->file_path);
+            }
+
+            $record->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Record deleted successfully'
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to delete record',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Delete multiple assignments (legacy support)
+     * @deprecated Use DELETE /{id} for single deletions
      */
     public function deleteMultiple(Request $request)
     {

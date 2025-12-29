@@ -108,8 +108,8 @@ const RiwayatPendidikan = () => {
     setPdfUrl(null);
 
     try {
-      console.log('Fetching PDF from:', `/api/riwayat-pendidikan/view/${item.id}`); // Debug log
-      const response = await authenticatedFetch(`/api/riwayat-pendidikan/view/${item.id}`);
+      console.log('Fetching PDF from:', `/api/riwayat-pendidikan/${item.id}`); // Debug log
+      const response = await authenticatedFetch(`/api/riwayat-pendidikan/${item.id}`);
       
       console.log('Response status:', response.status, 'OK:', response.ok); // Debug log
       
@@ -210,18 +210,17 @@ const RiwayatPendidikan = () => {
     try {
       const idsToDelete = deleteTargets.map((entry) => entry.id);
       
-      const response = await authenticatedFetch('/api/riwayat-pendidikan/delete-multiple', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ ids: idsToDelete }),
-      });
+      // Delete each item individually using REST endpoint
+      let successCount = 0;
+      for (const id of idsToDelete) {
+        const response = await authenticatedFetch(`/api/riwayat-pendidikan/${id}`, {
+          method: 'DELETE'
+        });
+        if (response.ok) successCount++;
+      }
 
-      const data = await response.json();
-
-      if (response.ok && data.success) {
-        setBanner({ message: `${data.deleted_count} data berhasil dihapus`, type: 'success' });
+      if (successCount > 0) {
+        setBanner({ message: `${successCount} data berhasil dihapus`, type: 'success' });
         
         // Update local state
         setDataByTab((prev) => ({
@@ -266,7 +265,7 @@ const RiwayatPendidikan = () => {
       apiFormData.append('institusi', formData.institusi);
       apiFormData.append('tahun_lulus', formData.tahun_lulus);
 
-      const response = await authenticatedFetch('/api/riwayat-pendidikan/store', {
+      const response = await authenticatedFetch('/api/riwayat-pendidikan', {
         method: 'POST',
         body: apiFormData,
         headers: {} // Let browser set Content-Type with boundary
