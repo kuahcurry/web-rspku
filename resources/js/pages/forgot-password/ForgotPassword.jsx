@@ -3,11 +3,9 @@ import { Link } from 'react-router-dom';
 import Button from '../../components/button/Button';
 import Input from '../../components/input/Input';
 import Form from '../../components/form/Form';
-import StatusBanner from '../../components/status/StatusBanner';
 import styles from './ForgotPassword.module.css';
 
 function ForgotPassword() {
-  const [banner, setBanner] = useState({ message: '', type: 'info' });
   const [step, setStep] = useState(1); // 1: email, 2: code, 3: new password
   const stepLabels = {
     1: 'Kirim kode reset',
@@ -140,10 +138,8 @@ function ForgotPassword() {
       const data = await response.json();
 
       if (response.ok && data.success) {
-        setBanner({ message: 'Password berhasil direset! Silakan login dengan password baru.', type: 'success' });
-        setTimeout(() => {
-          window.location.href = '/login';
-        }, 700);
+        alert('Password berhasil direset! Silakan login dengan password baru.');
+        window.location.href = '/login';
       } else {
         if (data.errors) {
           setErrors(data.errors);
@@ -161,13 +157,6 @@ function ForgotPassword() {
 
   return (
     <div className={styles['forgot-page']}>
-      <div className={styles.bannerArea}>
-        <StatusBanner
-          message={banner.message}
-          type={banner.type}
-          onClose={() => setBanner({ message: '', type: 'info' })}
-        />
-      </div>
       <div className={styles.overlay}></div>
       <div className={styles.card}>
         <div className={styles['header-row']}>

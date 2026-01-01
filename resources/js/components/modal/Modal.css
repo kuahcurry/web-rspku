@@ -226,11 +226,6 @@
   flex: 1;
 }
 
-.modal-banner {
-  padding: 0 2rem;
-  margin-top: 1rem;
-}
-
 /* Footer */
 .modal-footer {
   display: flex;

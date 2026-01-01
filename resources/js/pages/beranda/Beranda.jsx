@@ -340,7 +340,7 @@ const Beranda = () => {
                       <p>{userData.jabatan || 'Jabatan Tidak Tersedia'}</p>
                     </Card>
                     <Card glass padding="small">
-                      <p>Status: {userData.status_kepegawaian || 'Belum Diisi'}</p>
+                      <p>{userData.status_kepegawaian || 'Belum Diisi'}</p>
                     </Card>
                   </div>
                 </div>

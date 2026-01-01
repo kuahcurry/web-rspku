@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\PasswordResetController;
 use App\Http\Controllers\PdfCompressionController;
 
 // Public routes
+Route::post('/compress-pdf', [PdfCompressionController::class, 'compress']);
 Route::post('/register', [RegisterController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/verify-email', [AuthController::class, 'verifyEmail']);

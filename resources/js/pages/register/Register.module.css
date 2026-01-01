@@ -45,20 +45,6 @@
   z-index: 0;
 }
 
-.register-container .logo-container {
-  position: absolute;
-  top: 2rem;
-  left: 2rem;
-  z-index: 2;
-}
-
-.register-container .logo {
-  width: 80px;
-  height: 80px;
-  object-fit: contain;
-  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
-}
-
 .register-container .building-image {
   width: 100%;
   height: 100%;
@@ -123,6 +109,20 @@
   min-height: 0;
 }
 
+/* Header Logo - above Daftar Akun */
+.header-logo-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 0.75rem;
+}
+
+.header-logo {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+}
+
 .register-form {
   flex: 1;
   min-height: 0;
@@ -147,17 +147,7 @@
   font-weight: 700;
   margin: 0 0 0rem 0;
   text-align: center;
-  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
-  letter-spacing: 0.02em;
-  position: relative;
-}
-
-.register-header h2 {
-  color: var(--text-inverse);
-  font-size: 1.5rem;
-  font-weight: 700;
-  margin: 0 0 1rem 0;
-  text-align: center;
+  margin-bottom: 30px;
   text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
   letter-spacing: 0.02em;
   position: relative;
