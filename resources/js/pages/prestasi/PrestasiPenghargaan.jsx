@@ -13,12 +13,14 @@ import styles from './PrestasiPenghargaan.module.css';
 
 const tabs = [
   { key: 'prestasi', label: 'Prestasi' },
-  { key: 'penghargaan', label: 'Penghargaan' }
+  { key: 'penghargaan', label: 'Penghargaan' },
+  { key: 'kompetensi', label: 'Kompetensi Utama' }
 ];
 
 const JENIS_MAPPING = {
   'prestasi': 'Prestasi',
-  'penghargaan': 'Penghargaan'
+  'penghargaan': 'Penghargaan',
+  'kompetensi': 'Kompetensi Utama'
 };
 
 const EMPTY_FORM = {
@@ -41,13 +43,15 @@ const PrestasiPenghargaan = () => {
   const [loadingPdf, setLoadingPdf] = useState(false);
   const [dataByTab, setDataByTab] = useState({
     prestasi: [],
-    penghargaan: []
+    penghargaan: [],
+    kompetensi: []
   });
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formDataByTab, setFormDataByTab] = useState({
     prestasi: { ...EMPTY_FORM },
-    penghargaan: { ...EMPTY_FORM }
+    penghargaan: { ...EMPTY_FORM },
+    kompetensi: { ...EMPTY_FORM }
   });
   const fileInputRef = useRef(null);
 
@@ -72,7 +76,8 @@ const PrestasiPenghargaan = () => {
       if (response.ok && data.success) {
         setDataByTab({
           prestasi: data.data['Prestasi'] || [],
-          penghargaan: data.data['Penghargaan'] || []
+          penghargaan: data.data['Penghargaan'] || [],
+          kompetensi: data.data['Kompetensi Utama'] || []
         });
       }
     } catch (error) {
@@ -104,7 +109,7 @@ const PrestasiPenghargaan = () => {
     setShowViewModal(true);
 
     try {
-      const response = await authenticatedFetch(`/api/prestasi-penghargaan/${item.id}/file`);
+      const response = await authenticatedFetch(`/api/prestasi-penghargaan/${item.id}`);
       
       if (!response.ok) {
         throw new Error('Failed to fetch PDF');
@@ -244,10 +249,15 @@ const PrestasiPenghargaan = () => {
         fetchData();
       } else {
         // Log validation errors for debugging
+        console.error('Server response:', data);
         if (data.errors) {
           console.error('Validation errors:', data.errors);
+          const errorMessages = Object.entries(data.errors)
+            .map(([field, messages]) => `${field}: ${Array.isArray(messages) ? messages.join(', ') : messages}`)
+            .join('\n');
+          throw new Error(`Validation errors:\n${errorMessages}`);
         }
-        throw new Error(data.message || 'Gagal menambahkan data');
+        throw new Error(data.message || data.error || 'Gagal menambahkan data');
       }
     } catch (error) {
       console.error('Error adding achievement:', error);
@@ -344,8 +354,8 @@ const PrestasiPenghargaan = () => {
   return (
     <MainLayout>
       <header className={styles.pageHeader}>
-        <h1 className={styles.pageTitle}>Prestasi & Penghargaan</h1>
-        <p className={styles.pageSubtitle}>Kelola prestasi dan penghargaan yang pernah diraih</p>
+        <h1 className={styles.pageTitle}>Prestasi, Penghargaan & Kompetensi</h1>
+        <p className={styles.pageSubtitle}>Kelola prestasi, penghargaan, dan kompetensi yang pernah diraih</p>
       </header>
 
       <div className={styles.container}>
@@ -354,7 +364,7 @@ const PrestasiPenghargaan = () => {
 
           <div className={styles.headerRow}>
             <h3 className={styles.sectionTitle}>
-              {activeTab === 'prestasi' ? 'Daftar Prestasi' : 'Daftar Penghargaan'}
+              {activeTab === 'prestasi' ? 'Daftar Prestasi' : activeTab === 'penghargaan' ? 'Daftar Penghargaan' : 'Daftar Kompetensi Utama'}
             </h3>
             <div className={styles.actionButtons}>
               <Button variant="success" size="small" icon={<MdAdd />} iconPosition="left" onClick={handleAddClick}>
@@ -467,14 +477,16 @@ const PrestasiPenghargaan = () => {
       >
         <Form onSubmit={handleSubmit} className={styles.modalContent}>
           <Input
-            label={activeTab === 'prestasi' ? 'Nama Prestasi' : 'Nama Penghargaan'}
+            label={activeTab === 'prestasi' ? 'Nama Prestasi' : activeTab === 'penghargaan' ? 'Nama Penghargaan' : 'Nama Kompetensi'}
             name="judul"
             value={formData.judul}
             onChange={handleInputChange}
             placeholder={
               activeTab === 'prestasi'
                 ? 'Contoh: Juara 1 Lomba Inovasi Pelayanan Publik'
-                : 'Contoh: Penghargaan Tenaga Kesehatan Teladan'
+                : activeTab === 'penghargaan'
+                ? 'Contoh: Penghargaan Tenaga Kesehatan Teladan'
+                : 'Contoh: Sertifikasi ACLS (Advanced Cardiovascular Life Support)'
             }
             required
           />

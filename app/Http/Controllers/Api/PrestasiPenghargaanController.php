@@ -27,6 +27,7 @@ class PrestasiPenghargaanController extends Controller
             $grouped = [
                 'Prestasi' => $records->where('achievement_type', 'Prestasi')->values(),
                 'Penghargaan' => $records->where('achievement_type', 'Penghargaan')->values(),
+                'Kompetensi Utama' => $records->where('achievement_type', 'Kompetensi Utama')->values(),
             ];
 
             return response()->json([
@@ -54,7 +55,7 @@ class PrestasiPenghargaanController extends Controller
             'judul' => 'required|string|max:255',
             'penyelenggara' => 'required|string|max:255',
             'tahun' => 'required|digits:4|integer|min:1900|max:' . (date('Y') + 1),
-            'jenis' => 'required|in:Prestasi,Penghargaan',
+            'jenis' => 'required|in:Prestasi,Penghargaan,Kompetensi Utama',
             'file' => 'required|file|mimes:pdf|max:10240',
         ];
 
@@ -74,7 +75,16 @@ class PrestasiPenghargaanController extends Controller
 
             // Create folder structure based on type
             $folderName = $this->sanitizeFolderName($user->name) . '_' . $user->nik;
-            $subFolder = $request->jenis === 'Prestasi' ? 'prestasi' : 'penghargaan';
+            
+            // Determine subfolder based on type
+            if ($request->jenis === 'Prestasi') {
+                $subFolder = 'prestasi';
+            } elseif ($request->jenis === 'Penghargaan') {
+                $subFolder = 'penghargaan';
+            } else { // Kompetensi Utama
+                $subFolder = 'kompetensiUtama';
+            }
+            
             $folderPath = $folderName . '/pendidikan&prestasi/' . $subFolder;
 
             // Generate unique filename
@@ -99,6 +109,13 @@ class PrestasiPenghargaanController extends Controller
                 'data' => $record
             ], 201);
         } catch (\Exception $e) {
+            \Log::error('Failed to add prestasi/penghargaan record', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'user_id' => auth()->id(),
+                'request_data' => $request->except(['file'])
+            ]);
+            
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to add record',
