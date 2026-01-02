@@ -27,13 +27,13 @@ const Sidebar = ({ isOpen, onClose }) => {
     { 
       key: 'riwayat-pendidikan',
       icon: MdSchool, 
-      label: 'Pendidikan dan Prestasi',
+      label: 'Pendidikan & Prestasi',
       subMenus: [
         { path: '/riwayat-pendidikan', label: 'Pendidikan & Pelatihan' },
-        { path: '/prestasi-penghargaan', label: 'Prestasi & Penghargaan' }
+        { path: '/prestasi-penghargaan', label: 'Prestasi, Penghargaan, & Kompetensi' }
       ]
     },
-    { path: '/penugasan', icon: MdAssignment, label: 'Penugasan' },
+    { path: '/penugasan', icon: MdAssignment, label: 'Penugasan & Pengabdian' },
     { 
       key: 'kredensial',
       icon: IoShieldCheckmarkSharp, 
