@@ -1,0 +1,395 @@
+/* System Settings Styles */
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Banner Notification */
+.banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.875rem 1.25rem;
+  border-radius: var(--radius-md);
+  font-weight: 500;
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.banner.success {
+  background: color-mix(in srgb, var(--success-green) 15%, transparent);
+  color: var(--success-dark);
+  border: 1px solid color-mix(in srgb, var(--success-green) 30%, transparent);
+}
+
+.banner.error {
+  background: color-mix(in srgb, var(--error-red) 15%, transparent);
+  color: var(--error-dark);
+  border: 1px solid color-mix(in srgb, var(--error-red) 30%, transparent);
+}
+
+.bannerClose {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: inherit;
+  opacity: 0.7;
+  padding: 0;
+  line-height: 1;
+  transition: opacity 0.2s ease;
+}
+
+.bannerClose:hover {
+  opacity: 1;
+}
+
+/* Page Header */
+.pageHeader {
+  margin-bottom: 0.5rem;
+}
+
+.pageTitle {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--heading-main);
+  margin: 0 0 0.35rem 0;
+  letter-spacing: -0.02em;
+}
+
+.pageSubtitle {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+/* Settings Grid */
+.settingsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+}
+
+/* Settings Card */
+.settingsCard {
+  background: var(--bg-main);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--border-grey);
+  overflow: hidden;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--border-grey);
+  background: var(--bg-soft);
+}
+
+.cardIcon {
+  color: var(--primary-main);
+}
+
+.cardTitle {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--heading-main);
+  margin: 0;
+}
+
+.cardContent {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.cardFooter {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--border-grey);
+  background: var(--bg-soft);
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* Setting Item */
+.settingItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.settingLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.settingLabel svg {
+  color: var(--text-secondary);
+}
+
+/* Input Group */
+.inputGroup {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.inputField {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border-grey);
+  border-radius: var(--radius-md);
+  font-size: 0.9rem;
+  background: var(--bg-main);
+  transition: all 0.2s ease;
+}
+
+.inputField:focus {
+  outline: none;
+  border-color: var(--primary-main);
+  box-shadow: 0 0 0 3px var(--primary-soft);
+}
+
+/* Select Group */
+.selectGroup {
+  display: flex;
+}
+
+.selectField {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border-grey);
+  border-radius: var(--radius-md);
+  font-size: 0.9rem;
+  background: var(--bg-main);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.selectField:focus {
+  outline: none;
+  border-color: var(--primary-main);
+  box-shadow: 0 0 0 3px var(--primary-soft);
+}
+
+/* Password Section */
+.passwordSection {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  background: var(--bg-soft);
+  border-radius: var(--radius-md);
+}
+
+.passwordMask {
+  font-size: 1.25rem;
+  letter-spacing: 2px;
+  color: var(--text-secondary);
+}
+
+/* Toggle Item */
+.toggleItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  background: var(--bg-soft);
+  border-radius: var(--radius-md);
+}
+
+.toggleInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.toggleLabel {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--heading-main);
+}
+
+.toggleDescription {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.toggleBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--grey-400);
+  transition: color 0.2s ease;
+  padding: 0;
+}
+
+.toggleBtn.active {
+  color: var(--success-green);
+}
+
+/* Warning Box */
+.warningBox {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.875rem 1rem;
+  background: var(--warning-light);
+  border-radius: var(--radius-md);
+  font-size: 0.85rem;
+  color: var(--warning-dark);
+}
+
+.warningBox svg {
+  flex-shrink: 0;
+}
+
+/* Info Item */
+.infoItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--border-grey);
+}
+
+.infoItem:last-child {
+  border-bottom: none;
+}
+
+.infoLabel {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.infoValue {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--heading-main);
+}
+
+/* Password Modal */
+.passwordModalContent {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.passwordField {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.passwordField label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.passwordInputWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.passwordInputWrapper .inputField {
+  padding-right: 3rem;
+}
+
+.togglePasswordBtn {
+  position: absolute;
+  right: 0.75rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-secondary);
+  padding: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s ease;
+}
+
+.togglePasswordBtn:hover {
+  color: var(--primary-main);
+}
+
+.passwordHint {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.passwordHint svg {
+  color: var(--info-blue);
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .settingsGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .pageTitle {
+    font-size: 2rem;
+  }
+
+  .inputGroup {
+    flex-direction: column;
+  }
+
+  .toggleItem {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .passwordSection {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .pageTitle {
+    font-size: 1.75rem;
+  }
+
+  .cardHeader {
+    padding: 1rem;
+  }
+
+  .cardContent {
+    padding: 1rem;
+  }
+}

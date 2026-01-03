@@ -1,0 +1,304 @@
+.register-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 2rem 1rem;
+  background: url('../../../assets/loginBackground.png');
+  background-size: cover;
+  background-position: center;
+  /* Hide page scrollbar while preserving scroll */
+  scrollbar-width: none;       /* Firefox */
+  -ms-overflow-style: none;    /* IE/Edge */
+}
+
+.register-page::-webkit-scrollbar {
+  display: none;               /* Chrome/Safari */
+}
+
+.register-container {
+  display: flex;
+  width: min(1200px, 96vw);
+  height: min(760px, 92vh);
+  max-width: 100vw;
+  max-height: 100vh;
+  position: relative;
+  overflow: hidden; 
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg), 0 20px 60px rgba(0, 0, 0, 0.22);
+}
+
+.register-container :global(.btn) {
+  --btn-width: 100%;
+  --btn-tablet-width: 100%;
+  --btn-mobile-width: 100%;
+}
+
+/* Left Panel */
+.left-panel {
+  flex: 0 0 40%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.register-container .building-image {
+  width: 100%;
+  height: 100%;
+  background: url('../../../assets/loginBuilding.png');
+  background-size: cover;
+  background-position: center;
+  filter: drop-shadow(0 12px 28px rgba(0, 0, 0, 0.12));
+}
+
+.register-card {
+  flex: 0 0 60%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  z-index: 3;
+}
+
+/* Decorative Circles */
+.register-container .circle {
+  position: absolute;
+  border-radius: 50%;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.register-container .circle-1 {
+  width: 1100px;
+  height: 1100px;
+  top: -40px;
+  left: 280px; /* anchor the large ring further to the right */
+  background: var(--primary-main);
+}
+
+.register-container .circle-2 {
+  width: 320px;
+  height: 320px;
+  top: -60px;
+  left: 390px; /* small accent circle near the top-right */
+  background: var(--primary-darker);
+}
+
+.register-container .circle-3 {
+  width: 320px;
+  height: 320px;
+  border-radius: 0;
+  right: 0px;
+  background: var(--primary-main);
+}
+
+.register-content {
+  display: flex;
+  flex-direction: column;
+  border-radius: 28px;
+  padding: 2.5rem 2.5rem 2rem 2.5rem;
+  width: 100%;
+  max-width: 580px;
+  position: relative;
+  z-index: 1;
+  max-height: 88vh;
+  min-height: 0;
+}
+
+/* Header Logo - above Daftar Akun */
+.header-logo-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 0.75rem;
+}
+
+.header-logo {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+}
+
+.register-form {
+  flex: 1;
+  min-height: 0;
+  max-height: 300px;
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.register-form::-webkit-scrollbar {
+  display: none;
+}
+
+.register-header {
+  position: relative;
+  text-align: center;
+}
+
+.register-header h1 {
+  color: var(--text-inverse);
+  font-size: 4rem;
+  font-weight: 700;
+  margin: 0 0 0rem 0;
+  text-align: center;
+  margin-bottom: 30px;
+  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
+  letter-spacing: 0.02em;
+  position: relative;
+}
+
+.register-container :global(.form-row){
+  margin-bottom: 0;
+}
+
+.register-container :global(.input-wrapper){
+  margin-bottom: 0.5rem;
+}
+
+.register-container :global(.input-label){
+  color: var(--text-inverse);
+}
+
+.register-container form{
+  margin-bottom: 1rem;
+}
+
+.register-content :global(.error-message) {
+  display: block;
+  margin-top: 0.35rem;
+  color: var(--error-light);
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.auth-links {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.75rem;
+  margin-bottom: 1.4rem;
+  color: color-mix(in srgb, var(--text-inverse) 75%, transparent);
+  font-weight: 500;
+}
+
+.auth-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.auth-link {
+  color: var(--secondary-light);
+  font-weight: 700;
+  text-decoration: none;
+  transition: opacity 0.2s ease, text-decoration 0.2s ease, transform 0.2s ease;
+}
+
+.auth-link:hover {
+  opacity: 0.9;
+  text-decoration: underline;
+  transform: translateY(-1px);
+}
+
+.register-footer {
+  text-align: center;
+  color: var(--pure-white);
+  font-size: 0.75rem;
+  line-height: 1.5;
+  margin-top: 0.6rem;
+  padding-top: 0.2rem;
+  border-top: 1px solid color-mix(in srgb, var(--pure-white) 14%, transparent);
+}
+
+.register-footer p {
+  margin: 0.2rem 0;
+}
+
+.register-error {
+  margin: 0.5rem 0 0.75rem 0;
+  padding: 0.75rem 0.9rem;
+  border-radius: var(--radius-md);
+  background: var(--error-light);
+  color: var(--error-dark);
+  border: 1px solid color-mix(in srgb, var(--error-red) 35%, transparent);
+  font-weight: 600;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .left-panel {
+    display: none;
+  }
+  
+  .register-container {
+    height: auto;
+    min-height: 85vh;
+    box-shadow: none;
+  }
+
+  .register-card {
+    flex: 1;
+  }
+
+  .register-container .circle {
+    display: none;
+  }
+
+  .register-header h1 {
+    font-size: 3.2rem;
+    margin: 0 0 2rem 0;
+  }
+
+  .register-content {
+    padding: 3rem;
+    box-shadow: var(--shadow-lg);
+    background: var(--primary-main);
+    max-width: 500px;
+  }
+}
+
+@media (max-width: 768px) {
+  .register-content {
+    padding: 2.5rem 2rem 2rem 2rem;
+    max-width: 500px;
+    border-radius: 24px;
+  }
+
+  .register-header h1 {
+    font-size: 2.5rem;
+    margin: 0 0 2rem 0;
+  }
+
+  .register-container :global(.form-row) {
+    display: block;
+  }
+
+  .register-container :global(.form-group) {
+    margin-bottom: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .register-card {
+    padding: 1.5rem 1rem;
+  }
+
+  .register-content {
+    padding: 2rem 1.5rem 1.5rem 1.5rem;
+    border-radius: 20px;
+  }
+
+  .register-header h1 {
+    font-size: 1.75rem;
+    margin: 0 0 1.5rem 0;
+  }
+} 
