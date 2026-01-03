@@ -31,14 +31,17 @@ class SecurityHeaders
             $response->headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
         }
         
-        // Content Security Policy
+        // Content Security Policy - allow localhost:5173 in development
+        $isDev = app()->environment('local');
+        $devSrc = $isDev ? ' http://localhost:5173 ws://localhost:5173' : '';
+        
         $response->headers->set('Content-Security-Policy', 
             "default-src 'self'; " .
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://fonts.googleapis.com; " .
-            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " .
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://fonts.googleapis.com{$devSrc}; " .
+            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com{$devSrc}; " .
             "font-src 'self' https://fonts.gstatic.com; " .
-            "img-src 'self' data: https:; " .
-            "connect-src 'self'"
+            "img-src 'self' data: https: blob:{$devSrc}; " .
+            "connect-src 'self'{$devSrc}"
         );
         
         // Referrer Policy
