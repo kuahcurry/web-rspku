@@ -32,6 +32,7 @@
   --btn-width: 100%;
   --btn-tablet-width: 100%;
   --btn-mobile-width: 100%;
+  margin-top: 1rem;
 }
 
 /* Left Panel */
@@ -126,14 +127,34 @@
 .register-form {
   flex: 1;
   min-height: 0;
-  max-height: 300px;
+  max-height: 400px;
   overflow-y: auto;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+  padding-right: 8px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.5) rgba(255, 255, 255, 0.1);
 }
 
 .register-form::-webkit-scrollbar {
-  display: none;
+  width: 8px;
+}
+
+.register-form::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  margin: 4px 0;
+}
+
+.register-form::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  transition: background 0.2s ease;
+}
+
+.register-form::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.7);
+  background-clip: padding-box;
 }
 
 .register-header {

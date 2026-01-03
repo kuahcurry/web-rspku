@@ -370,24 +370,24 @@ function Register() {
                 disabled={isSubmitting}
                 allowPasswordToggle
               />
+
+              {errors.general && (
+                <div className={styles['register-error']}>
+                  {errors.general}
+                </div>
+              )}
+
+              <Button 
+                type="submit" 
+                variant="success" 
+                size="large" 
+                fullWidth
+                disabled={isSubmitting}
+                onClick={handleRegister}
+              >
+                  {isSubmitting ? 'Mendaftar...' : 'Daftar'}
+              </Button>
             </Form>
-
-            {errors.general && (
-              <div className={styles['register-error']}>
-                {errors.general}
-              </div>
-            )}
-
-            <Button 
-              type="submit" 
-              variant="success" 
-              size="large" 
-              fullWidth
-              disabled={isSubmitting}
-              onClick={handleRegister}
-            >
-                {isSubmitting ? 'Mendaftar...' : 'Daftar'}
-            </Button>
 
             <div className={styles['auth-links']}>
               <div className={styles['auth-row']}>
