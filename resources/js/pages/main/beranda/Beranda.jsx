@@ -40,7 +40,7 @@ const Beranda = () => {
   // State for actual data from each section
   const [dokumenData, setDokumenData] = useState([]);
   const [pendidikanData, setPendidikanData] = useState({});
-  const [prestasiData, setPrestasiData] = useState({ Prestasi: [], Penghargaan: [] });
+  const [prestasiData, setPrestasiData] = useState({ Prestasi: [], Penghargaan: [], 'Kompetensi Utama': [] });
   const [penugasanData, setPenugasanData] = useState({ Penugasan: [], Pengabdian: [] });
   const [kredensialData, setKredensialData] = useState([]);
   const [kewenanganData, setKewenanganData] = useState({ SPK: [], RKK: [] });
@@ -146,7 +146,7 @@ const Beranda = () => {
       }
       const dokumenPercentage = Math.round((dokumenCount / 3) * 100);
 
-      // Calculate Pendidikan dan Prestasi (5 sections: Ijazah, Sertifikat Pelatihan, Workshop, Prestasi, Penghargaan)
+      // Calculate Pendidikan dan Prestasi (6 sections: Ijazah, Sertifikat Pelatihan, Workshop, Prestasi, Penghargaan, Kompetensi Utama)
       let pendidikanCount = 0;
       if (pendidikanData.success && pendidikanData.data) {
         if (pendidikanData.data.Ijazah?.length > 0) pendidikanCount++;
@@ -156,8 +156,9 @@ const Beranda = () => {
       if (prestasiData.success && prestasiData.data) {
         if (prestasiData.data.Prestasi?.length > 0) pendidikanCount++;
         if (prestasiData.data.Penghargaan?.length > 0) pendidikanCount++;
+        if (prestasiData.data['Kompetensi Utama']?.length > 0) pendidikanCount++;
       }
-      const pendidikanPercentage = Math.round((pendidikanCount / 5) * 100);
+      const pendidikanPercentage = Math.round((pendidikanCount / 6) * 100);
 
       // Calculate Penugasan (2 types: Penugasan, Pengabdian)
       let penugasanCount = 0;
@@ -196,7 +197,7 @@ const Beranda = () => {
       // Store actual data for display
       const storedDokumen = dokumenData.success && Array.isArray(dokumenData.data) ? dokumenData.data : [];
       const storedPendidikan = pendidikanData.success ? pendidikanData.data : {};
-      const storedPrestasi = prestasiData.success ? prestasiData.data : { Prestasi: [], Penghargaan: [] };
+      const storedPrestasi = prestasiData.success ? prestasiData.data : { Prestasi: [], Penghargaan: [], 'Kompetensi Utama': [] };
       const storedPenugasan = penugasanData.success ? penugasanData.data : { Penugasan: [], Pengabdian: [] };
       const storedKredensial = kredensialData.success && kredensialData.data?.riwayat ? kredensialData.data.riwayat : [];
       const storedKewenangan = kewenanganData.success ? kewenanganData.data : { SPK: [], RKK: [] };
@@ -217,9 +218,10 @@ const Beranda = () => {
       console.log('Sample Ijazah:', storedPendidikan.Ijazah?.[0]);
       console.log('Sample Pelatihan:', storedPendidikan['Sertifikat Pelatihan']?.[0]);
       console.log('Sample Workshop:', storedPendidikan['Sertifikat Workshop']?.[0]);
-      console.log('Prestasi stored:', storedPrestasi.Prestasi?.length || 0, 'prestasi,', storedPrestasi.Penghargaan?.length || 0, 'penghargaan');
+      console.log('Prestasi stored:', storedPrestasi.Prestasi?.length || 0, 'prestasi,', storedPrestasi.Penghargaan?.length || 0, 'penghargaan,', storedPrestasi['Kompetensi Utama']?.length || 0, 'kompetensi utama');
       console.log('Sample Prestasi:', storedPrestasi.Prestasi?.[0]);
       console.log('Sample Penghargaan:', storedPrestasi.Penghargaan?.[0]);
+      console.log('Sample Kompetensi Utama:', storedPrestasi['Kompetensi Utama']?.[0]);
       console.log('Penugasan stored:', storedPenugasan.Penugasan?.length || 0, 'penugasan,', storedPenugasan.Pengabdian?.length || 0, 'pengabdian');
       console.log('Sample Penugasan:', storedPenugasan.Penugasan?.[0]);
       console.log('Kredensial stored:', storedKredensial.length, 'items');
@@ -606,6 +608,22 @@ const Beranda = () => {
               <h4 className={styles['education-subtitle']}>Penghargaan Terbaru</h4>
               {prestasiData.Penghargaan && prestasiData.Penghargaan.length > 0 ? (
                 prestasiData.Penghargaan.slice(0, 1).map((item) => (
+                  <Card key={item.id} variant='inverse' className={styles['detail-card']}>
+                    <div className={styles['education-grid']}>
+                      <div className={styles['workshop-main']}>{item.judul || 'Belum Mengisi/Tidak Ada'}</div>
+                      <div className={styles['workshop-meta']}>{item.tahun || 'Belum Mengisi/Tidak Ada'}</div>
+                    </div>
+                  </Card>
+                ))
+              ) : (
+                <p>Belum Mengisi/Tidak Ada</p>
+              )}
+            </Card>
+
+            <Card variant='secondary' padding="normal">
+              <h4 className={styles['education-subtitle']}>Kompetensi Utama Terbaru</h4>
+              {prestasiData['Kompetensi Utama'] && prestasiData['Kompetensi Utama'].length > 0 ? (
+                prestasiData['Kompetensi Utama'].slice(0, 1).map((item) => (
                   <Card key={item.id} variant='inverse' className={styles['detail-card']}>
                     <div className={styles['education-grid']}>
                       <div className={styles['workshop-main']}>{item.judul || 'Belum Mengisi/Tidak Ada'}</div>
