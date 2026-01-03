@@ -381,7 +381,7 @@ const EtikDisiplin = () => {
               <div className={styles.headerRow}>
                 <h3 className={styles.sectionTitle}>Riwayat Pembinaan Etik</h3>
                 <Button
-                  variant="primary"
+                  variant="success"
                   size="small"
                   icon={<MdAdd />}
                   iconPosition="left"
@@ -469,7 +469,7 @@ const EtikDisiplin = () => {
               <div className={styles.headerRow}>
                 <h3 className={styles.sectionTitle}>Riwayat Disiplin</h3>
                 <Button
-                  variant="primary"
+                  variant="success"
                   size="small"
                   icon={<MdAdd />}
                   iconPosition="left"
