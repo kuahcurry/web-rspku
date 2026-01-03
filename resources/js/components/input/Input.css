@@ -22,11 +22,13 @@
 .input-icon {
   position: absolute;
   top: 50%;
+  transform: translateY(-50%);
   color: var(--text-muted);
   display: flex;
   align-items: center;
   justify-content: center;
   pointer-events: none;
+  line-height: 1;
 }
 
 .input-icon-left {

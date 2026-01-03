@@ -1,0 +1,786 @@
+/* Admin Etik Disiplin Styles */
+.pageHeader {
+  margin-bottom: 1.5rem;
+}
+
+.pageTitle {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--heading-main);
+  margin: 0 0 0.35rem 0;
+  letter-spacing: -0.02em;
+}
+
+.pageSubtitle {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.headerMeta {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.lastUpdated {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+/* Statistics Section */
+.statsSection {
+  margin-bottom: 0.5rem;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.25rem;
+}
+
+.statCard {
+  background: var(--bg-main);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  border: 1px solid var(--border-grey);
+  padding: 1.25rem;
+  transition: all 0.2s ease;
+}
+
+.statCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+.statContent {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.statIcon {
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.statIcon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.statInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.statLabel {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.statValue {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--heading-main);
+  margin: 0;
+  line-height: 1.2;
+}
+
+.statTrend {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--success-green);
+}
+
+.statPercentage {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.statAction {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--primary-main);
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.statAction:hover {
+  color: var(--primary-dark);
+  text-decoration: underline;
+}
+
+/* Main Grid */
+.mainGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+/* Section Card */
+.sectionCard {
+  background: var(--bg-main);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--border-grey);
+  overflow: hidden;
+}
+
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--border-grey);
+  background: var(--bg-soft);
+}
+
+.sectionTitleWrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.sectionIcon {
+  color: var(--primary-main);
+}
+
+.sectionIconWarning {
+  color: var(--warning-yellow);
+}
+
+.sectionTitle {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--heading-main);
+  margin: 0;
+}
+
+.sectionContent {
+  max-height: 450px;
+  overflow-y: auto;
+}
+
+/* Table Styles in Dashboard */
+.userName {
+  font-weight: 600;
+  color: var(--heading-main);
+}
+
+.docType {
+  display: inline-block;
+  padding: 0.2rem 0.5rem;
+  background: var(--primary-soft);
+  color: var(--primary-main);
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+/* Loading & Empty States */
+.loadingState,
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.emptyState svg {
+  opacity: 0.4;
+  margin-bottom: 0.75rem;
+}
+
+/* Expiring Documents List */
+.expiringList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.expiringItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background: var(--bg-soft);
+  border-radius: var(--radius-md);
+  transition: background 0.2s ease;
+}
+
+.expiringItem:hover {
+  background: var(--bg-hover);
+}
+
+.expiringInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.expiringName {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--heading-main);
+}
+
+.expiringType {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.expiringMeta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.35rem;
+}
+
+.expiringDate {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.daysLeftBadge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+}
+
+.daysLeftBadge.danger {
+  background: var(--error-light);
+  color: var(--error-dark);
+}
+
+.daysLeftBadge.warning {
+  background: var(--warning-light);
+  color: var(--warning-dark);
+}
+
+.daysLeftBadge.info {
+  background: var(--info-light);
+  color: var(--info-dark);
+}
+
+/* Activity List */
+.activityList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.activityItem {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.875rem 1rem;
+  background: var(--bg-soft);
+  border-radius: var(--radius-md);
+  transition: background 0.2s ease;
+}
+
+.activityItem:hover {
+  background: var(--bg-hover);
+}
+
+.activityIconWrapper {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: var(--bg-main);
+}
+
+.activityIconRegister {
+  color: var(--success-green);
+}
+
+.activityIconUpdate {
+  color: var(--info-blue);
+}
+
+.activityIconVerify {
+  color: var(--primary-main);
+}
+
+.activityIconUpload {
+  color: var(--warning-yellow);
+}
+
+.activityIconDefault {
+  color: var(--text-secondary);
+}
+
+.activityContent {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  flex: 1;
+}
+
+.activityUser {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--heading-main);
+}
+
+.activityAction {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.activityTime {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .statsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 1024px) {
+  .mainGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .headerContent {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .headerMeta {
+    justify-content: flex-start;
+  }
+
+  .pageTitle {
+    font-size: 1.75rem;
+  }
+
+  .statsGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .statContent {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .statValue {
+    font-size: 1.5rem;
+  }
+
+  .expiringItem {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .expiringMeta {
+    align-items: flex-start;
+    flex-direction: row;
+    gap: 0.5rem;
+  }
+
+  /* Chart responsive */
+  .chartLegend {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .chartContainer {
+    height: 220px;
+  }
+
+  .barContainer {
+    height: 160px;
+  }
+
+  .bar {
+    width: 12px;
+  }
+}
+
+@media (max-width: 780px) and (min-width: 421px) {
+  .sectionHeader {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    column-gap: 0.75rem;
+  }
+
+  .sectionHeader :global(.btn) {
+    justify-self: end;
+    white-space: nowrap;
+  }
+
+  .expiringItem {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    column-gap: 0.75rem;
+  }
+
+  .expiringMeta {
+    flex-direction: column;
+    align-items: flex-end;
+    text-align: right;
+    gap: 0.35rem;
+  }
+
+  .activityItem {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas:
+      "icon content"
+      "icon time";
+    column-gap: 0.75rem;
+    row-gap: 0.25rem;
+    align-items: center;
+  }
+
+  .activityIconWrapper {
+    grid-area: icon;
+  }
+
+  .activityContent {
+    grid-area: content;
+  }
+
+  .activityTime {
+    grid-area: time;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    gap: 1rem;
+  }
+
+  .statsGrid {
+    gap: 0.6rem;
+  }
+
+  .statContent {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .statIcon {
+    display: none;
+  }
+
+  .statCard {
+    padding: 0.75rem;
+  }
+
+  .statIcon {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+  }
+
+  .statIcon svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .statValue {
+    font-size: 1.35rem;
+  }
+
+  .statLabel,
+  .statTrend,
+  .statPercentage,
+  .statAction {
+    font-size: 0.7rem;
+  }
+
+  .pageTitle {
+    font-size: 1.5rem;
+  }
+
+  .sectionHeader {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    column-gap: 0.75rem;
+  }
+
+  .sectionTitle {
+    font-size: 1rem;
+    line-height: 1.3;
+    max-width: 70%;
+  }
+
+  .sectionHeader :global(.btn) {
+    padding: 0.35rem 0.5rem;
+    font-size: 0.8rem;
+    white-space: nowrap;
+    justify-self: end;
+  }
+
+  .activityItem {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas:
+      "icon content"
+      "icon time";
+    column-gap: 0.75rem;
+    row-gap: 0.25rem;
+    align-items: center;
+  }
+
+  .activityIconWrapper {
+    grid-area: icon;
+    align-self: start;
+  }
+
+  .activityContent {
+    grid-area: content;
+  }
+
+  .activityTime {
+    grid-area: time;
+  }
+
+  .activityTime {
+    margin-top: 0;
+  }
+
+  .expiringItem {
+    padding: 0.7rem;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    column-gap: 0.75rem;
+  }
+
+  .expiringMeta {
+    gap: 0.25rem;
+    flex-wrap: nowrap;
+    flex-direction: column;
+    align-items: flex-end;
+    text-align: right;
+    min-width: 0;
+  }
+
+  .expiringDate {
+    font-size: 0.75rem;
+    order: 1;
+  }
+
+  .daysLeftBadge {
+    order: 2;
+  }
+
+  .activityItem {
+    padding: 0.65rem 0.75rem;
+  }
+
+  .activityIconWrapper {
+    align-self: center;
+  }
+
+  .activityContent {
+    min-width: 0;
+  }
+
+  .activityTime {
+    text-align: left;
+    width: 100%;
+  }
+}
+
+@media (max-width: 360px) {
+  .sectionHeader {
+    grid-template-columns: 1fr;
+    row-gap: 0.5rem;
+  }
+
+  .sectionHeader :global(.btn) {
+    justify-self: start;
+  }
+
+  .expiringItem {
+    grid-template-columns: 1fr;
+    row-gap: 0.5rem;
+  }
+
+  .expiringMeta {
+    align-items: flex-start;
+    text-align: left;
+  }
+}
+
+/* Modal Dokumen Kedaluwarsa */
+.modalContent {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.modalFilters {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.searchWrapper {
+  flex: 1;
+  min-width: 250px;
+}
+
+.filterWrapper {
+  width: 160px;
+}
+
+.modalInfo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--border-grey);
+}
+
+.modalTableWrapper {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.modalTable :global(.table-head),
+.modalTable :global(.table-row) {
+  grid-template-columns: 1.6fr 1.2fr 1fr 0.7fr 1.2fr 0.9fr 0.9fr;
+}
+
+.modalTable :global(.table-cell) {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.modalTable :global(.table-head-cell) {
+  font-size: 0.85rem;
+}
+
+.modalTable :global(.table-head-cell),
+.modalTable :global(.table-row .table-cell) {
+  justify-content: flex-start;
+}
+
+.modalTable :global(.table-row) {
+  min-height: 56px;
+}
+
+.modalTable :global(.table-row .table-cell:nth-child(2)),
+.modalTable :global(.table-row .table-cell:nth-child(5)) {
+  font-family: monospace;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.modalTable :global(.table-row .table-cell:nth-child(6)) {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.modalTable :global(.table-row .table-cell:nth-child(7)) {
+  justify-content: flex-end;
+}
+
+.tableName {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tableNip,
+.tableDocNumber {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.daysLeftBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 84px;
+}
+
+.tableName {
+  font-weight: 600;
+  color: var(--heading-main);
+}
+
+.tableNip {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  font-family: monospace;
+}
+
+.tableDocNumber {
+  font-size: 0.85rem;
+  font-family: monospace;
+}
+
+.docTypeBadge {
+  display: inline-block;
+  padding: 0.2rem 0.5rem;
+  background: var(--primary-soft);
+  color: var(--primary-main);
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+@media (max-width: 768px) {
+  .modalFilters {
+    flex-direction: column;
+  }
+
+  .searchWrapper,
+  .filterWrapper {
+    width: 100%;
+    min-width: unset;
+  }
+
+  .modalTableWrapper {
+    max-height: 300px;
+  }
+}
