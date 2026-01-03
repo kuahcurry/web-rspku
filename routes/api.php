@@ -11,16 +11,15 @@ use App\Http\Controllers\Api\PasswordResetController;
 use App\Http\Controllers\PdfCompressionController;
 
 // Public routes
-Route::post('/compress-pdf', [PdfCompressionController::class, 'compress']);
-Route::post('/register', [RegisterController::class, 'register']);
-Route::post('/login', [AuthController::class, 'login']);
-Route::post('/verify-email', [AuthController::class, 'verifyEmail']);
-Route::post('/resend-verification-code', [AuthController::class, 'resendVerificationCode']);
+Route::post('/register', [RegisterController::class, 'register'])->middleware('throttle:3,1')->middleware('throttle:3,1');
+Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
+Route::post('/verify-email', [RegisterController::class, 'verifyEmail'])->middleware('throttle:10,1')->middleware('throttle:10,1');
+Route::post('/resend-verification-code', [RegisterController::class, 'resendVerificationCode'])->middleware('throttle:3,10');
 
 // Password Reset routes
-Route::post('/forgot-password', [PasswordResetController::class, 'forgotPassword']);
-Route::post('/verify-reset-code', [PasswordResetController::class, 'verifyResetCode']);
-Route::post('/reset-password', [PasswordResetController::class, 'resetPassword']);
+Route::post('/forgot-password', [PasswordResetController::class, 'forgotPassword'])->middleware('throttle:3,10');
+Route::post('/verify-reset-code', [PasswordResetController::class, 'verifyResetCode'])->middleware('throttle:10,1');
+Route::post('/reset-password', [PasswordResetController::class, 'resetPassword'])->middleware('throttle:5,10');
 
 // Protected routes (require JWT token)
 Route::middleware('auth:api')->group(function () {
@@ -84,7 +83,9 @@ Route::middleware('auth:api')->group(function () {
     Route::prefix('prestasi-penghargaan')->group(function () {
         Route::get('/', [\App\Http\Controllers\Api\PrestasiPenghargaanController::class, 'index']);
         Route::post('/', [\App\Http\Controllers\Api\PrestasiPenghargaanController::class, 'store']);
+        Route::post('/bulk-delete', [\App\Http\Controllers\Api\PrestasiPenghargaanController::class, 'bulkDelete']);
         Route::get('/{id}', [\App\Http\Controllers\Api\PrestasiPenghargaanController::class, 'view']);
+        Route::get('/{id}/file', [\App\Http\Controllers\Api\PrestasiPenghargaanController::class, 'downloadFile']);
         Route::delete('/{id}', [\App\Http\Controllers\Api\PrestasiPenghargaanController::class, 'delete']);
     });
     
@@ -92,6 +93,7 @@ Route::middleware('auth:api')->group(function () {
     Route::prefix('status-kewenangan')->group(function () {
         Route::get('/', [\App\Http\Controllers\Api\StatusKewenanganController::class, 'index']);
         Route::post('/', [\App\Http\Controllers\Api\StatusKewenanganController::class, 'store']);
+        Route::post('/bulk-delete', [\App\Http\Controllers\Api\StatusKewenanganController::class, 'bulkDelete']);
         Route::get('/{id}', [\App\Http\Controllers\Api\StatusKewenanganController::class, 'view']);
         Route::delete('/{id}', [\App\Http\Controllers\Api\StatusKewenanganController::class, 'delete']);
     });
