@@ -31,6 +31,8 @@ import AdminKompresiPdf from "./pages/admin/alat/KompresiPdf";
 import AdminGambarKePdf from "./pages/admin/alat/GambarKePdf";
 import ManajemenRole from "./pages/admin/pengaturan/ManajemenRole";
 import AkunAdmin from "./pages/admin/pengaturan/AkunAdmin";
+import AdminFaq from "./pages/admin/faq/Faq";
+import UserFaq from "./pages/main/faq/Faq";
 
 function App() {
   return (
@@ -146,6 +148,14 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/faq"
+          element={
+            <ProtectedRoute>
+              <UserFaq />
+            </ProtectedRoute>
+          }
+        />
 
         {/* Admin Routes */}
         <Route path="/admin/dashboard" element={<Dashboard />} />
@@ -157,6 +167,7 @@ function App() {
         <Route path="/admin/pengaturan/role" element={<ManajemenRole />} />
         <Route path="/admin/pengaturan/akun" element={<AkunAdmin />} />
         <Route path="/admin/pengaturan" element={<AkunAdmin />} />
+        <Route path="/admin/faq" element={<AdminFaq />} />
       </Routes>
       </UserProvider>
     </Router>

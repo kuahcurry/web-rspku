@@ -15,7 +15,8 @@ import {
   MdTransform,
   MdAdminPanelSettings,
   MdManageAccounts,
-  MdPictureAsPdf
+  MdPictureAsPdf,
+  MdHelp
 } from 'react-icons/md';
 import headerImg from '../../assets/headerImg.png';
 import './AdminLayout.css';
@@ -49,7 +50,8 @@ const AdminLayout = ({ children }) => {
         { path: '/admin/pengaturan/role', label: 'Manajemen Role' },
         { path: '/admin/pengaturan/akun', label: 'Akun Admin' }
       ]
-    }
+    },
+    { path: '/admin/faq', icon: MdHelp, label: 'Bantuan & FAQ' }
   ];
 
   useEffect(() => {
@@ -80,6 +82,12 @@ const AdminLayout = ({ children }) => {
   }, [location.pathname]);
 
   const adminName = adminUser?.name || adminUser?.username || 'Administrator';
+  const adminInitials = adminName
+    .split(' ')
+    .map((part) => part[0])
+    .join('')
+    .substring(0, 2)
+    .toUpperCase();
 
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
@@ -188,6 +196,7 @@ const AdminLayout = ({ children }) => {
           <div className="admin-navbar-right">
             <div className="admin-user-profile-wrapper">
               <button className="admin-user-btn" onClick={() => setDropdownOpen(!dropdownOpen)}>
+                <span className="admin-user-avatar">{adminInitials}</span>
                 <span className="admin-user-name">{adminName}</span>
                 <MdKeyboardArrowDown className={`admin-dropdown-icon ${dropdownOpen ? 'open' : ''}`} size={18} />
               </button>
