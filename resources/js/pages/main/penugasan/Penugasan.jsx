@@ -464,44 +464,37 @@ const Penugasan = () => {
           setPdfUrl(null);
         }}
         title={selectedItem?.unit || 'Detail Penugasan'}
-        size="large"
-        padding="normal"
+        className={styles.viewModal}
       >
-        <div className={styles.modalContent}>
-          <div className={styles.metaRow}>
-            <div>
-              <p className={styles.metaLabel}>Periode</p>
-              <p className={styles.metaValue}>
+        <div className={styles.viewDetail}>
+          <div className={styles.detailGrid}>
+            <div className={styles.detailRow}>
+              <span className={styles.detailLabel}>Periode</span>
+              <span className={styles.detailValue}>
                 {formatDate(selectedItem?.tanggal_mulai)} -{' '}
                 {selectedItem?.tanggal_selesai ? formatDate(selectedItem?.tanggal_selesai) : 'Sekarang'}
-              </p>
+              </span>
             </div>
-            <div>
-              <p className={styles.metaLabel}>{activeTab === 'pengabdian' ? 'Peran / Posisi' : 'Penanggung Jawab'}</p>
-              <p className={styles.metaValue}>{selectedItem?.penanggung_jawab || '-'}</p>
+            <div className={styles.detailRow}>
+              <span className={styles.detailLabel}>{activeTab === 'pengabdian' ? 'Peran / Posisi' : 'Penanggung Jawab'}</span>
+              <span className={styles.detailValue}>{selectedItem?.penanggung_jawab || '-'}</span>
             </div>
-            <div>
-              <p className={styles.metaLabel}>Status</p>
-              <p className={styles.metaValue}>{selectedItem?.status || '-'}</p>
+            <div className={styles.detailRow}>
+              <span className={styles.detailLabel}>Status</span>
+              <span className={styles.detailValue}>{selectedItem?.status || '-'}</span>
             </div>
           </div>
-          {loadingPdf ? (
-            <div className={styles.pdfFrameWrapper}>
-              <div style={{ textAlign: 'center', padding: '2rem' }}>
-                <p>Memuat dokumen...</p>
-              </div>
-            </div>
-          ) : pdfUrl ? (
-            <div className={styles.pdfFrameWrapper}>
+
+          <div className={styles.pdfPreview}>
+            {loadingPdf ? (
+              <div className={styles.pdfEmpty}>Memuat dokumen...</div>
+            ) : pdfUrl ? (
               <iframe title="Preview PDF" src={pdfUrl} className={styles.pdfFrame} />
-            </div>
-          ) : (
-            <div className={styles.pdfFrameWrapper}>
-              <div style={{ textAlign: 'center', padding: '2rem' }}>
-                <p>Dokumen tidak tersedia</p>
-              </div>
-            </div>
-          )}
+            ) : (
+              <div className={styles.pdfEmpty}>Dokumen tidak tersedia.</div>
+            )}
+          </div>
+
           <div className={styles.modalActions}>
             <Button variant="danger" onClick={() => {
               setShowViewModal(false);
