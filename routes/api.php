@@ -12,7 +12,7 @@ use App\Http\Controllers\PdfCompressionController;
 
 // Public routes
 Route::post('/register', [RegisterController::class, 'register'])->middleware('throttle:5,1');
-Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
+Route::post('/login', [AuthController::class, 'login']); // Custom rate limiting inside controller
 Route::post('/verify-email', [RegisterController::class, 'verifyEmail'])->middleware('throttle:10,1');
 Route::post('/resend-verification-code', [RegisterController::class, 'resendVerificationCode'])->middleware('throttle:3,10');
 

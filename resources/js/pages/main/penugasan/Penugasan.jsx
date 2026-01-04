@@ -260,7 +260,7 @@ const Penugasan = () => {
         apiFormData.append('tanggal_selesai', formData.tanggal_selesai);
       }
 
-      const response = await authenticatedFetch('/api/penugasan/store', {
+      const response = await authenticatedFetch('/api/penugasan', {
         method: 'POST',
         body: apiFormData,
         headers: {}

@@ -273,7 +273,7 @@ const EtikDisiplin = () => {
       if (etikForm.catatan) formData.append('catatan', etikForm.catatan);
       formData.append('file', etikForm.file);
 
-      const response = await authenticatedFetch('/api/etik-disiplin/store', {
+      const response = await authenticatedFetch('/api/etik-disiplin', {
         method: 'POST',
         body: formData
       });
@@ -316,7 +316,7 @@ const EtikDisiplin = () => {
       if (disiplinForm.catatan) formData.append('catatan', disiplinForm.catatan);
       formData.append('file', disiplinForm.file);
 
-      const response = await authenticatedFetch('/api/etik-disiplin/store', {
+      const response = await authenticatedFetch('/api/etik-disiplin', {
         method: 'POST',
         body: formData
       });
@@ -343,7 +343,7 @@ const EtikDisiplin = () => {
     setPdfUrl(null);
 
     try {
-      const response = await authenticatedFetch(`/api/etik-disiplin/view/${item.id}`);
+      const response = await authenticatedFetch(`/api/etik-disiplin/${item.id}`);
       if (response.ok) {
         const blob = await response.blob();
         const url = URL.createObjectURL(blob);

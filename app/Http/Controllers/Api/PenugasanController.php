@@ -76,8 +76,8 @@ class PenugasanController extends Controller
             $subFolder = strtolower($request->jenis); // 'penugasan' or 'pengabdian'
             $folderPath = $folderName . '/' . $subFolder;
 
-            // Generate unique filename
-            $fileName = Str::slug($request->unit) . '_' . date('Y') . '_' . time() . '.pdf';
+            // Use original filename
+            $fileName = $file->getClientOriginalName();
             
             // Store file in public storage
             $filePath = $file->storeAs($folderPath, $fileName, 'public');

@@ -76,8 +76,8 @@ class StatusKewenanganController extends Controller
             $folderName = $this->sanitizeFolderName($user->name) . '_' . $user->nik;
             $folderPath = $folderName . '/kredensial&kewenanganKlinis/statusKewenangan';
 
-            // Generate unique filename
-            $fileName = Str::slug($request->nomor_dokumen) . '_' . date('Ymd') . '_' . time() . '.pdf';
+            // Use original filename
+            $fileName = $file->getClientOriginalName();
             
             // Store file in public storage
             $filePath = $file->storeAs($folderPath, $fileName, 'public');
