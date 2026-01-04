@@ -86,8 +86,8 @@ class EtikDisiplinController extends Controller
             $folderName = $this->sanitizeFolderName($user->name) . '_' . $user->nik;
             $folderPath = $folderName . '/etikndisiplin/' . $request->jenis;
 
-            // Generate unique filename
-            $fileName = Str::slug($request->jenis_pelanggaran) . '_' . date('Ymd') . '_' . time() . '.pdf';
+            // Use original filename
+            $fileName = $file->getClientOriginalName();
             
             // Store file in public storage
             $filePath = $file->storeAs($folderPath, $fileName, 'public');
@@ -182,7 +182,7 @@ class EtikDisiplinController extends Controller
                 // Store new file
                 $folderName = $this->sanitizeFolderName($user->name) . '_' . $user->nik;
                 $folderPath = $folderName . '/etikndisiplin/' . $record->jenis;
-                $fileName = Str::slug($request->jenis_pelanggaran) . '_' . date('Ymd') . '_' . time() . '.pdf';
+                $fileName = $file->getClientOriginalName();
                 $filePath = $file->storeAs($folderPath, $fileName, 'public');
                 
                 $updateData['file_path'] = $filePath;

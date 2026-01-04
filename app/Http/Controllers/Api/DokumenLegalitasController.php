@@ -86,8 +86,8 @@ class DokumenLegalitasController extends Controller
             $folderName = $this->sanitizeFolderName($user->name) . '_' . $user->nik;
             $folderPath = $folderName . '/dokumenLegalitas';
 
-            // Generate unique filename
-            $fileName = Str::slug($request->jenis_dokumen) . '_' . time() . '.pdf';
+            // Use original filename
+            $fileName = $file->getClientOriginalName();
             
             // Store file in public storage
             $filePath = $file->storeAs($folderPath, $fileName, 'public');

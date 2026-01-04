@@ -138,8 +138,12 @@ function Login() {
         
         navigate('/beranda');
       } else {
-        // Handle errors
-        if (data.errors) {
+        // Handle 429 rate limit error
+        if (response.status === 429) {
+          const retryAfter = data.retry_after || 60;
+          const errorMessage = data.message || `Terlalu banyak percobaan login gagal. Silakan coba lagi dalam ${retryAfter} detik.`;
+          setErrors({ general: errorMessage });
+        } else if (data.errors) {
           setErrors(data.errors);
         } else {
           const errorMessage = data.message || 'Login gagal. Silakan coba lagi.';

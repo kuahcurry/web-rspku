@@ -246,7 +246,7 @@ const PrestasiPenghargaan = () => {
       if (response.ok && data.success) {
         alert('Data berhasil ditambahkan');
         handleCloseAddModal();
-        fetchData();
+        await fetchData(); // Wait for data to refresh
       } else {
         // Log validation errors for debugging
         console.error('Server response:', data);

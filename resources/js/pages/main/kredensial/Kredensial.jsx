@@ -315,7 +315,7 @@ const Kredensial = () => {
     setLoadingPdf(true);
 
     try {
-      const response = await authenticatedFetch(`/api/kredensial/view/${item.id}`);
+      const response = await authenticatedFetch(`/api/kredensial/${item.id}`);
       if (response.ok) {
         const blob = await response.blob();
         const url = URL.createObjectURL(blob);
