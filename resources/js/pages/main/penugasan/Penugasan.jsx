@@ -228,10 +228,10 @@ const Penugasan = () => {
 
   const processFile = (file, eventRef) => {
     if (!file) return;
-    if (file.type === 'application/pdf' && file.size <= 10 * 1024 * 1024) {
+    if (file.type === 'application/pdf' && file.size <= 5 * 1024 * 1024) {
       setFormData({ ...formData, file });
     } else {
-      alert('File harus berformat PDF dan maksimal 10MB');
+      alert('File harus berformat PDF dan maksimal 5MB');
       if (eventRef?.target) eventRef.target.value = null;
     }
   };

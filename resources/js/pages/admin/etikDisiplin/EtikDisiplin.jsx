@@ -204,6 +204,16 @@ const EtikDisiplinAdmin = () => {
 
   const processEtikFile = (file, eventRef) => {
     if (!file) return;
+    if (file.type !== 'application/pdf') {
+      alert('Hanya file PDF yang diperbolehkan');
+      if (eventRef?.target) eventRef.target.value = '';
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      alert('File terlalu besar. Maksimal 5MB');
+      if (eventRef?.target) eventRef.target.value = '';
+      return;
+    }
     const blobUrl = URL.createObjectURL(file);
     setEtikForm((prev) => {
       if (prev.fileUrl) URL.revokeObjectURL(prev.fileUrl);
@@ -225,6 +235,16 @@ const EtikDisiplinAdmin = () => {
 
   const processDisiplinFile = (file, eventRef) => {
     if (!file) return;
+    if (file.type !== 'application/pdf') {
+      alert('Hanya file PDF yang diperbolehkan');
+      if (eventRef?.target) eventRef.target.value = '';
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      alert('File terlalu besar. Maksimal 5MB');
+      if (eventRef?.target) eventRef.target.value = '';
+      return;
+    }
     const blobUrl = URL.createObjectURL(file);
     setDisiplinForm((prev) => {
       if (prev.fileUrl) URL.revokeObjectURL(prev.fileUrl);
@@ -891,13 +911,30 @@ const EtikDisiplinAdmin = () => {
                 onDragOver={(e) => e.preventDefault()}
               >
                 <MdCloudUpload size={32} className={styles.dropzoneIcon} />
-                <span>{etikForm.file ? etikForm.file.name : 'Klik atau drop file PDF di sini'}</span>
+                <p className={styles.dropzoneTitle}>Pilih atau seret file ke sini</p>
+                <span className={styles.dropzoneHint}>PDF, maks 5MB</span>
+                <Button
+                  variant="outline"
+                  size="small"
+                  icon={<MdCloudUpload />}
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    fileEtikRef.current?.click();
+                  }}
+                >
+                  Pilih File
+                </Button>
+                {etikForm.file?.name && (
+                  <span className={styles.dropzoneFileName}>{etikForm.file.name}</span>
+                )}
                 <input
                   ref={fileEtikRef}
                   type="file"
                   accept=".pdf"
                   onChange={handleEtikFile}
                   style={{ display: 'none' }}
+                  required
                 />
               </div>
             </div>
@@ -1025,13 +1062,30 @@ const EtikDisiplinAdmin = () => {
                 onDragOver={(e) => e.preventDefault()}
               >
                 <MdCloudUpload size={32} className={styles.dropzoneIcon} />
-                <span>{disiplinForm.file ? disiplinForm.file.name : 'Klik atau drop file PDF di sini'}</span>
+                <p className={styles.dropzoneTitle}>Pilih atau seret file ke sini</p>
+                <span className={styles.dropzoneHint}>PDF, maks 5MB</span>
+                <Button
+                  variant="outline"
+                  size="small"
+                  icon={<MdCloudUpload />}
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    fileDisiplinRef.current?.click();
+                  }}
+                >
+                  Pilih File
+                </Button>
+                {disiplinForm.file?.name && (
+                  <span className={styles.dropzoneFileName}>{disiplinForm.file.name}</span>
+                )}
                 <input
                   ref={fileDisiplinRef}
                   type="file"
                   accept=".pdf"
                   onChange={handleDisiplinFile}
                   style={{ display: 'none' }}
+                  required
                 />
               </div>
             </div>

@@ -289,12 +289,32 @@
   justify-content: center;
   border-radius: 0.5rem;
   font-size: 1.25rem;
-  transition: all 0.2s ease;
+  background: transparent !important;
+  border: 1px solid transparent;
+  box-shadow: none;
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.actionCol :global(.btn .btn-text) {
+  display: none;
+}
+
+.actionCol :global(.btn .btn-icon) {
+  margin: 0;
 }
 
 .actionCol :global(.btn:hover) {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  transform: none;
+  box-shadow: none;
+  border-color: color-mix(in srgb, currentColor 25%, transparent);
+}
+
+.actionCol :global(.btn-warning) {
+  color: #f59e0b;
+}
+
+.actionCol :global(.btn-primary) {
+  color: var(--primary-main);
 }
 
 .statusBadge {
