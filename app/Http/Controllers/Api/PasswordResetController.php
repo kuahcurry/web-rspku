@@ -35,9 +35,10 @@ class PasswordResetController extends Controller
 
         if (!$user) {
             // Don't reveal if email exists or not for security
+            // Return success message but don't send any email
             return response()->json([
                 'success' => true,
-                'message' => 'Jika email terdaftar, Anda akan menerima link reset password.'
+                'message' => 'Jika email terdaftar, Anda akan menerima kode reset password.'
             ], 200);
         }
 
