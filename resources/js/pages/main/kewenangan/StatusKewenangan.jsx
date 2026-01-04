@@ -7,7 +7,7 @@ import Modal from '../../../components/modal/Modal';
 import Form from '../../../components/form/Form';
 import Input from '../../../components/input/Input';
 import Tabs from '../../../components/tabs/Tabs';
-import { MdVisibility, MdAdd, MdCloudUpload, MdSave, MdDownload, MdDelete, MdPrint } from 'react-icons/md';
+import { MdVisibility, MdAdd, MdCloudUpload, MdSave, MdDownload, MdDelete } from 'react-icons/md';
 import { authenticatedFetch, isAuthenticated } from '../../../utils/auth';
 import { formatDateToIndonesian } from '../../../utils/dateFormatter';
 import styles from './StatusKewenangan.module.css';
@@ -224,29 +224,6 @@ const StatusKewenangan = () => {
     }
   };
 
-  const handleDownload = async (item) => {
-    try {
-      const response = await authenticatedFetch(`/api/status-kewenangan/${item.id}/file`);
-      
-      if (!response.ok) {
-        throw new Error('Failed to download file');
-      }
-
-      const blob = await response.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${item.nomor_dokumen}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error('Error downloading file:', error);
-      alert('Gagal mengunduh file');
-    }
-  };
-
   const handleDeleteCheckbox = (id) => {
     setDeleteTargets(prev => {
       if (prev.includes(id)) {
@@ -298,28 +275,6 @@ const StatusKewenangan = () => {
     if (normalized === 'segera habis') return 'warning';
     if (normalized === 'tidak aktif' || normalized === 'habis') return 'danger';
     return 'secondary';
-  };
-
-  const handlePrint = async (item) => {
-    try {
-      const response = await authenticatedFetch(`/api/status-kewenangan/${item.id}/file`);
-      if (!response.ok) throw new Error('Failed to fetch file for print');
-      const blob = await response.blob();
-      const url = URL.createObjectURL(blob);
-      const printWindow = window.open(url);
-      if (!printWindow) {
-        alert('Pop-up diblokir, izinkan pop-up untuk mencetak');
-        URL.revokeObjectURL(url);
-        return;
-      }
-      printWindow.onload = () => {
-        printWindow.focus();
-        printWindow.print();
-      };
-    } catch (error) {
-      console.error('Error printing file:', error);
-      alert('Gagal menyiapkan cetak dokumen');
-    }
   };
 
   const handleTabChange = (tab) => {
@@ -416,54 +371,43 @@ const StatusKewenangan = () => {
                   }}
                 >
                   <div className={styles.itemContent}>
-                    <div>
+                    <div className={styles.itemInfo}>
                       <h4 className={styles.itemTitle}>{item.nomor_dokumen || 'Tanpa nomor dokumen'}</h4>
-                      <p className={styles.itemMeta}>Tanggal Terbit: {item.tanggal_terbit ? formatDateToIndonesian(item.tanggal_terbit) : '-'}</p>
-                      <p className={styles.itemMeta}>Tanggal Kadaluarsa: {item.masa_berlaku ? formatDateToIndonesian(item.masa_berlaku) : '-'}</p>
+                      <div className={styles.itemMetaGrid}>
+                        <div className={styles.itemMetaGroup}>
+                          <span className={styles.itemMetaLabel}>Tanggal Terbit</span>
+                          <span className={styles.itemMetaValue}>
+                            {item.tanggal_terbit ? formatDateToIndonesian(item.tanggal_terbit) : '-'}
+                          </span>
+                        </div>
+                        <div className={`${styles.itemMetaGroup} ${styles.itemMetaCenter}`}>
+                          <span className={styles.itemMetaLabel}>Tanggal Kadaluarsa</span>
+                          <span className={styles.itemMetaValue}>
+                            {item.masa_berlaku ? formatDateToIndonesian(item.masa_berlaku) : '-'}
+                          </span>
+                        </div>
+                      </div>
                     </div>
-                    <div className={styles.fileBlock}>
-                      <span className={styles.fileLabel}>Status</span>
-                      <Button variant={getStatusVariant(item.status)} size="small" disabled>
-                        {item.status || '-'}
-                      </Button>
-                    </div>
-                    <div className={styles.actions}>
-                      <Button
-                        variant="outline"
-                        icon={<MdVisibility />}
-                        iconPosition="left"
-                        size="small"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleViewClick(item);
-                        }}
-                      >
-                        Preview
-                      </Button>
-                      <Button
-                        variant="secondary"
-                        icon={<MdDownload />}
-                        iconPosition="left"
-                        size="small"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDownload(item);
-                        }}
-                      >
-                        Unduh
-                      </Button>
-                      <Button
-                        variant="secondary"
-                        icon={<MdPrint />}
-                        iconPosition="left"
-                        size="small"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handlePrint(item);
-                        }}
-                      >
-                        Cetak
-                      </Button>
+                    <div className={styles.itemAside}>
+                      <div className={styles.fileBlock}>
+                        <Button variant={getStatusVariant(item.status)} size="small" disabled>
+                          {item.status || '-'}
+                        </Button>
+                      </div>
+                      <div className={styles.actions}>
+                        <Button
+                          variant="outline"
+                          icon={<MdVisibility />}
+                          iconPosition="left"
+                          size="small"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleViewClick(item);
+                          }}
+                        >
+                          Lihat
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </Card>
@@ -478,40 +422,46 @@ const StatusKewenangan = () => {
         isOpen={showViewModal}
         onClose={handleCloseViewModal}
         title={selectedItem?.nomor_dokumen || 'Detail Dokumen'}
-        size="large"
-        padding="normal"
+        className={styles.viewModal}
       >
-        <div className={styles.modalContent}>
-          {loadingPdf ? (
-            <div className={styles.loadingPdf}>Memuat dokumen...</div>
-          ) : pdfUrl ? (
-            <div className={styles.pdfFrameWrapper}>
-              <iframe src={pdfUrl} className={styles.pdfFrame} title="PDF Viewer" />
+        <div className={styles.viewDetail}>
+          <div className={styles.detailGrid}>
+            <div className={styles.detailRow}>
+              <span className={styles.detailLabel}>Nomor Dokumen</span>
+              <span className={styles.detailValue}>{selectedItem?.nomor_dokumen || '-'}</span>
             </div>
-          ) : (
-            <div className={styles.errorPdf}>Gagal memuat dokumen</div>
-          )}
+            <div className={styles.detailRow}>
+              <span className={styles.detailLabel}>Tanggal Terbit</span>
+              <span className={styles.detailValue}>{selectedItem?.tanggal_terbit || '-'}</span>
+            </div>
+            <div className={styles.detailRow}>
+              <span className={styles.detailLabel}>Berlaku Sampai</span>
+              <span className={styles.detailValue}>{selectedItem?.masa_berlaku || '-'}</span>
+            </div>
+          </div>
+
+          <div className={styles.pdfPreview}>
+            {loadingPdf ? (
+              <div className={styles.pdfEmpty}>Memuat dokumen...</div>
+            ) : pdfUrl ? (
+              <iframe src={pdfUrl} className={styles.pdfFrame} title="PDF Viewer" />
+            ) : (
+              <div className={styles.pdfEmpty}>Dokumen tidak tersedia.</div>
+            )}
+          </div>
+
           <div className={styles.modalActions}>
-            <Button variant="secondary" onClick={handleCloseViewModal}>
+            <Button variant="danger" onClick={handleCloseViewModal}>
               Tutup
             </Button>
             <Button
               variant="primary"
               icon={<MdDownload />}
               iconPosition="left"
-              onClick={() => selectedItem && handleDownload(selectedItem)}
-              disabled={!selectedItem}
+              onClick={() => pdfUrl && window.open(pdfUrl, '_blank')}
+              disabled={!pdfUrl}
             >
               Download
-            </Button>
-            <Button
-              variant="secondary"
-              icon={<MdPrint />}
-              iconPosition="left"
-              onClick={() => selectedItem && handlePrint(selectedItem)}
-              disabled={!selectedItem}
-            >
-              Cetak
             </Button>
           </div>
         </div>
@@ -530,16 +480,11 @@ const StatusKewenangan = () => {
           <label className={styles['form-label']}>
             Jenis Dokumen <span className={styles.required}>*</span>
           </label>
-          <select
-            name="jenis"
-            value={selectedJenis}
-            onChange={(e) => setSelectedJenis(e.target.value)}
-            className={styles['form-select']}
-            required
-          >
-            <option value="spk">SPK (Surat Penugasan Klinis)</option>
-            <option value="rkk">RKK (Rincian Kewenangan Klinis)</option>
-          </select>
+          <div className={styles.readonlyField}>
+            {selectedJenis === 'spk'
+              ? 'SPK (Surat Penugasan Klinis)'
+              : 'RKK (Rincian Kewenangan Klinis)'}
+          </div>
         </div>
 
         <Input

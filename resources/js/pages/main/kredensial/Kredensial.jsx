@@ -777,56 +777,60 @@ const Kredensial = () => {
           setPdfUrl(null);
         }}
         title={selectedItem?.nama_kegiatan || 'Detail Kegiatan'}
-        size="large"
-        padding="normal"
+        className={styles.viewModal}
       >
-        <div className={styles.modalContent}>
-          <div className={styles.metaRow}>
-            <div>
-              <p className={styles.metaLabel}>Tanggal Terbit</p>
-              <p className={styles.metaValue}>
+        <div className={styles.viewDetail}>
+          <div className={styles.detailGrid}>
+            <div className={styles.detailRow}>
+              <span className={styles.detailLabel}>Tanggal Terbit</span>
+              <span className={styles.detailValue}>
                 {selectedItem?.tanggal_kegiatan ? formatDateToIndonesian(selectedItem.tanggal_kegiatan) : '-'}
-              </p>
+              </span>
             </div>
-            <div>
-              <p className={styles.metaLabel}>Jenis</p>
-              <p className={styles.metaValue}>{selectedItem?.jenis_kegiatan || '-'}</p>
+            <div className={styles.detailRow}>
+              <span className={styles.detailLabel}>Jenis Kegiatan</span>
+              <span className={styles.detailValue}>{selectedItem?.jenis_kegiatan || '-'}</span>
             </div>
-            <div>
-              <p className={styles.metaLabel}>Tahap</p>
-              <p className={styles.metaValue}>{selectedItem?.tahap || '-'}</p>
+            <div className={styles.detailRow}>
+              <span className={styles.detailLabel}>Tahap</span>
+              <span className={styles.detailValue}>{selectedItem?.tahap || '-'}</span>
             </div>
-            <div>
-              <p className={styles.metaLabel}>Hasil</p>
-              <p className={styles.metaValue}>{selectedItem?.hasil || '-'}</p>
+            <div className={styles.detailRow}>
+              <span className={styles.detailLabel}>Hasil</span>
+              <span className={styles.detailValue}>
+                {(() => {
+                  const badge = getStatusBadge(selectedItem?.hasil);
+                  return (
+                    <span className={`${styles.statusBadge} ${styles[`badge-${badge.variant}`]}`}>
+                      {badge.label}
+                    </span>
+                  );
+                })()}
+              </span>
             </div>
-            <div>
-              <p className={styles.metaLabel}>Tanggal Kadaluarsa</p>
-              <p className={styles.metaValue}>
+            <div className={styles.detailRow}>
+              <span className={styles.detailLabel}>Tanggal Kadaluarsa</span>
+              <span className={styles.detailValue}>
                 {selectedItem?.masa_berlaku ? formatDateToIndonesian(selectedItem.masa_berlaku) : 'Belum diatur'}
-              </p>
+              </span>
             </div>
-            <div>
-              <p className={styles.metaLabel}>Catatan</p>
-              <p className={styles.metaValue}>{selectedItem?.catatan || '-'}</p>
-            </div>
+            {selectedItem?.catatan && (
+              <div className={styles.detailRow}>
+                <span className={styles.detailLabel}>Catatan</span>
+                <span className={styles.detailValue}>{selectedItem.catatan}</span>
+              </div>
+            )}
           </div>
 
-          {loadingPdf && (
-            <div className={styles.pdfFrameWrapper}>
-              <p style={{ textAlign: 'center', padding: '2rem' }}>Memuat dokumen...</p>
-            </div>
-          )}
-          {!loadingPdf && pdfUrl && (
-            <div className={styles.pdfFrameWrapper}>
+          <div className={styles.pdfPreview}>
+            {loadingPdf ? (
+              <div className={styles.pdfEmpty}>Memuat dokumen...</div>
+            ) : pdfUrl ? (
               <iframe src={pdfUrl} className={styles.pdfFrame} title="PDF Viewer" />
-            </div>
-          )}
-          {!loadingPdf && !pdfUrl && (
-            <div className={styles.pdfFrameWrapper}>
-              <p style={{ textAlign: 'center', padding: '2rem' }}>Tidak ada dokumen</p>
-            </div>
-          )}
+            ) : (
+              <div className={styles.pdfEmpty}>Dokumen belum tersedia.</div>
+            )}
+          </div>
 
           <div className={styles.modalActions}>
             <Button variant="danger" onClick={() => setShowViewModal(false)}>
@@ -839,7 +843,7 @@ const Kredensial = () => {
               onClick={() => selectedItem && handleViewFile(selectedItem)}
               disabled={!selectedItem || (!selectedItem.fileName && !selectedItem.fileUrl)}
             >
-              Lihat / Download
+              Download
             </Button>
           </div>
         </div>

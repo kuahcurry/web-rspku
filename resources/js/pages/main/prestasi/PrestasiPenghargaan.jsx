@@ -7,7 +7,7 @@ import Modal from '../../../components/modal/Modal';
 import Form from '../../../components/form/Form';
 import Input from '../../../components/input/Input';
 import Tabs from '../../../components/tabs/Tabs';
-import { MdVisibility, MdAdd, MdCloudUpload, MdSave, MdDownload, MdDelete } from 'react-icons/md';
+import { MdVisibility, MdAdd, MdCloudUpload, MdSave, MdDelete } from 'react-icons/md';
 import { authenticatedFetch, isAuthenticated } from '../../../utils/auth';
 import styles from './PrestasiPenghargaan.module.css';
 
@@ -267,29 +267,6 @@ const PrestasiPenghargaan = () => {
     }
   };
 
-  const handleDownload = async (item) => {
-    try {
-      const response = await authenticatedFetch(`/api/prestasi-penghargaan/${item.id}/file`);
-      
-      if (!response.ok) {
-        throw new Error('Failed to download file');
-      }
-
-      const blob = await response.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${item.judul}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error('Error downloading file:', error);
-      alert('Gagal mengunduh file');
-    }
-  };
-
   const handleDeleteButtonClick = () => {
     if (!deleteMode) {
       setDeleteMode(true);
@@ -409,7 +386,7 @@ const PrestasiPenghargaan = () => {
                     </div>
                     <div className={styles.fileBlock}>
                       <span className={styles.fileLabel}>File</span>
-                      <span className={styles.fileLink}>{item.file_name || item.nama_file || 'Dokumen terlampir'}</span>
+                      <span className={styles.fileLink}>{item.file_name || item.nama_file || '-'}</span>
                     </div>
                     <div className={styles.actions}>
                       <Button
@@ -423,18 +400,6 @@ const PrestasiPenghargaan = () => {
                         }}
                       >
                         Lihat
-                      </Button>
-                      <Button
-                        variant="secondary"
-                        size="small"
-                        icon={<MdDownload />}
-                        iconPosition="left"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDownload(item);
-                        }}
-                      >
-                        Unduh
                       </Button>
                     </div>
                   </div>
@@ -450,20 +415,35 @@ const PrestasiPenghargaan = () => {
         isOpen={showViewModal}
         onClose={handleCloseViewModal}
         title={selectedItem?.judul || 'Detail Dokumen'}
-        size="large"
+        className={styles.viewModal}
       >
-        <div className={styles['modal-content']}>
-          {loadingPdf ? (
-            <div className={styles['loading-pdf']}>Memuat dokumen...</div>
-          ) : pdfUrl ? (
-            <iframe
-              src={pdfUrl}
-              className={styles['pdf-viewer']}
-              title="PDF Viewer"
-            />
-          ) : (
-            <div className={styles['error-pdf']}>Gagal memuat dokumen</div>
-          )}
+        <div className={styles.viewDetail}>
+          <div className={styles.detailGrid}>
+            <div className={styles.detailRow}>
+              <span className={styles.detailLabel}>Penyelenggara</span>
+              <span className={styles.detailValue}>{selectedItem?.penyelenggara || '-'}</span>
+            </div>
+            <div className={styles.detailRow}>
+              <span className={styles.detailLabel}>Tahun</span>
+              <span className={styles.detailValue}>{selectedItem?.tahun || '-'}</span>
+            </div>
+          </div>
+
+          <div className={styles.pdfPreview}>
+            {loadingPdf ? (
+              <div className={styles.pdfEmpty}>Memuat dokumen...</div>
+            ) : pdfUrl ? (
+              <iframe src={pdfUrl} className={styles.pdfFrame} title="PDF Viewer" />
+            ) : (
+              <div className={styles.pdfEmpty}>Dokumen tidak tersedia.</div>
+            )}
+          </div>
+
+          <div className={styles.modalActions}>
+            <Button variant="danger" onClick={handleCloseViewModal}>
+              Tutup
+            </Button>
+          </div>
         </div>
       </Modal>
 
