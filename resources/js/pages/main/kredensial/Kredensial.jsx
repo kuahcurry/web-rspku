@@ -264,8 +264,8 @@ const Kredensial = () => {
       if (formData.file) apiFormData.append('file', formData.file);
 
       const url = editingId 
-        ? `/api/kredensial/update/${editingId}`
-        : '/api/kredensial/store';
+        ? `/api/kredensial/${editingId}`
+        : '/api/kredensial';
       
       // Use POST for both create and update (with _method for update)
       if (editingId) {
@@ -535,18 +535,23 @@ const Kredensial = () => {
                       <p className={styles.mutedText}>{item.catatan || '-'}</p>
                     </div>
                     <div className={`table-cell ${styles.actionCol}`} data-label="Aksi">
-                      <Button variant="warning" size="small" icon={<MdEdit />} iconPosition='left' onClick={() => openEditModal(item)}>
-                        Edit
-                      </Button>
+                      <Button 
+                        variant="warning" 
+                        size="small" 
+                        icon={<MdEdit />} 
+                        iconPosition='center'
+                        onClick={() => openEditModal(item)}
+                        title="Edit"
+                      />
                       {hasFile && (
                         <Button
-                          variant="outline"
+                          variant="primary"
                           size="small"
                           icon={<MdVisibility />}
+                          iconPosition='center'
                           onClick={() => handleViewFile(item)}
-                        >
-                          Lihat
-                        </Button>
+                          title="Lihat Dokumen"
+                        />
                       )}
                     </div>
                   </div>
@@ -594,25 +599,25 @@ const Kredensial = () => {
                         variant="warning" 
                         size="small" 
                         icon={<MdEdit/>}
+                        iconPosition='center'
                         onClick={(e) => {
                           e.stopPropagation();
                           openEditModal(item);
                         }}
-                      >
-                        Edit
-                      </Button>
+                        title="Edit"
+                      />
                       {hasFile && (
                         <Button
-                          variant="outline"
+                          variant="primary"
                           size="small"
                           icon={<MdVisibility />}
+                          iconPosition='center'
                           onClick={(e) => {
                             e.stopPropagation();
                             handleViewFile(item);
                           }}
-                        >
-                          Lihat
-                        </Button>
+                          title="Lihat Dokumen"
+                        />
                       )}
                     </div>
                   </div>

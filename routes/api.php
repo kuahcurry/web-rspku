@@ -57,6 +57,7 @@ Route::middleware('auth:api')->group(function () {
     Route::prefix('penugasan')->group(function () {
         Route::get('/', [\App\Http\Controllers\Api\PenugasanController::class, 'index']);
         Route::post('/', [\App\Http\Controllers\Api\PenugasanController::class, 'store']);
+        Route::post('/delete-multiple', [\App\Http\Controllers\Api\PenugasanController::class, 'deleteMultiple']);
         Route::get('/{id}', [\App\Http\Controllers\Api\PenugasanController::class, 'view']);
         Route::delete('/{id}', [\App\Http\Controllers\Api\PenugasanController::class, 'delete']);
     });
@@ -74,6 +75,7 @@ Route::middleware('auth:api')->group(function () {
     Route::prefix('kredensial')->group(function () {
         Route::get('/', [\App\Http\Controllers\Api\KredensialController::class, 'index']);
         Route::post('/', [\App\Http\Controllers\Api\KredensialController::class, 'store']);
+        Route::post('/delete-multiple', [\App\Http\Controllers\Api\KredensialController::class, 'deleteMultiple']);
         Route::get('/{id}', [\App\Http\Controllers\Api\KredensialController::class, 'view']);
         Route::put('/{id}', [\App\Http\Controllers\Api\KredensialController::class, 'update']);
         Route::delete('/{id}', [\App\Http\Controllers\Api\KredensialController::class, 'delete']);
