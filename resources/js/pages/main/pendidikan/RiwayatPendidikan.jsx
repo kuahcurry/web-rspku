@@ -158,10 +158,10 @@ const RiwayatPendidikan = () => {
   const processFile = (file) => {
     if (!file) return;
     if (file.type === 'application/pdf') {
-      if (file.size <= 10 * 1024 * 1024) { // 10MB limit
+      if (file.size <= 5 * 1024 * 1024) { // 5MB limit
         setFormData({ ...formData, file });
       } else {
-        setBanner({ message: 'File terlalu besar. Maksimal 10MB', type: 'error' });
+        setBanner({ message: 'File terlalu besar. Maksimal 5MB', type: 'error' });
       }
     } else {
       setBanner({ message: 'Hanya file PDF yang diperbolehkan', type: 'error' });
@@ -573,6 +573,7 @@ const RiwayatPendidikan = () => {
               onChange={handleFileChange}
               ref={fileInputRef}
               style={{ display: 'none' }}
+              required
             />
             <Button variant="outline" icon={<MdCloudUpload />} onClick={handleChooseFile}>
               Pilih File

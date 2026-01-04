@@ -189,6 +189,16 @@ const EtikDisiplin = () => {
 
   const processEtikFile = (file, eventRef) => {
     if (!file) return;
+    if (file.type !== 'application/pdf') {
+      alert('Hanya file PDF yang diperbolehkan');
+      if (eventRef?.target) eventRef.target.value = '';
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      alert('File terlalu besar. Maksimal 5MB');
+      if (eventRef?.target) eventRef.target.value = '';
+      return;
+    }
     const blobUrl = URL.createObjectURL(file);
     setEtikForm((prev) => {
       if (prev.fileUrl) URL.revokeObjectURL(prev.fileUrl);
@@ -210,6 +220,16 @@ const EtikDisiplin = () => {
 
   const processDisiplinFile = (file, eventRef) => {
     if (!file) return;
+    if (file.type !== 'application/pdf') {
+      alert('Hanya file PDF yang diperbolehkan');
+      if (eventRef?.target) eventRef.target.value = '';
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      alert('File terlalu besar. Maksimal 5MB');
+      if (eventRef?.target) eventRef.target.value = '';
+      return;
+    }
     const blobUrl = URL.createObjectURL(file);
     setDisiplinForm((prev) => {
       if (prev.fileUrl) URL.revokeObjectURL(prev.fileUrl);
@@ -632,11 +652,13 @@ const EtikDisiplin = () => {
             onDragOver={(e) => e.preventDefault()}
             onDrop={handleEtikDrop}
           >
-            <p className={styles.fileDropTitle}>Upload dokumen pendukung (opsional)</p>
-            <p className={styles.fileDropHint}>PDF, DOC, atau gambar</p>
+            <MdCloudUpload size={40} />
+            <p className={styles.fileDropTitle}>Pilih atau seret file ke sini</p>
+            <p className={styles.fileDropHint}>PDF, maks 5MB</p>
             <Button
               variant="outline"
               size="small"
+              icon={<MdCloudUpload />}
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
@@ -652,7 +674,8 @@ const EtikDisiplin = () => {
             ref={fileEtikRef}
             style={{ display: 'none' }}
             onChange={handleEtikFile}
-            accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
+            accept=".pdf"
+            required
           />
           <Form.Actions align="right" className={styles.modalActions}>
             <Button variant="secondary" type="button" onClick={() => setShowEtikModal(false)} disabled={isSubmitting}>
@@ -736,11 +759,13 @@ const EtikDisiplin = () => {
             onDragOver={(e) => e.preventDefault()}
             onDrop={handleDisiplinDrop}
           >
-            <p className={styles.fileDropTitle}>Upload dokumen (opsional)</p>
-            <p className={styles.fileDropHint}>PDF, DOC, atau gambar</p>
+            <MdCloudUpload size={40} />
+            <p className={styles.fileDropTitle}>Pilih atau seret file ke sini</p>
+            <p className={styles.fileDropHint}>PDF, maks 5MB</p>
             <Button
               variant="outline"
               size="small"
+              icon={<MdCloudUpload />}
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
@@ -756,7 +781,8 @@ const EtikDisiplin = () => {
             ref={fileDisiplinRef}
             style={{ display: 'none' }}
             onChange={handleDisiplinFile}
-            accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
+            accept=".pdf"
+            required
           />
           <Form.Actions align="right" className={styles.modalActions}>
             <Button variant="secondary" type="button" onClick={() => setShowDisiplinModal(false)} disabled={isSubmitting}>
