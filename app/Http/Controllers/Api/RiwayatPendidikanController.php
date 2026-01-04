@@ -79,8 +79,8 @@ class RiwayatPendidikanController extends Controller
             $subfolder = RiwayatPendidikan::getSubfolderByJenis($request->jenis);
             $folderPath = $folderName . '/riwayatPendidikan/' . $subfolder;
 
-            // Generate unique filename
-            $fileName = Str::slug($request->judul) . '_' . $request->tahun_lulus . '_' . time() . '.pdf';
+            // Use original filename
+            $fileName = $file->getClientOriginalName();
             
             // Store file in public storage
             $filePath = $file->storeAs($folderPath, $fileName, 'public');

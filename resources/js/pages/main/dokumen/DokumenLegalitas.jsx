@@ -174,7 +174,7 @@ const DokumenLegalitas = () => {
       formData.append('tanggal_mulai', uploadData.tanggal_mulai);
       formData.append('tanggal_berlaku', uploadData.tanggal_berlaku);
 
-      const response = await authenticatedFetch('/api/dokumen-legalitas/upload', {
+      const response = await authenticatedFetch('/api/dokumen-legalitas', {
         method: 'POST',
         body: formData,
         headers: {} // Let browser set Content-Type with boundary
