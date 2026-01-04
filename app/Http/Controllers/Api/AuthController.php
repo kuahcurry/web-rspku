@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
 use App\Models\UserRegistration;
 use App\Mail\VerificationCodeMail;
 use Tymon\JWTAuth\Facades\JWTAuth;
@@ -33,15 +35,34 @@ class AuthController extends Controller
             ], 422);
         }
 
+        // Create throttle key based on NIK and IP
+        $throttleKey = Str::lower($request->nik) . '|' . $request->ip();
+        
+        // Check if too many failed attempts (5 attempts per 1 minute)
+        if (RateLimiter::tooManyAttempts($throttleKey, 5)) {
+            $seconds = RateLimiter::availableIn($throttleKey);
+            return response()->json([
+                'success' => false,
+                'message' => "Terlalu banyak percobaan login. Silakan coba lagi dalam {$seconds} detik.",
+                'retry_after' => $seconds
+            ], 429);
+        }
+
         // Find user by NIK
         $user = UserRegistration::where('nik', $request->nik)->first();
 
         if (!$user || !Hash::check($request->password, $user->password)) {
+            // Increment failed attempts counter
+            RateLimiter::hit($throttleKey, 60); // 60 seconds = 1 minute
+            
             return response()->json([
                 'success' => false,
                 'message' => 'NIK atau password salah'
             ], 401);
         }
+
+        // Clear failed attempts on successful login
+        RateLimiter::clear($throttleKey);
 
         try {
             // Generate JWT token

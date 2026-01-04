@@ -87,8 +87,8 @@ class PrestasiPenghargaanController extends Controller
             
             $folderPath = $folderName . '/pendidikan&prestasi/' . $subFolder;
 
-            // Generate unique filename
-            $fileName = Str::slug($request->judul) . '_' . $request->tahun . '_' . time() . '.pdf';
+            // Use original filename
+            $fileName = $file->getClientOriginalName();
             
             // Store file in public storage
             $filePath = $file->storeAs($folderPath, $fileName, 'public');

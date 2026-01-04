@@ -82,8 +82,8 @@ class KredensialController extends Controller
                 $folderName = $this->sanitizeFolderName($user->name) . '_' . $user->nik;
                 $folderPath = $folderName . '/kredensial&kewenanganKlinis/kredensial&rekredensial';
 
-                // Generate unique filename
-                $fileName = Str::slug($request->nama_kegiatan) . '_' . date('Ymd') . '_' . time() . '.pdf';
+                // Use original filename
+                $fileName = $file->getClientOriginalName();
                 
                 // Store file in public storage
                 $filePath = $file->storeAs($folderPath, $fileName, 'public');
@@ -170,7 +170,7 @@ class KredensialController extends Controller
                 // Store new file
                 $folderName = $this->sanitizeFolderName($user->name) . '_' . $user->nik;
                 $folderPath = $folderName . '/kredensial&kewenanganKlinis/kredensial&rekredensial';
-                $fileName = Str::slug($request->nama_kegiatan) . '_' . date('Ymd') . '_' . time() . '.pdf';
+                $fileName = $file->getClientOriginalName();
                 $filePath = $file->storeAs($folderPath, $fileName, 'public');
                 
                 $updateData['file_path'] = $filePath;
