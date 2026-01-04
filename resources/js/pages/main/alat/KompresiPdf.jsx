@@ -2,7 +2,7 @@ import { useRef, useState } from 'react';
 import MainLayout from '../../../layout/main/MainLayout';
 import Card from '../../../components/card/Card';
 import Button from '../../../components/button/Button';
-import { MdCloudUpload, MdCompress, MdDelete, MdCheckCircle } from 'react-icons/md';
+import { MdCloudUpload, MdCompress, MdDelete, MdCheckCircle, MdDownload, MdRefresh, MdDescription, MdSpeed, MdDataUsage, MdTimer } from 'react-icons/md';
 import styles from '../../admin/alat/Alat.module.css';
 
 function KompresiPdf() {
@@ -14,6 +14,8 @@ function KompresiPdf() {
   const [originalSize, setOriginalSize] = useState(0);
   const [compressedSize, setCompressedSize] = useState(0);
   const [elapsedTime, setElapsedTime] = useState(0);
+  const [pdfResult, setPdfResult] = useState(null);
+  const [isConverted, setIsConverted] = useState(false);
 
   const processFile = (fileObj, eventRef) => {
     if (!fileObj) return;
@@ -85,16 +87,19 @@ function KompresiPdf() {
         bytes[i] = binaryString.charCodeAt(i);
       }
       const compressedBlob = new Blob([bytes], { type: 'application/pdf' });
-
       const url = URL.createObjectURL(compressedBlob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = result.original_filename;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
 
+      setPdfResult({
+        blob: compressedBlob,
+        url: url,
+        filename: result.original_filename,
+        originalSize: result.original_size,
+        compressedSize: result.compressed_size,
+        reductionPercentage: result.reduction_percentage,
+        level: level
+      });
+
+      setIsConverted(true);
       setStatus(`✓ PDF berhasil dikompres! Pengurangan ukuran: ${result.reduction_percentage}%`);
     } catch (error) {
       console.error('Error compressing PDF:', error);
@@ -110,6 +115,40 @@ function KompresiPdf() {
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
+  const handleDownload = () => {
+    if (pdfResult) {
+      const link = document.createElement('a');
+      link.href = pdfResult.url;
+      link.download = pdfResult.filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
+
+  const handleReset = () => {
+    if (pdfResult?.url) {
+      URL.revokeObjectURL(pdfResult.url);
+    }
+    setPdfResult(null);
+    setIsConverted(false);
+    setFile(null);
+    setLevel('medium');
+    setStatus('');
+    setOriginalSize(0);
+    setCompressedSize(0);
+    setElapsedTime(0);
+  };
+
+  const getLevelLabel = (levelValue) => {
+    const labels = {
+      light: 'Rendah',
+      medium: 'Sedang',
+      strong: 'Tinggi'
+    };
+    return labels[levelValue] || levelValue;
   };
 
   return (
@@ -185,80 +224,125 @@ function KompresiPdf() {
           </Card>
 
           <Card className={styles.cardShell}>
-            <h3 className={styles.sectionTitle}>Tingkat Kompresi</h3>
-            <div className={styles.radioGroup}>
-              <label className={styles.radioLabel}>
-                <input
-                  type="radio"
-                  name="level"
-                  value="light"
-                  checked={level === 'light'}
-                  onChange={(e) => setLevel(e.target.value)}
-                />
-                <span className={styles.radioText}>
-                  <strong>Rendah</strong>
-                  <small>Kualitas tinggi, kompresi minimal</small>
-                </span>
-              </label>
-              <label className={styles.radioLabel}>
-                <input
-                  type="radio"
-                  name="level"
-                  value="medium"
-                  checked={level === 'medium'}
-                  onChange={(e) => setLevel(e.target.value)}
-                />
-                <span className={styles.radioText}>
-                  <strong>Sedang</strong>
-                  <small>Keseimbangan kualitas dan ukuran (Disarankan)</small>
-                </span>
-              </label>
-              <label className={styles.radioLabel}>
-                <input
-                  type="radio"
-                  name="level"
-                  value="strong"
-                  checked={level === 'strong'}
-                  onChange={(e) => setLevel(e.target.value)}
-                />
-                <span className={styles.radioText}>
-                  <strong>Tinggi</strong>
-                  <small>Ukuran minimum, penurunan kualitas</small>
-                </span>
-              </label>
-            </div>
-
-            <Button
-              variant="primary"
-              icon={<MdCompress />}
-              onClick={handleCompress}
-              disabled={!file || isProcessing}
-              className={styles.actionBtn}
-            >
-              {isProcessing ? 'Memproses...' : 'Kompres PDF'}
-            </Button>
-
-            {status && (
-              <div className={`${styles.statusBox} ${status.startsWith('✓') ? styles.success : status.startsWith('✗') ? styles.error : ''}`}>
-                {status}
-              </div>
-            )}
-
-            {compressedSize > 0 && (
-              <div className={styles.resultBox}>
-                <div className={styles.resultItem}>
-                  <span>Ukuran Asli</span>
-                  <strong>{formatFileSize(originalSize)}</strong>
+            {!isConverted ? (
+              <>
+                <h3 className={styles.sectionTitle}>Tingkat Kompresi</h3>
+                <div className={styles.radioGroup}>
+                  <label className={styles.radioLabel}>
+                    <input
+                      type="radio"
+                      name="level"
+                      value="light"
+                      checked={level === 'light'}
+                      onChange={(e) => setLevel(e.target.value)}
+                    />
+                    <span className={styles.radioText}>
+                      <strong>Rendah</strong>
+                      <small>Kualitas tinggi, kompresi minimal</small>
+                    </span>
+                  </label>
+                  <label className={styles.radioLabel}>
+                    <input
+                      type="radio"
+                      name="level"
+                      value="medium"
+                      checked={level === 'medium'}
+                      onChange={(e) => setLevel(e.target.value)}
+                    />
+                    <span className={styles.radioText}>
+                      <strong>Sedang</strong>
+                      <small>Keseimbangan kualitas dan ukuran (Disarankan)</small>
+                    </span>
+                  </label>
+                  <label className={styles.radioLabel}>
+                    <input
+                      type="radio"
+                      name="level"
+                      value="strong"
+                      checked={level === 'strong'}
+                      onChange={(e) => setLevel(e.target.value)}
+                    />
+                    <span className={styles.radioText}>
+                      <strong>Tinggi</strong>
+                      <small>Ukuran minimum, penurunan kualitas</small>
+                    </span>
+                  </label>
                 </div>
-                <div className={styles.resultItem}>
-                  <span>Ukuran Hasil</span>
-                  <strong>{formatFileSize(compressedSize)}</strong>
+
+                <Button
+                  variant="primary"
+                  icon={<MdCompress />}
+                  onClick={handleCompress}
+                  disabled={!file || isProcessing}
+                  className={styles.actionBtn}
+                >
+                  {isProcessing ? 'Memproses...' : 'Kompres PDF'}
+                </Button>
+
+                {status && !isProcessing && (
+                  <div className={`${styles.statusBox} ${status.startsWith('✓') ? styles.success : status.startsWith('✗') ? styles.error : ''}`}>
+                    {status}
+                  </div>
+                )}
+              </>
+            ) : (
+              <>
+                <div className={styles.resultSuccessHeader}>
+                  <div className={styles.resultSuccessIcon}>
+                    <MdCheckCircle size={32} />
+                  </div>
+                  <h3 className={styles.resultSuccessTitle}>Kompresi Berhasil!</h3>
+                  <p className={styles.resultSuccessSubtitle}>PDF siap untuk diunduh</p>
                 </div>
-                <div className={styles.resultItem}>
-                  <span>Waktu Proses</span>
-                  <strong>{elapsedTime} detik</strong>
+
+                <div className={styles.resultStatsGrid}>
+                  <div className={styles.resultStatCard}>
+                    <MdDescription size={24} />
+                    <span className={styles.resultStatValue}>{formatFileSize(pdfResult?.originalSize || 0)}</span>
+                    <span className={styles.resultStatLabel}>Ukuran Asli</span>
+                  </div>
+                  <div className={styles.resultStatCard}>
+                    <MdCompress size={24} />
+                    <span className={styles.resultStatValue}>{formatFileSize(pdfResult?.compressedSize || 0)}</span>
+                    <span className={styles.resultStatLabel}>Ukuran Hasil</span>
+                  </div>
+                  <div className={styles.resultStatCard}>
+                    <MdDataUsage size={24} />
+                    <span className={styles.resultStatValue}>{pdfResult?.reductionPercentage}%</span>
+                    <span className={styles.resultStatLabel}>Pengurangan</span>
+                  </div>
+                  <div className={styles.resultStatCard}>
+                    <MdTimer size={24} />
+                    <span className={styles.resultStatValue}>{elapsedTime}s</span>
+                    <span className={styles.resultStatLabel}>Waktu Proses</span>
+                  </div>
                 </div>
-              </div>
+
+                <div className={styles.resultFileInfo}>
+                  <MdDescription size={20} />
+                  <span className={styles.resultFileName}>{pdfResult?.filename}</span>
+                </div>
+
+                <div className={styles.resultActions}>
+                  <Button
+                    variant="primary"
+                    icon={<MdDownload />}
+                    onClick={handleDownload}
+                    className={styles.actionBtn}
+                  >
+                    Download PDF
+                  </Button>
+                  
+                  <Button
+                    variant="outline"
+                    icon={<MdRefresh />}
+                    onClick={handleReset}
+                    className={styles.actionBtn}
+                  >
+                    Kompres Lagi
+                  </Button>
+                </div>
+              </>
             )}
           </Card>
         </div>

@@ -141,6 +141,10 @@
   cursor: pointer;
   text-align: left;
   transition: background 0.2s ease;
+  -webkit-transition: background 0.2s ease;
+  -moz-transition: background 0.2s ease;
+  -ms-transition: background 0.2s ease;
+  -o-transition: background 0.2s ease;
 }
 
 .faqHeader:hover {
@@ -230,7 +234,7 @@
 
 /* Help Card */
 .helpCard {
-  background: linear-gradient(135deg, var(--primary) 0%, #006680 100%) !important;
+  background: var(--bg-main) !important;
   padding: 1.5rem !important;
 }
 
@@ -245,13 +249,13 @@
 .helpInfo h3 {
   font-size: 1.25rem;
   font-weight: 700;
-  color: white;
+  color: var(--heading-main);
   margin: 0 0 0.25rem 0;
 }
 
 .helpInfo p {
   font-size: 0.95rem;
-  color: rgba(255, 255, 255, 0.85);
+  color: var(--text-secondary);
   margin: 0;
 }
 
@@ -261,7 +265,7 @@
 
 .helpContact p {
   font-size: 0.9rem;
-  color: white;
+  color: var(--heading-main);
   margin: 0 0 0.25rem 0;
 }
 
@@ -270,7 +274,7 @@
 }
 
 .helpContact strong {
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--heading-main);
 }
 
 /* Responsive */
