@@ -462,45 +462,34 @@ const RiwayatPendidikan = () => {
           setPdfUrl(null);
         }}
         title={selectedItem?.judul || 'Lihat Dokumen'}
-        size="large"
-        padding="normal"
+        className={styles.viewModal}
       >
-        <div className={styles.modalContent}>
-          <div className={styles.metaRow}>
-            <div>
-              <p className={styles.metaLabel}>Institusi</p>
-              <p className={styles.metaValue}>{selectedItem?.institusi || '-'}</p>
+        <div className={styles.viewDetail}>
+          <div className={styles.detailGrid}>
+            <div className={styles.detailRow}>
+              <span className={styles.detailLabel}>Institusi</span>
+              <span className={styles.detailValue}>{selectedItem?.institusi || '-'}</span>
             </div>
-            <div>
-              <p className={styles.metaLabel}>Tahun Lulus</p>
-              <p className={styles.metaValue}>{selectedItem?.tahun_lulus || '-'}</p>
+            <div className={styles.detailRow}>
+              <span className={styles.detailLabel}>Tahun Lulus</span>
+              <span className={styles.detailValue}>{selectedItem?.tahun_lulus || '-'}</span>
             </div>
-            <div>
-              <p className={styles.metaLabel}>File</p>
-              <p className={styles.metaValue}>{selectedItem?.file_name || 'File belum tersedia'}</p>
+            <div className={styles.detailRow}>
+              <span className={styles.detailLabel}>File</span>
+              <span className={styles.detailValue}>{selectedItem?.file_name || 'File belum tersedia'}</span>
             </div>
           </div>
-          {loadingPdf ? (
-            <div className={styles.pdfFrameWrapper}>
-              <div style={{ textAlign: 'center', padding: '2rem' }}>
-                <p>Memuat dokumen...</p>
-              </div>
-            </div>
-          ) : pdfUrl ? (
-            <div className={styles.pdfFrameWrapper}>
-              <iframe
-                src={pdfUrl}
-                className={styles.pdfFrame}
-                title="PDF Viewer"
-              />
-            </div>
-          ) : (
-            <div className={styles.pdfFrameWrapper}>
-              <div style={{ textAlign: 'center', padding: '2rem' }}>
-                <p>Dokumen tidak tersedia</p>
-              </div>
-            </div>
-          )}
+
+          <div className={styles.pdfPreview}>
+            {loadingPdf ? (
+              <div className={styles.pdfEmpty}>Memuat dokumen...</div>
+            ) : pdfUrl ? (
+              <iframe src={pdfUrl} className={styles.pdfFrame} title="PDF Viewer" />
+            ) : (
+              <div className={styles.pdfEmpty}>Dokumen tidak tersedia.</div>
+            )}
+          </div>
+
           <div className={styles.modalActions}>
             <Button variant="danger" onClick={() => {
               setShowViewModal(false);

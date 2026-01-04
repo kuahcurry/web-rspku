@@ -444,9 +444,9 @@
 }
 
 .fullscreenModal {
-  width: 66vw;
+  width: 75vw;
   height: 90vh;
-  max-width: 960px;
+  max-width: 1080px;
   min-width: 520px;
   max-height: 90vh;
   border-radius: var(--radius-xl);

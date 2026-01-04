@@ -772,71 +772,79 @@ const EtikDisiplin = () => {
       <Modal
         isOpen={viewOpen}
         onClose={() => setViewOpen(false)}
-        title={viewItem?.jenis || 'Detail Catatan'}
+        title="Detail Catatan"
         size="large"
         padding="normal"
+        className={styles.viewModal}
       >
-        <div className={styles.viewContent}>
-          <div className={styles.metaGrid}>
-            <div>
-              <p className={styles.metaLabel}>Tanggal Kejadian</p>
-              <p className={styles.metaValue}>
-                {viewItem?.tanggal ? formatDateToIndonesian(viewItem.tanggal) : '-'}
-              </p>
-            </div>
-            {'tindakan' in (viewItem || {}) ? (
-              <div>
-                <p className={styles.metaLabel}>Tindakan / Tingkat</p>
-                <p className={styles.metaValue}>{viewItem?.tindakan || '-'}</p>
+        {viewItem && (
+          <div className={styles.viewDetail}>
+            <div className={styles.detailGrid}>
+              <div className={styles.detailRow}>
+                <span className={styles.detailLabel}>Tanggal Kejadian</span>
+                <span className={styles.detailValue}>
+                  {viewItem?.tanggal ? formatDateToIndonesian(viewItem.tanggal) : '-'}
+                </span>
               </div>
-            ) : (
-              <div>
-                <p className={styles.metaLabel}>Tingkat</p>
-                <p className={styles.metaValue}>{viewItem?.tingkat || '-'}</p>
+              <div className={styles.detailRow}>
+                <span className={styles.detailLabel}>Jenis Pelanggaran</span>
+                <span className={styles.detailValue}>{viewItem?.jenis || '-'}</span>
               </div>
-            )}
-            <div>
-              <p className={styles.metaLabel}>Status</p>
-              <p className={styles.metaValue}>{viewItem?.status || '-'}</p>
+              {'tindakan' in (viewItem || {}) ? (
+                <div className={styles.detailRow}>
+                  <span className={styles.detailLabel}>Tindakan Disiplin</span>
+                  <span className={styles.detailValue}>{viewItem?.tindakan || '-'}</span>
+                </div>
+              ) : (
+                <div className={styles.detailRow}>
+                  <span className={styles.detailLabel}>Tingkat</span>
+                  <span className={styles.detailValue}>{viewItem?.tingkat || '-'}</span>
+                </div>
+              )}
+              <div className={styles.detailRow}>
+                <span className={styles.detailLabel}>Status</span>
+                <span className={styles.detailValue}>
+                  {renderStatusPill(viewItem?.status, viewItem?.status === 'Selesai' ? 'success' : viewItem?.status === 'Proses' ? 'warning' : 'neutral')}
+                </span>
+              </div>
+              {viewItem?.tanggal_selesai && (
+                <div className={styles.detailRow}>
+                  <span className={styles.detailLabel}>Tanggal Penyelesaian</span>
+                  <span className={styles.detailValue}>{formatDateToIndonesian(viewItem.tanggal_selesai)}</span>
+                </div>
+              )}
+              <div className={styles.detailRow}>
+                <span className={styles.detailLabel}>Uraian</span>
+                <span className={styles.detailValue}>{viewItem?.uraian || '-'}</span>
+              </div>
+              {viewItem?.catatan && (
+                <div className={styles.detailRow}>
+                  <span className={styles.detailLabel}>Catatan</span>
+                  <span className={styles.detailValue}>{viewItem?.catatan}</span>
+                </div>
+              )}
             </div>
-            <div>
-              <p className={styles.metaLabel}>Tanggal Selesai</p>
-              <p className={styles.metaValue}>
-                {viewItem?.tanggal_selesai ? formatDateToIndonesian(viewItem.tanggal_selesai) : '-'}
-              </p>
+            <div className={styles.pdfPreview}>
+              {loadingPdf ? (
+                <div className={styles.pdfEmpty}>Memuat dokumen...</div>
+              ) : pdfUrl ? (
+                <iframe src={pdfUrl} className={styles.pdfFrame} title="Dokumen PDF" />
+              ) : (
+                <div className={styles.pdfEmpty}>Dokumen belum tersedia.</div>
+              )}
             </div>
-          </div>
-          <div className={styles.sectionBox}>
-            <p className={styles.metaLabel}>Uraian</p>
-            <p className={styles.metaValue}>{viewItem?.uraian || '-'}</p>
-          </div>
-          <div className={styles.sectionBox}>
-            <p className={styles.metaLabel}>Catatan</p>
-            <p className={styles.metaValue}>{viewItem?.catatan || '-'}</p>
-          </div>
-          {loadingPdf && (
-            <div className={styles.pdfLoader}>
-              <p>Memuat dokumen...</p>
-            </div>
-          )}
-          {pdfUrl && !loadingPdf && (
-            <div className={styles.pdfViewer}>
-              <iframe src={pdfUrl} title="Dokumen PDF" className={styles.pdfIframe} />
-            </div>
-          )}
-          <div className={styles.modalActions}>
-            <Button variant="secondary" onClick={() => setViewOpen(false)}>
-              Tutup
-            </Button>
-            {pdfUrl && (
+            <div className={styles.modalActions}>
+              <Button variant="danger" onClick={() => setViewOpen(false)}>
+                Tutup
+              </Button>
               <a href={pdfUrl} download={viewItem?.file_name || 'dokumen.pdf'} style={{ textDecoration: 'none' }}>
-                <Button variant="primary" icon={<MdDownload />} iconPosition="left">
+                <Button variant="primary" icon={<MdDownload />} iconPosition="left" disabled={!pdfUrl}>
                   Download
                 </Button>
               </a>
-            )}
+            </div>
           </div>
-        </div>
+        )}
       </Modal>
     </MainLayout>
   );

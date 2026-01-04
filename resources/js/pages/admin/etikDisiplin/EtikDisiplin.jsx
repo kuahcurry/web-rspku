@@ -1132,7 +1132,7 @@ const EtikDisiplinAdmin = () => {
             </div>
             <div className={styles.modalActions}>
               <Button variant="danger" onClick={handleCloseView}>
-                Batal
+                Tutup
               </Button>
               <Button variant="primary" icon={<MdDownload />} iconPosition="left" onClick={handleDownloadView}>
                 Download
