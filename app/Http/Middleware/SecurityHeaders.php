@@ -34,14 +34,17 @@ class SecurityHeaders
         // Content Security Policy - allow localhost:5173 in development
         $isDev = app()->environment('local');
         $devSrc = $isDev ? ' http://localhost:5173 ws://localhost:5173' : '';
+        $devImgSrc = $isDev ? ' http://localhost:8000 http://127.0.0.1:8000' : '';
         
         $response->headers->set('Content-Security-Policy', 
             "default-src 'self'; " .
             "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://fonts.googleapis.com{$devSrc}; " .
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com{$devSrc}; " .
             "font-src 'self' https://fonts.gstatic.com; " .
-            "img-src 'self' data: https: blob:{$devSrc}; " .
-            "connect-src 'self'{$devSrc}"
+            "img-src 'self' data: https: blob:{$devSrc}{$devImgSrc}; " .
+            "connect-src 'self' https://www.emsifa.com{$devSrc}; " .
+            "worker-src 'self' blob:; " .
+            "frame-src 'self'"
         );
         
         // Referrer Policy

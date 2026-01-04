@@ -11,7 +11,7 @@ function VerifikasiEmail() {
   const [code, setCode] = useState(['', '', '', '', '', '']);
   const [email, setEmail] = useState('');
   const [userName, setUserName] = useState('');
-  const [timeLeft, setTimeLeft] = useState(15 * 60); // 15 minutes in seconds
+  const [timeLeft, setTimeLeft] = useState(3 * 60); // 3 minutes in seconds
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [canResend, setCanResend] = useState(false);
@@ -120,7 +120,7 @@ function VerifikasiEmail() {
         },
         body: JSON.stringify({
           email: email,
-          code: codeToVerify
+          verification_code: codeToVerify
         })
       });
 

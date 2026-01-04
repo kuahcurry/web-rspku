@@ -57,7 +57,7 @@ class RegisterController extends Controller
                 'address' => $request->address,
                 'password' => Hash::make($request->password),
                 'verification_code' => $verificationCode,
-                'verification_code_expires_at' => now()->addMinutes(15),
+                'verification_code_expires_at' => now()->addMinutes(3),
             ]);
 
             // Send verification email
@@ -222,7 +222,7 @@ class RegisterController extends Controller
             // Update pending registration
             $pendingUser->update([
                 'verification_code' => $verificationCode,
-                'verification_code_expires_at' => now()->addMinutes(15),
+                'verification_code_expires_at' => now()->addMinutes(3),
             ]);
 
             // Send verification email
