@@ -140,10 +140,10 @@ const DokumenLegalitas = () => {
   const processFile = (file, eventRef) => {
     if (!file) return;
     if (file.type === 'application/pdf') {
-      if (file.size <= 10 * 1024 * 1024) { // 10MB limit
+      if (file.size <= 5 * 1024 * 1024) { // 5MB limit
         setUploadFile(file);
       } else {
-        alert('File terlalu besar. Maksimal 10MB');
+        alert('File terlalu besar. Maksimal 5MB');
         if (eventRef?.target) eventRef.target.value = '';
       }
     } else {
@@ -383,13 +383,14 @@ const DokumenLegalitas = () => {
             >
               <MdCloudUpload size={48} />
               <p>Pilih atau seret file ke sini</p>
-              <span className={styles['upload-hint']}>PDF, maks 10MB</span>
+              <span className={styles['upload-hint']}>PDF, maks 5MB</span>
               <input
                 type="file"
                 accept=".pdf"
                 onChange={handleFileChange}
                 ref={fileInputRef}
                 style={{ display: 'none' }}
+                required
               />
               <Button variant="outline" icon={<MdCloudUpload />} onClick={handleChooseFile} type="button">
                 Pilih File

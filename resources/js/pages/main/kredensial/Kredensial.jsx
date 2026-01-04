@@ -246,8 +246,8 @@ const Kredensial = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.nama_kegiatan || !formData.tanggal_berlaku || !formData.jenis_kegiatan || !formData.hasil_penilaian) {
-      alert('Mohon lengkapi minimal nama, tanggal, jenis, dan hasil.');
+    if (!formData.nama_kegiatan || !formData.tanggal_berlaku || !formData.jenis_kegiatan || !formData.hasil_penilaian || !formData.file) {
+      alert('Mohon lengkapi semua field dan upload file.');
       return;
     }
 
@@ -400,7 +400,7 @@ const Kredensial = () => {
     }
   };
 
-  const isFormValid = formData.nama_kegiatan && formData.tanggal_berlaku && formData.jenis_kegiatan && formData.hasil_penilaian;
+  const isFormValid = formData.nama_kegiatan && formData.tanggal_berlaku && formData.jenis_kegiatan && formData.hasil_penilaian && formData.file;
 
   const columnsRiwayat = useMemo(
     () => [
@@ -739,7 +739,7 @@ const Kredensial = () => {
           >
             <MdCloudUpload size={40} />
             <div className={styles.fileDropText}>
-              <p className={styles.fileDropTitle}>Upload Sertifikat (opsional)</p>
+              <p className={styles.fileDropTitle}>Pilih atau seret file ke sini</p>
               <p className={styles.fileDropHint}>PDF, maks 5MB</p>
               <Button
                 variant="outline"
@@ -762,6 +762,7 @@ const Kredensial = () => {
               accept=".pdf"
               style={{ display: 'none' }}
               onChange={handleFileChange}
+              required
             />
           </div>
           <Form.Actions align="right" className={styles.modalActions}>
