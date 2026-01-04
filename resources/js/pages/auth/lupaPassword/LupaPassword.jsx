@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import Button from '../../../components/button/Button';
 import Input from '../../../components/input/Input';
@@ -22,38 +22,9 @@ function LupaSandi() {
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState('');
-  const [timeLeft, setTimeLeft] = useState(15 * 60); // 15 minutes in seconds
-  const [canResend, setCanResend] = useState(false);
+  const [canResend, setCanResend] = useState(true);
   const [isResending, setIsResending] = useState(false);
   const inputRefs = useRef([]);
-
-  // Timer effect for code expiration
-  useEffect(() => {
-    if (step !== 2) return;
-    
-    if (timeLeft <= 0) {
-      setCanResend(true);
-      return;
-    }
-
-    const timer = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev <= 1) {
-          setCanResend(true);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [timeLeft, step]);
-
-  const formatTime = (seconds) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -66,7 +37,6 @@ function LupaSandi() {
     }
   };
 
-  // Handle code input change
   const handleCodeChange = (index, value) => {
     if (!/^\d*$/.test(value)) return;
 
@@ -79,23 +49,22 @@ function LupaSandi() {
       inputRefs.current[index + 1]?.focus();
     }
 
-    // Auto submit when all digits are filled
     if (index === 5 && value && newCode.every((digit) => digit !== '')) {
       handleVerifyCode(null, newCode.join(''));
     }
   };
 
-  const handleKeyDown = (index, e) => {
+  const handleCodeKeyDown = (index, e) => {
     if (e.key === 'Backspace' && !formData.code[index] && index > 0) {
       inputRefs.current[index - 1]?.focus();
     }
     if (e.key === 'v' && (e.ctrlKey || e.metaKey)) {
       e.preventDefault();
-      handlePaste(e);
+      handleCodePaste(e);
     }
   };
 
-  const handlePaste = async (e) => {
+  const handleCodePaste = async (e) => {
     e.preventDefault();
     const pastedData = e.clipboardData?.getData('text') || (await navigator.clipboard.readText());
     const digits = pastedData.replace(/\D/g, '').slice(0, 6);
@@ -108,43 +77,16 @@ function LupaSandi() {
     }
   };
 
-  const handleResendCode = async () => {
-    setIsResending(true);
-    setErrors({});
-
-    try {
-      const response = await fetch('/api/forgot-password', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify({ email: formData.email })
-      });
-
-      const data = await response.json();
-
-      if (response.ok && data.success) {
-        setMessage('Kode reset baru telah dikirim ke email Anda');
-        setTimeLeft(15 * 60);
-        setCanResend(false);
-        setFormData({ ...formData, code: ['', '', '', '', '', ''] });
-        inputRefs.current[0]?.focus();
-      } else {
-        setErrors({ general: data.message || 'Gagal mengirim kode baru' });
-      }
-    } catch (error) {
-      console.error('Resend error:', error);
-      setErrors({ general: 'Terjadi kesalahan. Silakan coba lagi.' });
-    } finally {
-      setIsResending(false);
-    }
-  };
-
   const handleSendCode = async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
+    const isResend = step === 2;
+    
     setErrors({});
-    setIsSubmitting(true);
+    if (isResend) {
+      setIsResending(true);
+    } else {
+      setIsSubmitting(true);
+    }
     setMessage('');
 
     try {
@@ -160,10 +102,12 @@ function LupaSandi() {
       const data = await response.json();
 
       if (response.ok && data.success) {
-        setMessage('Kode reset password telah dikirim ke email Anda');
-        setTimeLeft(15 * 60); // Reset timer
+        setMessage(isResend ? 'Kode baru telah dikirim ke email Anda' : 'Kode reset password telah dikirim ke email Anda');
+        if (!isResend) setStep(2);
+        setFormData({ ...formData, code: ['', '', '', '', '', ''] });
         setCanResend(false);
-        setStep(2);
+        setTimeout(() => setCanResend(true), 60000); // Can resend after 1 minute
+        setTimeout(() => inputRefs.current[0]?.focus(), 100);
       } else {
         if (data.errors) {
           setErrors(data.errors);
@@ -176,13 +120,13 @@ function LupaSandi() {
       setErrors({ general: 'Terjadi kesalahan koneksi. Silakan coba lagi.' });
     } finally {
       setIsSubmitting(false);
+      setIsResending(false);
     }
   };
 
-  const handleVerifyCode = async (e, codeString = null) => {
+  const handleVerifyCode = async (e, verificationCode = null) => {
     if (e) e.preventDefault();
-    
-    const codeToVerify = codeString || formData.code.join('');
+    const codeToVerify = verificationCode || formData.code.join('');
     
     if (codeToVerify.length !== 6) {
       setErrors({ code: ['Silakan masukkan kode 6 digit'] });
@@ -215,15 +159,16 @@ function LupaSandi() {
         if (data.errors) {
           setErrors(data.errors);
         } else {
-          setErrors({ general: data.message || 'Kode tidak valid' });
+          setErrors({ code: [data.message || 'Kode tidak valid'] });
         }
-        // Reset code inputs on error
         setFormData({ ...formData, code: ['', '', '', '', '', ''] });
         inputRefs.current[0]?.focus();
       }
     } catch (error) {
       console.error('Verify code error:', error);
       setErrors({ general: 'Terjadi kesalahan koneksi. Silakan coba lagi.' });
+      setFormData({ ...formData, code: ['', '', '', '', '', ''] });
+      inputRefs.current[0]?.focus();
     } finally {
       setIsSubmitting(false);
     }
@@ -313,7 +258,7 @@ function LupaSandi() {
         {step === 1 && (
           <Form onSubmit={handleSendCode} className={styles.form}>
             <p className={styles['helper-note']}>
-              Pastikan email aktif dan dapat menerima pesan agar kode tidak terlewat.
+              Pastikan email aktif dan terdaftar serta dapat menerima pesan agar kode tidak terlewat.
             </p>
             <Input
               label="Email"
@@ -345,7 +290,7 @@ function LupaSandi() {
         {step === 2 && (
           <Form onSubmit={(e) => handleVerifyCode(e)} className={styles.form}>
             <p className={styles['helper-note']}>
-              Masukkan kode yang baru saja dikirim ke <strong>{formData.email}</strong>. Tempel langsung jika Anda menyalin kode.
+              Periksa juga folder spam. Kode biasanya berlaku beberapa menit.
             </p>
             
             <div className={styles['code-section']}>
@@ -361,8 +306,8 @@ function LupaSandi() {
                     maxLength="1"
                     value={digit}
                     onChange={(e) => handleCodeChange(index, e.target.value)}
-                    onKeyDown={(e) => handleKeyDown(index, e)}
-                    onPaste={handlePaste}
+                    onKeyDown={(e) => handleCodeKeyDown(index, e)}
+                    onPaste={handleCodePaste}
                     className={styles['code-input']}
                     disabled={isSubmitting}
                     autoFocus={index === 0}
@@ -375,16 +320,6 @@ function LupaSandi() {
                   {errors.code[0]}
                 </div>
               )}
-
-              <div className={styles['timer']}>
-                {timeLeft > 0 ? (
-                  <>
-                    Kode akan kedaluwarsa dalam <strong>{formatTime(timeLeft)}</strong>
-                  </>
-                ) : (
-                  <span className={styles['expired']}>Kode telah kedaluwarsa</span>
-                )}
-              </div>
             </div>
 
             <div className={styles['actions']}>
@@ -404,7 +339,7 @@ function LupaSandi() {
                   type="button"
                   variant="inverse"
                   size="small"
-                  onClick={handleResendCode}
+                  onClick={handleSendCode}
                   disabled={!canResend || isResending}
                   icon={<MdRefresh />}
                 >
@@ -417,10 +352,7 @@ function LupaSandi() {
                 variant="outline"
                 size="medium"
                 fullWidth
-                onClick={() => {
-                  setStep(1);
-                  setFormData({ ...formData, code: ['', '', '', '', '', ''] });
-                }}
+                onClick={() => setStep(1)}
                 disabled={isSubmitting}
               >
                 Kembali

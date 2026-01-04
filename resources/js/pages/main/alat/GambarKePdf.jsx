@@ -2,7 +2,7 @@ import { useRef, useState } from 'react';
 import MainLayout from '../../../layout/main/MainLayout';
 import Card from '../../../components/card/Card';
 import Button from '../../../components/button/Button';
-import { MdCloudUpload, MdDelete, MdCheckCircle, MdPictureAsPdf } from 'react-icons/md';
+import { MdCloudUpload, MdDelete, MdCheckCircle, MdPictureAsPdf, MdDownload, MdRefresh, MdDescription, MdImage, MdAspectRatio, MdMargin } from 'react-icons/md';
 import { jsPDF } from 'jspdf';
 import styles from '../../admin/alat/Alat.module.css';
 
@@ -13,6 +13,8 @@ function GambarKePdf() {
   const [margin, setMargin] = useState('normal');
   const [status, setStatus] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [pdfResult, setPdfResult] = useState(null);
+  const [isConverted, setIsConverted] = useState(false);
 
   const handleFiles = (fileList) => {
     const accepted = Array.from(fileList || []).filter((file) =>
@@ -113,9 +115,24 @@ function GambarKePdf() {
       const timestamp = new Date().toISOString().slice(0, 19).replace(/[:-]/g, '').replace('T', '_');
       const filename = `admin_images_to_pdf_${timestamp}.pdf`;
       
-      pdf.save(filename);
+      const pdfBlob = pdf.output('blob');
+      const pdfUrl = URL.createObjectURL(pdfBlob);
       
-      setStatus(`✓ Berhasil! PDF dengan ${images.length} gambar telah diunduh.`);
+      setPdfResult({
+        blob: pdfBlob,
+        url: pdfUrl,
+        filename: filename,
+        pageCount: images.length,
+        fileSize: pdfBlob.size,
+        orientation: orientation,
+        margin: margin,
+        createdAt: new Date(),
+        imageNames: images.map(img => img.name),
+        totalImageSize: images.reduce((acc, img) => acc + img.size, 0)
+      });
+      
+      setIsConverted(true);
+      setStatus(`✓ Berhasil! PDF dengan ${images.length} gambar siap diunduh.`);
     } catch (error) {
       console.error('Error converting images to PDF:', error);
       setStatus('✗ Terjadi kesalahan saat konversi. Silakan coba lagi.');
@@ -130,6 +147,42 @@ function GambarKePdf() {
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
+  const handleDownload = () => {
+    if (pdfResult) {
+      const link = document.createElement('a');
+      link.href = pdfResult.url;
+      link.download = pdfResult.filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
+
+  const handleReset = () => {
+    if (pdfResult?.url) {
+      URL.revokeObjectURL(pdfResult.url);
+    }
+    setPdfResult(null);
+    setIsConverted(false);
+    setImages([]);
+    setOrientation('portrait');
+    setMargin('normal');
+    setStatus('');
+  };
+
+  const getMarginLabel = (marginValue) => {
+    const labels = {
+      none: 'Tanpa Margin',
+      narrow: 'Sempit',
+      normal: 'Normal'
+    };
+    return labels[marginValue] || marginValue;
+  };
+
+  const getOrientationLabel = (orientationValue) => {
+    return orientationValue === 'portrait' ? 'Portrait (Vertikal)' : 'Landscape (Horizontal)';
   };
 
   return (
@@ -217,96 +270,158 @@ function GambarKePdf() {
           </Card>
 
           <Card className={styles.cardShell}>
-            <h3 className={styles.sectionTitle}>Pengaturan PDF</h3>
+            {!isConverted ? (
+              <>
+                <h3 className={styles.sectionTitle}>Pengaturan PDF</h3>
             
-            <div className={styles.settingGroup}>
-              <label className={styles.settingLabel}>Orientasi Halaman</label>
-              <div className={styles.radioGroup}>
-                <label className={styles.radioLabel}>
-                  <input
-                    type="radio"
-                    name="orientation"
-                    value="portrait"
-                    checked={orientation === 'portrait'}
-                    onChange={(e) => setOrientation(e.target.value)}
-                  />
-                  <span className={styles.radioText}>
-                    <strong>Portrait</strong>
-                    <small>Vertikal (A4)</small>
-                  </span>
-                </label>
-                <label className={styles.radioLabel}>
-                  <input
-                    type="radio"
-                    name="orientation"
-                    value="landscape"
-                    checked={orientation === 'landscape'}
-                    onChange={(e) => setOrientation(e.target.value)}
-                  />
-                  <span className={styles.radioText}>
-                    <strong>Landscape</strong>
-                    <small>Horizontal (A4)</small>
-                  </span>
-                </label>
-              </div>
-            </div>
+                <div className={styles.settingGroup}>
+                  <label className={styles.settingLabel}>Orientasi Halaman</label>
+                  <div className={styles.radioGroup}>
+                    <label className={styles.radioLabel}>
+                      <input
+                        type="radio"
+                        name="orientation"
+                        value="portrait"
+                        checked={orientation === 'portrait'}
+                        onChange={(e) => setOrientation(e.target.value)}
+                      />
+                      <span className={styles.radioText}>
+                        <strong>Portrait</strong>
+                        <small>Vertikal (A4)</small>
+                      </span>
+                    </label>
+                    <label className={styles.radioLabel}>
+                      <input
+                        type="radio"
+                        name="orientation"
+                        value="landscape"
+                        checked={orientation === 'landscape'}
+                        onChange={(e) => setOrientation(e.target.value)}
+                      />
+                      <span className={styles.radioText}>
+                        <strong>Landscape</strong>
+                        <small>Horizontal (A4)</small>
+                      </span>
+                    </label>
+                  </div>
+                </div>
 
-            <div className={styles.settingGroup}>
-              <label className={styles.settingLabel}>Margin</label>
-              <div className={styles.radioGroup}>
-                <label className={styles.radioLabel}>
-                  <input
-                    type="radio"
-                    name="margin"
-                    value="none"
-                    checked={margin === 'none'}
-                    onChange={(e) => setMargin(e.target.value)}
-                  />
-                  <span className={styles.radioText}>
-                    <strong>Tanpa Margin</strong>
-                  </span>
-                </label>
-                <label className={styles.radioLabel}>
-                  <input
-                    type="radio"
-                    name="margin"
-                    value="narrow"
-                    checked={margin === 'narrow'}
-                    onChange={(e) => setMargin(e.target.value)}
-                  />
-                  <span className={styles.radioText}>
-                    <strong>Sempit</strong>
-                  </span>
-                </label>
-                <label className={styles.radioLabel}>
-                  <input
-                    type="radio"
-                    name="margin"
-                    value="normal"
-                    checked={margin === 'normal'}
-                    onChange={(e) => setMargin(e.target.value)}
-                  />
-                  <span className={styles.radioText}>
-                    <strong>Normal</strong>
-                  </span>
-                </label>
-              </div>
-            </div>
+                <div className={styles.settingGroup}>
+                  <label className={styles.settingLabel}>Margin</label>
+                  <div className={styles.radioGroup}>
+                    <label className={styles.radioLabel}>
+                      <input
+                        type="radio"
+                        name="margin"
+                        value="none"
+                        checked={margin === 'none'}
+                        onChange={(e) => setMargin(e.target.value)}
+                      />
+                      <span className={styles.radioText}>
+                        <strong>Tanpa Margin</strong>
+                      </span>
+                    </label>
+                    <label className={styles.radioLabel}>
+                      <input
+                        type="radio"
+                        name="margin"
+                        value="narrow"
+                        checked={margin === 'narrow'}
+                        onChange={(e) => setMargin(e.target.value)}
+                      />
+                      <span className={styles.radioText}>
+                        <strong>Sempit</strong>
+                      </span>
+                    </label>
+                    <label className={styles.radioLabel}>
+                      <input
+                        type="radio"
+                        name="margin"
+                        value="normal"
+                        checked={margin === 'normal'}
+                        onChange={(e) => setMargin(e.target.value)}
+                      />
+                      <span className={styles.radioText}>
+                        <strong>Normal</strong>
+                      </span>
+                    </label>
+                  </div>
+                </div>
 
-            <Button
-              variant="primary"
-              icon={<MdPictureAsPdf />}
-              onClick={handleConvert}
-              disabled={!images.length || isProcessing}
-              className={styles.actionBtn}
-            >
-              {isProcessing ? 'Memproses...' : 'Konversi ke PDF'}
-            </Button>
+                <Button
+                  variant="primary"
+                  icon={<MdPictureAsPdf />}
+                  onClick={handleConvert}
+                  disabled={!images.length || isProcessing}
+                  className={styles.actionBtn}
+                >
+                  {isProcessing ? 'Memproses...' : 'Konversi ke PDF'}
+                </Button>
 
-            {status && !isProcessing && (
-              <div className={`${styles.statusBox} ${status.startsWith('✓') ? styles.success : status.startsWith('✗') ? styles.error : ''}`}>
-                {status}
-              </div>
+                {status && !isProcessing && (
+                  <div className={`${styles.statusBox} ${status.startsWith('✓') ? styles.success : status.startsWith('✗') ? styles.error : ''}`}>
+                    {status}
+                  </div>
+                )}
+              </>
+            ) : (
+              <>
+                <div className={styles.resultSuccessHeader}>
+                  <div className={styles.resultSuccessIcon}>
+                    <MdCheckCircle size={32} />
+                  </div>
+                  <h3 className={styles.resultSuccessTitle}>Konversi Berhasil!</h3>
+                  <p className={styles.resultSuccessSubtitle}>PDF siap untuk diunduh</p>
+                </div>
+
+                <div className={styles.resultStatsGrid}>
+                  <div className={styles.resultStatCard}>
+                    <MdPictureAsPdf size={24} />
+                    <span className={styles.resultStatValue}>{formatFileSize(pdfResult?.fileSize || 0)}</span>
+                    <span className={styles.resultStatLabel}>Ukuran PDF</span>
+                  </div>
+                  <div className={styles.resultStatCard}>
+                    <MdImage size={24} />
+                    <span className={styles.resultStatValue}>{pdfResult?.pageCount}</span>
+                    <span className={styles.resultStatLabel}>Halaman</span>
+                  </div>
+                  <div className={styles.resultStatCard}>
+                    <MdAspectRatio size={24} />
+                    <span className={styles.resultStatValue}>{pdfResult?.orientation === 'portrait' ? 'Portrait' : 'Landscape'}</span>
+                    <span className={styles.resultStatLabel}>Orientasi</span>
+                  </div>
+                  <div className={styles.resultStatCard}>
+                    <MdDescription size={24} />
+                    <span className={styles.resultStatValue}>{getMarginLabel(pdfResult?.margin)}</span>
+                    <span className={styles.resultStatLabel}>Margin</span>
+                  </div>
+                </div>
+
+                <div className={styles.resultFileInfo}>
+                  <MdDescription size={20} />
+                  <span className={styles.resultFileName}>{pdfResult?.filename}</span>
+                </div>
+
+                <div className={styles.resultActions}>
+                  <Button
+                    variant="primary"
+                    icon={<MdDownload />}
+                    onClick={handleDownload}
+                    className={styles.actionBtn}
+                  >
+                    Download PDF
+                  </Button>
+                  
+                  <Button
+                    variant="outline"
+                    icon={<MdRefresh />}
+                    onClick={handleReset}
+                    className={styles.actionBtn}
+                  >
+                    Konversi Lagi
+                  </Button>
+                </div>
+              </>
             )}
           </Card>
         </div>
