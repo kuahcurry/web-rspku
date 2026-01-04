@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Button from '../../../components/button/Button';
 import Input from '../../../components/input/Input';
 import Form from '../../../components/form/Form';
+import { MdRefresh } from 'react-icons/md';
 import styles from './LupaPassword.module.css';
 
 function LupaSandi() {
@@ -14,13 +15,45 @@ function LupaSandi() {
   };
   const [formData, setFormData] = useState({
     email: '',
-    code: '',
+    code: ['', '', '', '', '', ''],
     password: '',
     password_confirmation: ''
   });
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState('');
+  const [timeLeft, setTimeLeft] = useState(15 * 60); // 15 minutes in seconds
+  const [canResend, setCanResend] = useState(false);
+  const [isResending, setIsResending] = useState(false);
+  const inputRefs = useRef([]);
+
+  // Timer effect for code expiration
+  useEffect(() => {
+    if (step !== 2) return;
+    
+    if (timeLeft <= 0) {
+      setCanResend(true);
+      return;
+    }
+
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          setCanResend(true);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [timeLeft, step]);
+
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -30,6 +63,81 @@ function LupaSandi() {
     });
     if (errors[name]) {
       setErrors({ ...errors, [name]: null });
+    }
+  };
+
+  // Handle code input change
+  const handleCodeChange = (index, value) => {
+    if (!/^\d*$/.test(value)) return;
+
+    const newCode = [...formData.code];
+    newCode[index] = value.slice(-1);
+    setFormData({ ...formData, code: newCode });
+    setErrors({ ...errors, code: null });
+
+    if (value && index < 5) {
+      inputRefs.current[index + 1]?.focus();
+    }
+
+    // Auto submit when all digits are filled
+    if (index === 5 && value && newCode.every((digit) => digit !== '')) {
+      handleVerifyCode(null, newCode.join(''));
+    }
+  };
+
+  const handleKeyDown = (index, e) => {
+    if (e.key === 'Backspace' && !formData.code[index] && index > 0) {
+      inputRefs.current[index - 1]?.focus();
+    }
+    if (e.key === 'v' && (e.ctrlKey || e.metaKey)) {
+      e.preventDefault();
+      handlePaste(e);
+    }
+  };
+
+  const handlePaste = async (e) => {
+    e.preventDefault();
+    const pastedData = e.clipboardData?.getData('text') || (await navigator.clipboard.readText());
+    const digits = pastedData.replace(/\D/g, '').slice(0, 6);
+    
+    if (digits.length === 6) {
+      const newCode = digits.split('');
+      setFormData({ ...formData, code: newCode });
+      inputRefs.current[5]?.focus();
+      handleVerifyCode(null, digits);
+    }
+  };
+
+  const handleResendCode = async () => {
+    setIsResending(true);
+    setErrors({});
+
+    try {
+      const response = await fetch('/api/forgot-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({ email: formData.email })
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        setMessage('Kode reset baru telah dikirim ke email Anda');
+        setTimeLeft(15 * 60);
+        setCanResend(false);
+        setFormData({ ...formData, code: ['', '', '', '', '', ''] });
+        inputRefs.current[0]?.focus();
+      } else {
+        setErrors({ general: data.message || 'Gagal mengirim kode baru' });
+      }
+    } catch (error) {
+      console.error('Resend error:', error);
+      setErrors({ general: 'Terjadi kesalahan. Silakan coba lagi.' });
+    } finally {
+      setIsResending(false);
     }
   };
 
@@ -53,6 +161,8 @@ function LupaSandi() {
 
       if (response.ok && data.success) {
         setMessage('Kode reset password telah dikirim ke email Anda');
+        setTimeLeft(15 * 60); // Reset timer
+        setCanResend(false);
         setStep(2);
       } else {
         if (data.errors) {
@@ -69,8 +179,16 @@ function LupaSandi() {
     }
   };
 
-  const handleVerifyCode = async (e) => {
-    e.preventDefault();
+  const handleVerifyCode = async (e, codeString = null) => {
+    if (e) e.preventDefault();
+    
+    const codeToVerify = codeString || formData.code.join('');
+    
+    if (codeToVerify.length !== 6) {
+      setErrors({ code: ['Silakan masukkan kode 6 digit'] });
+      return;
+    }
+    
     setErrors({});
     setIsSubmitting(true);
     setMessage('');
@@ -84,7 +202,7 @@ function LupaSandi() {
         },
         body: JSON.stringify({
           email: formData.email,
-          code: formData.code
+          code: codeToVerify
         })
       });
 
@@ -99,6 +217,9 @@ function LupaSandi() {
         } else {
           setErrors({ general: data.message || 'Kode tidak valid' });
         }
+        // Reset code inputs on error
+        setFormData({ ...formData, code: ['', '', '', '', '', ''] });
+        inputRefs.current[0]?.focus();
       }
     } catch (error) {
       console.error('Verify code error:', error);
@@ -129,7 +250,7 @@ function LupaSandi() {
         },
         body: JSON.stringify({
           email: formData.email,
-          code: formData.code,
+          code: formData.code.join(''),
           password: formData.password,
           password_confirmation: formData.password_confirmation
         })
@@ -222,45 +343,89 @@ function LupaSandi() {
         )}
 
         {step === 2 && (
-          <Form onSubmit={handleVerifyCode} className={styles.form}>
+          <Form onSubmit={(e) => handleVerifyCode(e)} className={styles.form}>
             <p className={styles['helper-note']}>
-              Periksa juga folder spam. Kode biasanya berlaku beberapa menit.
+              Masukkan kode yang baru saja dikirim ke <strong>{formData.email}</strong>. Tempel langsung jika Anda menyalin kode.
             </p>
-            <Input
-              label="Kode Verifikasi"
-              type="text"
-              name="code"
-              placeholder="Masukkan kode 6 digit"
-              value={formData.code}
-              onChange={handleChange}
-              required
-              maxLength={6}
-              error={errors.code?.[0]}
-              disabled={isSubmitting}
-              variant="filled"
-              size="large"
-            />
+            
+            <div className={styles['code-section']}>
+              <label className={styles['label']}>Kode 6 Digit</label>
+              
+              <div className={styles['code-inputs']}>
+                {formData.code.map((digit, index) => (
+                  <input
+                    key={index}
+                    ref={(el) => (inputRefs.current[index] = el)}
+                    type="text"
+                    inputMode="numeric"
+                    maxLength="1"
+                    value={digit}
+                    onChange={(e) => handleCodeChange(index, e.target.value)}
+                    onKeyDown={(e) => handleKeyDown(index, e)}
+                    onPaste={handlePaste}
+                    className={styles['code-input']}
+                    disabled={isSubmitting}
+                    autoFocus={index === 0}
+                  />
+                ))}
+              </div>
 
-            <Button
-              type="submit"
-              variant="success"
-              size="large"
-              fullWidth
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? 'Memverifikasi...' : 'Verifikasi Kode'}
-            </Button>
+              {errors.code && (
+                <div className={styles['code-error']}>
+                  {errors.code[0]}
+                </div>
+              )}
 
-            <Button
-              type="button"
-              variant="outline"
-              size="medium"
-              fullWidth
-              onClick={() => setStep(1)}
-              disabled={isSubmitting}
-            >
-              Kembali
-            </Button>
+              <div className={styles['timer']}>
+                {timeLeft > 0 ? (
+                  <>
+                    Kode akan kedaluwarsa dalam <strong>{formatTime(timeLeft)}</strong>
+                  </>
+                ) : (
+                  <span className={styles['expired']}>Kode telah kedaluwarsa</span>
+                )}
+              </div>
+            </div>
+
+            <div className={styles['actions']}>
+              <Button
+                type="submit"
+                variant="success"
+                size="large"
+                fullWidth
+                disabled={formData.code.some((digit) => digit === '') || isSubmitting}
+              >
+                {isSubmitting ? 'Memverifikasi...' : 'Verifikasi Kode'}
+              </Button>
+
+              <div className={styles['resend-section']}>
+                <span className={styles['resend-text']}>Tidak menerima kode?</span>
+                <Button
+                  type="button"
+                  variant="inverse"
+                  size="small"
+                  onClick={handleResendCode}
+                  disabled={!canResend || isResending}
+                  icon={<MdRefresh />}
+                >
+                  {isResending ? 'Mengirim...' : 'Kirim Ulang'}
+                </Button>
+              </div>
+
+              <Button
+                type="button"
+                variant="outline"
+                size="medium"
+                fullWidth
+                onClick={() => {
+                  setStep(1);
+                  setFormData({ ...formData, code: ['', '', '', '', '', ''] });
+                }}
+                disabled={isSubmitting}
+              >
+                Kembali
+              </Button>
+            </div>
           </Form>
         )}
 
