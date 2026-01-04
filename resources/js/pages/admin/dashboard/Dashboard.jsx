@@ -202,7 +202,7 @@ const Dashboard = () => {
                 <div className={styles.statInfo}>
                   <span className={styles.statLabel}>Dokumen Segera Kedaluwarsa</span>
                   <h2 className={styles.statValue}>{loading ? '-' : stats.expiringDocuments}</h2>
-                  <span className={styles.statAction} onClick={() => navigate('/admin/pengguna')}>
+                  <span className={styles.statAction} onClick={handleOpenExpiringModal}>
                     Tinjau sekarang
                   </span>
                 </div>

@@ -9,7 +9,8 @@ import {
   MdGavel,
   MdPictureAsPdf,
   MdKeyboardArrowDown,
-  MdKeyboardArrowRight
+  MdKeyboardArrowRight,
+  MdHelp
 } from 'react-icons/md';
 import { IoShieldCheckmarkSharp } from "react-icons/io5";
 import Navbar from '../../components/navbar/Navbar';
@@ -54,7 +55,8 @@ const MainLayout = ({ children }) => {
         { path: '/alat/kompresi-pdf', label: 'Kompresi File PDF' },
         { path: '/alat/cetak-pdf', label: 'Cetak PDF' }
       ]
-    }
+    },
+    { path: '/faq', icon: MdHelp, label: 'Bantuan & FAQ' }
   ];
 
   // Auto-expand menu when page is active
