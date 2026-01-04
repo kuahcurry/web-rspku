@@ -175,9 +175,9 @@
 
 .itemGrid {
   display: grid;
-  grid-template-columns: 1.1fr 1.1fr 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1rem;
-  align-items: center;
+  align-items: start;
 }
 
 .metaBlock {
@@ -206,11 +206,10 @@
 }
 
 .fileAction {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: 0.75rem;
-  flex-wrap: wrap;
-  justify-content: space-between;
   width: 100%;
 }
 
@@ -219,6 +218,7 @@
   font-weight: 600;
   text-decoration: none;
   font-size: 0.95rem;
+  word-break: break-word;
 }
 
 .fileLink:hover {
@@ -283,7 +283,78 @@
 .pdfFrame {
   width: 100%;
   height: 100%;
+  min-height: 45vh;
   border: none;
+}
+
+/* View Detail Modal - Admin Style */
+.viewModal {
+  width: 75vw;
+  max-width: 1080px;
+  min-width: 520px;
+}
+
+.viewDetail {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-height: 60vh;
+}
+
+.detailGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.detailRow {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.5rem 0;
+}
+
+.detailLabel {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.detailValue {
+  font-size: 0.95rem;
+  color: var(--text-main);
+}
+
+.pdfPreview {
+  margin-top: 0.5rem;
+  border: 1px solid var(--border-grey);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--bg-soft);
+  flex: 1;
+}
+
+.pdfEmpty {
+  padding: 2rem;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+@media (max-width: 768px) {
+  .detailGrid {
+    grid-template-columns: 1fr;
+  }
+  
+  .viewDetail {
+    min-height: auto;
+  }
+  
+  .pdfFrame {
+    min-height: 35vh;
+  }
 }
 
 .modalForm {
@@ -358,7 +429,8 @@
 }
 
 .viewButton {
-  margin-left: auto;
+  margin-left: 0;
+  justify-self: end;
 }
 
 @media (max-width: 960px) {
