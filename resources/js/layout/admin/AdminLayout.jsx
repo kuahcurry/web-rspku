@@ -61,7 +61,7 @@ const AdminLayout = ({ children }) => {
     
     if (!token || !userStr) {
       console.log('AdminLayout: No token or user found, redirecting to login');
-      navigate('/login?mode=admin');
+      navigate('/admin/login');
       return;
     }
     
@@ -74,7 +74,7 @@ const AdminLayout = ({ children }) => {
       if (userData.role !== 'admin') {
         console.log('AdminLayout: User role is not admin:', userData.role);
         alert('Akses ditolak: Anda tidak memiliki hak akses admin.');
-        navigate('/login?mode=admin');
+        navigate('/admin/login');
         return;
       }
       
@@ -82,7 +82,7 @@ const AdminLayout = ({ children }) => {
       setAdminUser(userData);
     } catch (e) {
       console.error('AdminLayout: Error parsing user data:', e);
-      navigate('/login?mode=admin');
+      navigate('/admin/login');
     }
   }, [navigate]);
 
@@ -129,7 +129,7 @@ const AdminLayout = ({ children }) => {
     localStorage.removeItem('token_type');
     localStorage.removeItem('user');
     localStorage.removeItem('token_expires_at');
-    navigate('/login?mode=admin');
+    navigate('/admin/login');
   };
 
   return (
