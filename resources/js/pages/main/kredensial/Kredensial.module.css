@@ -320,31 +320,27 @@
 .statusBadge {
   display: inline-flex;
   align-items: center;
-  padding: 0.3rem 0.7rem;
-  border-radius: 999px;
-  font-weight: 700;
-  font-size: 0.9rem;
-  border: 1px solid transparent;
-  background: #f6f8fb;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.75rem;
+  border: none;
   gap: 0.35rem;
 }
 
 .badge-success {
-  background: #e8fff2;
-  color: #1f9a5c;
-  border-color: #b6edcd;
+  background: var(--success-light);
+  color: var(--success-green);
 }
 
 .badge-danger {
-  background: #fff1f2;
-  color: #dc2626;
-  border-color: #fecdd3;
+  background: var(--error-light);
+  color: var(--error-red);
 }
 
 .badge-secondary {
-  background: #f3f4f6;
-  color: #4b5563;
-  border-color: #e5e7eb;
+  background: var(--bg-soft);
+  color: var(--text-secondary);
 }
 
 .rekredSummary {

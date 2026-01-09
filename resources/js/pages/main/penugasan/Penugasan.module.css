@@ -154,23 +154,21 @@
 }
 
 .statusBadge {
-  padding: 0.4rem 0.75rem;
-  border-radius: 999px;
-  font-size: 0.9rem;
-  font-weight: 700;
-  border: 1px solid transparent;
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
 }
 
 .statusAktif {
-  background: #e8fff2;
-  color: #1f9a5c;
-  border-color: #b6edcd;
+  background: var(--success-light);
+  color: var(--success-green);
 }
 
 .statusSelesai {
-  background: #f2f2f2;
-  color: #6b7280;
-  border-color: #e0e0e0;
+  background: var(--bg-soft);
+  color: var(--text-secondary);
 }
 
 .itemGrid {
