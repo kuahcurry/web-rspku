@@ -44,6 +44,10 @@ return [
             'driver' => 'jwt',
             'provider' => 'users_registration',
         ],
+        'admin' => [
+            'driver' => 'jwt',
+            'provider' => 'admins',
+        ],
     ],
 
     /*
@@ -71,6 +75,10 @@ return [
         'users_registration' => [
             'driver' => 'eloquent',
             'model' => App\Models\UserRegistration::class,
+        ],
+        'admins' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\Admin::class,
         ],
 
         // 'users' => [

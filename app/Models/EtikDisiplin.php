@@ -30,6 +30,7 @@ class EtikDisiplin extends Model
 
     protected $appends = [
         'file_name',
+        'url',
     ];
 
     /**

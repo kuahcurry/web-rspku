@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Kredensial;
+use App\Models\ActivityLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
@@ -100,6 +101,16 @@ class KredensialController extends Controller
                 'hasil_penilaian' => $request->hasil_penilaian,
                 'catatan' => $request->catatan,
                 'file_path' => $filePath,
+            ]);
+
+            // Log the activity
+            ActivityLog::create([
+                'user_id' => $user->id,
+                'type' => 'upload',
+                'action' => 'Uploaded kredensial',
+                'metadata' => json_encode([
+                    'kategori' => $request->kredensial_type
+                ])
             ]);
 
             return response()->json([
@@ -250,12 +261,25 @@ class KredensialController extends Controller
                 ], 404);
             }
 
+            // Capture metadata before deletion
+            $metadata = [
+                'kategori' => $record->kredensial_type
+            ];
+
             // Delete file from storage
             if (Storage::disk('public')->exists($record->file_path)) {
                 Storage::disk('public')->delete($record->file_path);
             }
 
             $record->delete();
+
+            // Log the activity
+            ActivityLog::create([
+                'user_id' => $user->id,
+                'type' => 'delete',
+                'action' => 'Deleted kredensial',
+                'metadata' => json_encode($metadata)
+            ]);
 
             return response()->json([
                 'success' => true,

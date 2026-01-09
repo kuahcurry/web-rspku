@@ -241,7 +241,7 @@ const RiwayatPendidikan = () => {
           setShowViewModal(false);
         }
         
-        fetchData(); // Refresh data
+        await fetchData(); // Refresh data
       } else {
         setBanner({ message: 'Gagal menghapus data', type: 'error' });
       }
@@ -285,7 +285,7 @@ const RiwayatPendidikan = () => {
         setBanner({ message: 'Data berhasil ditambahkan!', type: 'success' });
         setShowAddModal(false);
         setFormData({ judul: '', institusi: '', tahun_lulus: '', file: null });
-        fetchData(); // Refresh data
+        await fetchData(); // Refresh data
       } else {
         setBanner({ message: data.message || 'Gagal menambahkan data', type: 'error' });
       }
