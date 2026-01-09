@@ -1,5 +1,6 @@
 // Auth Pages (Shared)
-import Login from "./pages/auth/login/Login";
+import LoginUser from "./pages/auth/login/LoginUser";
+import LoginAdmin from "./pages/auth/login/LoginAdmin";
 import Register from "./pages/auth/register/Register";
 import VerifyEmail from "./pages/auth/verifikasiEmail/VerifikasiEmail";
 import ForgotPassword from "./pages/auth/lupaPassword/LupaPassword";
@@ -19,6 +20,7 @@ import GambarKePdf from "./pages/main/alat/GambarKePdf";
 import KompresiPdf from "./pages/main/alat/KompresiPdf";
 import CetakPdf from "./pages/main/alat/CetakPdf";
 import ProtectedRoute from "./components/ProtectedRoute";
+import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
 import { UserProvider } from "./contexts/UserContext";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
@@ -39,8 +41,8 @@ function App() {
     <Router>
       <UserProvider>
         <Routes>
-        <Route path="/" element={<Login />} />
-        <Route path="/login" element={<Login />} />
+        <Route path="/" element={<LoginUser />} />
+        <Route path="/login" element={<LoginUser />} />
         <Route path="/register" element={<Register />} />
         <Route path="/verifikasi-email" element={<VerifyEmail />} />
         <Route path="/lupa-password" element={<ForgotPassword />} />
@@ -158,16 +160,87 @@ function App() {
         />
 
         {/* Admin Routes */}
-        <Route path="/admin/dashboard" element={<Dashboard />} />
-        <Route path="/admin/pengguna" element={<ManajemenPengguna />} />
-        <Route path="/admin/pengguna/:userId" element={<DetailPengguna />} />
-        <Route path="/admin/etik-disiplin" element={<AdminEtikDisiplin />} />
-        <Route path="/admin/alat/kompresi-pdf" element={<AdminKompresiPdf />} />
-        <Route path="/admin/alat/gambar-ke-pdf" element={<AdminGambarKePdf />} />
-        <Route path="/admin/pengaturan/role" element={<ManajemenRole />} />
-        <Route path="/admin/pengaturan/akun" element={<AkunAdmin />} />
-        <Route path="/admin/pengaturan" element={<AkunAdmin />} />
-        <Route path="/admin/faq" element={<AdminFaq />} />
+        <Route path="/admin/login" element={<LoginAdmin />} />
+        <Route 
+          path="/admin/dashboard" 
+          element={
+            <ProtectedAdminRoute>
+              <Dashboard />
+            </ProtectedAdminRoute>
+          } 
+        />
+        <Route 
+          path="/admin/pengguna" 
+          element={
+            <ProtectedAdminRoute>
+              <ManajemenPengguna />
+            </ProtectedAdminRoute>
+          } 
+        />
+        <Route 
+          path="/admin/pengguna/:userId" 
+          element={
+            <ProtectedAdminRoute>
+              <DetailPengguna />
+            </ProtectedAdminRoute>
+          } 
+        />
+        <Route 
+          path="/admin/etik-disiplin" 
+          element={
+            <ProtectedAdminRoute>
+              <AdminEtikDisiplin />
+            </ProtectedAdminRoute>
+          } 
+        />
+        <Route 
+          path="/admin/alat/kompresi-pdf" 
+          element={
+            <ProtectedAdminRoute>
+              <AdminKompresiPdf />
+            </ProtectedAdminRoute>
+          } 
+        />
+        <Route 
+          path="/admin/alat/gambar-ke-pdf" 
+          element={
+            <ProtectedAdminRoute>
+              <AdminGambarKePdf />
+            </ProtectedAdminRoute>
+          } 
+        />
+        <Route 
+          path="/admin/pengaturan/role" 
+          element={
+            <ProtectedAdminRoute>
+              <ManajemenRole />
+            </ProtectedAdminRoute>
+          } 
+        />
+        <Route 
+          path="/admin/pengaturan/akun" 
+          element={
+            <ProtectedAdminRoute>
+              <AkunAdmin />
+            </ProtectedAdminRoute>
+          } 
+        />
+        <Route 
+          path="/admin/pengaturan" 
+          element={
+            <ProtectedAdminRoute>
+              <AkunAdmin />
+            </ProtectedAdminRoute>
+          } 
+        />
+        <Route 
+          path="/admin/faq" 
+          element={
+            <ProtectedAdminRoute>
+              <AdminFaq />
+            </ProtectedAdminRoute>
+          } 
+        />
       </Routes>
       </UserProvider>
     </Router>
