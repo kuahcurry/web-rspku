@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\DokumenLegalitas;
 use App\Models\UserRegistration;
+use App\Models\ActivityLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
@@ -110,6 +111,17 @@ class DokumenLegalitasController extends Controller
                     'tanggal_berlaku' => $request->tanggal_berlaku,
                     'file_path' => $filePath,
                 ]);
+
+                // Log update activity
+                ActivityLog::create([
+                    'user_id' => $user->id,
+                    'type' => 'upload',
+                    'action' => 'Updated dokumen legalitas',
+                    'metadata' => [
+                        'jenis_dokumen' => $request->jenis_dokumen,
+                        'nomor_sk' => $request->nomor_sk,
+                    ]
+                ]);
             } else {
                 // Create new document
                 $document = DokumenLegalitas::create([
@@ -119,6 +131,17 @@ class DokumenLegalitasController extends Controller
                     'tanggal_mulai' => $request->tanggal_mulai,
                     'tanggal_berlaku' => $request->tanggal_berlaku,
                     'file_path' => $filePath,
+                ]);
+
+                // Log upload activity
+                ActivityLog::create([
+                    'user_id' => $user->id,
+                    'type' => 'upload',
+                    'action' => 'Uploaded dokumen legalitas',
+                    'metadata' => [
+                        'jenis_dokumen' => $request->jenis_dokumen,
+                        'nomor_sk' => $request->nomor_sk,
+                    ]
                 ]);
             }
 
@@ -180,6 +203,9 @@ class DokumenLegalitasController extends Controller
                 ->where('id', $id)
                 ->firstOrFail();
 
+            $jenisDokumen = $document->jenis_dokumen;
+            $nomorSk = $document->nomor_sk;
+
             // Delete file from storage
             if (Storage::disk('public')->exists($document->file_path)) {
                 Storage::disk('public')->delete($document->file_path);
@@ -187,6 +213,17 @@ class DokumenLegalitasController extends Controller
 
             // Delete database record
             $document->delete();
+
+            // Log delete activity
+            ActivityLog::create([
+                'user_id' => $user->id,
+                'type' => 'delete',
+                'action' => 'Deleted dokumen legalitas',
+                'metadata' => [
+                    'jenis_dokumen' => $jenisDokumen,
+                    'nomor_sk' => $nomorSk,
+                ]
+            ]);
 
             return response()->json([
                 'success' => true,

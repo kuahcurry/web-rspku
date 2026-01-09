@@ -15,6 +15,22 @@ export const UserProvider = ({ children }) => {
       return;
     }
 
+    // Check if current user is admin - skip fetching from /api/me
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      try {
+        const userData = JSON.parse(storedUser);
+        if (userData.role === 'admin') {
+          // Admin users don't use /api/me endpoint
+          setUser(null);
+          setLoading(false);
+          return;
+        }
+      } catch (e) {
+        // Continue with normal fetch if parsing fails
+      }
+    }
+
     try {
       const response = await authenticatedFetch('/api/me');
       const data = await response.json();

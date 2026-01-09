@@ -6,6 +6,7 @@ import Button from '../../../components/button/Button';
 import Modal from '../../../components/modal/Modal';
 import Input from '../../../components/input/Input';
 import Table from '../../../components/table/Table';
+import { authenticatedFetch } from '../../../utils/auth';
 import { 
   MdPeople, 
   MdVerifiedUser, 
@@ -32,7 +33,8 @@ const Dashboard = () => {
     totalUsers: 0,
     activeUsers: 0,
     etikDisiplinCases: 0,
-    expiringDocuments: 0
+    expiringDocuments: 0,
+    newUsersThisMonth: 0
   });
   const [expiringDocuments, setExpiringDocuments] = useState([]);
   const [allExpiringDocuments, setAllExpiringDocuments] = useState([]);
@@ -45,51 +47,54 @@ const Dashboard = () => {
     try {
       setLoading(true);
       
-      // Fetch dashboard statistics - in real implementation, this would call actual API
-      // For now, we'll use mock data
-      setStats({
-        totalUsers: 156,
-        activeUsers: 142,
-        etikDisiplinCases: 8,
-        expiringDocuments: 23
-      });
+      // Fetch dashboard statistics
+      const statsResponse = await authenticatedFetch('/api/admin/dashboard/statistics');
+      
+      // Handle 403 Forbidden (not admin)
+      if (statsResponse.status === 403) {
+        console.error('Access denied: User does not have admin role');
+        alert('Akses ditolak: Anda tidak memiliki akses admin. Silakan hubungi administrator.');
+        navigate('/login');
+        return;
+      }
+      
+      const statsData = await statsResponse.json();
+      
+      if (statsData.success) {
+        setStats(statsData.data);
+      }
 
-      setExpiringDocuments([
-        { id: 1, userName: 'Dr. Ahmad Sudirman', documentType: 'STR', expiryDate: '2026-01-15', daysLeft: 12 },
-        { id: 2, userName: 'Ns. Siti Rahayu', documentType: 'SIP', expiryDate: '2026-01-20', daysLeft: 17 },
-        { id: 3, userName: 'Dr. Bambang Hartono', documentType: 'STR', expiryDate: '2026-02-01', daysLeft: 29 },
-        { id: 4, userName: 'Ns. Dewi Lestari', documentType: 'SIP', expiryDate: '2026-02-10', daysLeft: 38 },
-      ]);
+      // Fetch expiring documents
+      const expiringResponse = await authenticatedFetch('/api/admin/dashboard/expiring-documents');
+      const expiringData = await expiringResponse.json();
+      
+      if (expiringData.success) {
+        const documents = expiringData.data;
+        setExpiringDocuments(documents.slice(0, 4)); // Show first 4 in main dashboard
+        setAllExpiringDocuments(documents); // Store all for modal
+      }
 
-      // Data lengkap semua dokumen yang akan kedaluwarsa
-      setAllExpiringDocuments([
-        { id: 1, userName: 'Dr. Ahmad Sudirman', nip: '198501152010011001', documentType: 'STR', documentNumber: 'STR-123456', expiryDate: '2026-01-15', daysLeft: 12, unit: 'Poli Umum' },
-        { id: 2, userName: 'Ns. Siti Rahayu', nip: '199003202015012002', documentType: 'SIP', documentNumber: 'SIP-789012', expiryDate: '2026-01-20', daysLeft: 17, unit: 'IGD' },
-        { id: 3, userName: 'Dr. Bambang Hartono', nip: '198205102008011003', documentType: 'STR', documentNumber: 'STR-345678', expiryDate: '2026-02-01', daysLeft: 29, unit: 'Poli Gigi' },
-        { id: 4, userName: 'Ns. Dewi Lestari', nip: '199108152016012004', documentType: 'SIP', documentNumber: 'SIP-901234', expiryDate: '2026-02-10', daysLeft: 38, unit: 'Rawat Inap' },
-        { id: 5, userName: 'Dr. Eko Prasetyo', nip: '198704252011011005', documentType: 'STR', documentNumber: 'STR-567890', expiryDate: '2026-02-15', daysLeft: 43, unit: 'Poli Anak' },
-        { id: 6, userName: 'Ns. Fitri Handayani', nip: '199206102017012006', documentType: 'SIP', documentNumber: 'SIP-123789', expiryDate: '2026-02-20', daysLeft: 48, unit: 'ICU' },
-        { id: 7, userName: 'Dr. Gunawan Wijaya', nip: '198009152007011007', documentType: 'STR', documentNumber: 'STR-456123', expiryDate: '2026-02-25', daysLeft: 53, unit: 'Bedah' },
-        { id: 8, userName: 'Ns. Hesti Kurniawati', nip: '199305202018012008', documentType: 'SIP', documentNumber: 'SIP-789456', expiryDate: '2026-03-01', daysLeft: 57, unit: 'Hemodialisa' },
-        { id: 9, userName: 'Dr. Irfan Maulana', nip: '198602102009011009', documentType: 'STR', documentNumber: 'STR-012345', expiryDate: '2026-03-05', daysLeft: 61, unit: 'Radiologi' },
-        { id: 10, userName: 'Ns. Julia Permata', nip: '199407152019012010', documentType: 'SIP', documentNumber: 'SIP-678901', expiryDate: '2026-03-10', daysLeft: 66, unit: 'Laboratorium' },
-      ]);
-
-      setRecentActivities([
-        { id: 1, type: 'register', userName: 'Ns. Putri Amelia', action: 'Mendaftar sebagai pengguna baru', timestamp: '2026-01-03 10:30' },
-        { id: 2, type: 'update', userName: 'Dr. Rudi Hermawan', action: 'Memperbarui dokumen STR', timestamp: '2026-01-03 09:15' },
-        { id: 3, type: 'verify', userName: 'Ns. Andi Pratama', action: 'Verifikasi email berhasil', timestamp: '2026-01-03 08:45' },
-        { id: 4, type: 'upload', userName: 'Dr. Yanti Kusuma', action: 'Mengunggah dokumen SIP', timestamp: '2026-01-02 16:20' },
-        { id: 5, type: 'register', userName: 'Ns. Budi Santoso', action: 'Mendaftar sebagai pengguna baru', timestamp: '2026-01-02 14:00' },
-      ]);
+      // Fetch recent activities
+      const activitiesResponse = await authenticatedFetch('/api/admin/dashboard/activities');
+      const activitiesData = await activitiesResponse.json();
+      
+      if (activitiesData.success) {
+        setRecentActivities(activitiesData.data);
+      }
 
       setLastUpdated(new Date());
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
+      
+      // Handle authentication error
+      if (error.message === 'Not authenticated') {
+        alert('Sesi Anda telah berakhir. Silakan login kembali.');
+        navigate('/login');
+      }
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [navigate]);
 
   useEffect(() => {
     fetchDashboardData();
@@ -110,9 +115,16 @@ const Dashboard = () => {
   };
 
   const getDaysLeftBadge = (daysLeft) => {
+    if (daysLeft < 0) return 'expired';
     if (daysLeft <= 7) return 'danger';
     if (daysLeft <= 30) return 'warning';
     return 'info';
+  };
+
+  const getDaysLeftText = (daysLeft) => {
+    if (daysLeft < 0) return `Kadaluwarsa ${Math.abs(daysLeft)} hari lalu`;
+    if (daysLeft === 0) return 'Kadaluwarsa hari ini';
+    return `${daysLeft} hari lagi`;
   };
 
   // Filter dokumen kedaluwarsa
@@ -158,7 +170,7 @@ const Dashboard = () => {
                   <h2 className={styles.statValue}>{loading ? '-' : stats.totalUsers}</h2>
                   <span className={styles.statTrend}>
                     <MdTrendingUp size={16} />
-                    +12 bulan ini
+                    +{stats.newUsersThisMonth} bulan ini
                   </span>
                 </div>
               </div>
@@ -244,7 +256,7 @@ const Dashboard = () => {
                       <div className={styles.expiringMeta}>
                         <span className={styles.expiringDate}>{doc.expiryDate}</span>
                         <span className={`${styles.daysLeftBadge} ${styles[getDaysLeftBadge(doc.daysLeft)]}`}>
-                          {doc.daysLeft} hari lagi
+                          {getDaysLeftText(doc.daysLeft)}
                         </span>
                       </div>
                     </div>
@@ -358,7 +370,7 @@ const Dashboard = () => {
                   <div className="table-cell" data-label="Kedaluwarsa">{doc.expiryDate}</div>
                   <div className="table-cell" data-label="Status">
                     <span className={`${styles.daysLeftBadge} ${styles[getDaysLeftBadge(doc.daysLeft)]}`}>
-                      {doc.daysLeft} hari lagi
+                      {getDaysLeftText(doc.daysLeft)}
                     </span>
                   </div>
                 </div>

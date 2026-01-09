@@ -27,6 +27,7 @@ class Penugasan extends Model
     protected $appends = [
         'file_name',
         'status',
+        'url',
     ];
 
     /**

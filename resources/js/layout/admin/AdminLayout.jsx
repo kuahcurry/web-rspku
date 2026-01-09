@@ -55,16 +55,36 @@ const AdminLayout = ({ children }) => {
   ];
 
   useEffect(() => {
-    // Get admin user from localStorage
-    const storedAdminUser = localStorage.getItem('admin_user');
-    if (storedAdminUser) {
-      try {
-        setAdminUser(JSON.parse(storedAdminUser));
-      } catch (e) {
-        console.error('Error parsing admin user:', e);
-      }
+    // Check authentication
+    const token = localStorage.getItem('access_token');
+    const userStr = localStorage.getItem('user');
+    
+    if (!token || !userStr) {
+      console.log('AdminLayout: No token or user found, redirecting to login');
+      navigate('/login?mode=admin');
+      return;
     }
-  }, []);
+    
+    // Get admin user from localStorage
+    try {
+      const userData = JSON.parse(userStr);
+      console.log('AdminLayout: User data from localStorage:', userData);
+      
+      // Check if user has admin role
+      if (userData.role !== 'admin') {
+        console.log('AdminLayout: User role is not admin:', userData.role);
+        alert('Akses ditolak: Anda tidak memiliki hak akses admin.');
+        navigate('/login?mode=admin');
+        return;
+      }
+      
+      console.log('AdminLayout: Admin authenticated successfully');
+      setAdminUser(userData);
+    } catch (e) {
+      console.error('AdminLayout: Error parsing user data:', e);
+      navigate('/login?mode=admin');
+    }
+  }, [navigate]);
 
   // Auto-expand menu when page is active
   useEffect(() => {
@@ -105,9 +125,11 @@ const AdminLayout = ({ children }) => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('admin_token');
-    localStorage.removeItem('admin_user');
-    navigate('/login');
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('token_type');
+    localStorage.removeItem('user');
+    localStorage.removeItem('token_expires_at');
+    navigate('/login?mode=admin');
   };
 
   return (
