@@ -433,7 +433,7 @@ const Penugasan = () => {
                           {item.file_name}
                         </a>
                         <Button
-                          variant="outline"
+                          variant="primary"
                           size="small"
                           icon={<MdVisibility />}
                           iconPosition="left"
@@ -441,7 +441,6 @@ const Penugasan = () => {
                             e.stopPropagation();
                             handleViewClick(item);
                           }}
-                          className={`${styles.compactButton} ${styles.viewButton}`}
                         >
                           Lihat
                         </Button>

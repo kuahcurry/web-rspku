@@ -191,29 +191,13 @@
 .actionBtns {
   display: flex;
   gap: 0.5rem;
+  align-items: center;
+  justify-content: flex-start;
 }
 
-.iconBtn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0.5rem;
-  border-radius: var(--radius-sm);
-  color: var(--text-secondary);
-  transition: all 0.2s ease;
-}
-
-.iconBtn:hover {
-  background: var(--bg-soft);
-  color: var(--primary-main);
-}
-
-.iconBtnPrimary {
-  color: var(--primary-main);
-}
-
-.iconBtnWarning {
-  color: var(--warning-dark);
+.actionBtns :global(.btn) {
+  white-space: nowrap;
+  min-width: auto;
 }
 
 /* Loading State */
