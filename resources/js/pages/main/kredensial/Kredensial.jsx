@@ -6,7 +6,6 @@ import Button from '../../../components/button/Button';
 import Modal from '../../../components/modal/Modal';
 import Form from '../../../components/form/Form';
 import Input from '../../../components/input/Input';
-import Tabs from '../../../components/tabs/Tabs';
 import Table from '../../../components/table/Table';
 import {
   MdAdd,
@@ -43,9 +42,10 @@ const HASIL_OPTIONS = [
   { value: 'Belum Diisi', label: 'Belum Diisi' }
 ];
 
-const TAB_ITEMS = [
-  { key: 'riwayat', label: 'Riwayat Kegiatan' },
-  { key: 'rekred', label: 'Rekredensial' }
+const KREDENSIAL_TYPE_OPTIONS = [
+  { value: 'Semua', label: 'Semua' },
+  { value: 'Kredensial Awal', label: 'Kredensial Awal' },
+  { value: 'Rekredensial', label: 'Rekredensial' }
 ];
 
 const getStatusBadge = (hasil) => {
@@ -58,13 +58,13 @@ const getStatusBadge = (hasil) => {
 const Kredensial = () => {
   const navigate = useNavigate();
   const [activities, setActivities] = useState([]);
-  const [activeTab, setActiveTab] = useState('riwayat');
   const [loading, setLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [filters, setFilters] = useState({
     search: '',
     year: 'Semua',
-    hasil: 'Semua'
+    hasil: 'Semua',
+    kredensialType: 'Semua'
   });
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState(null);
@@ -160,14 +160,10 @@ const Kredensial = () => {
         filters.year === 'Semua' ||
         (item.tanggal_kegiatan && new Date(item.tanggal_kegiatan).getFullYear().toString() === filters.year);
       const matchesHasil = filters.hasil === 'Semua' || item.hasil === filters.hasil;
-      return matchesSearch && matchesYear && matchesHasil;
+      const matchesKredensialType = filters.kredensialType === 'Semua' || item.tahap === filters.kredensialType;
+      return matchesSearch && matchesYear && matchesHasil && matchesKredensialType;
     });
   }, [activities, filters]);
-
-  const rekredActivities = useMemo(
-    () => filteredActivities.filter((item) => item.tahap === 'Rekredensial'),
-    [filteredActivities]
-  );
 
   const kompetenCount = activities.filter((item) => item.hasil === 'Kompeten').length;
   const tidakKompetenCount = activities.filter((item) => item.hasil === 'Tidak Kompeten').length;
@@ -416,17 +412,6 @@ const Kredensial = () => {
     []
   );
 
-  const columnsRekred = useMemo(
-    () => [
-      { key: 'tanggal', label: 'Tanggal Terbit' },
-      { key: 'kadaluwarsa', label: 'Tanggal Kadaluarsa' },
-      { key: 'hasil', label: 'Hasil' },
-      { key: 'catatan', label: 'Catatan' },
-      { key: 'aksi', label: 'Aksi' }
-    ],
-    []
-  );
-
   if (loading) {
     return (
       <MainLayout>
@@ -450,182 +435,123 @@ const Kredensial = () => {
 
       <div className={styles.container}>
         <div className={styles.cardShell}>
-          <Tabs tabs={TAB_ITEMS} activeKey={activeTab} onChange={setActiveTab} className={styles.tabGroup} />
-
-        {activeTab === 'riwayat' && (
-          <div>
-            <div className={styles.headerRow}>
-              <h3 className={styles.sectionTitle}>Riwayat Kegiatan Kredensial</h3>
-              <div className={styles.actionButtons}>
-                <Button variant="success" size="small" icon={<MdAdd />} iconPosition="left" onClick={openAddModal}>
-                  Tambah
-                </Button>
-                <Button variant="danger" size="small" icon={<MdDelete/>} iconPosition='left' onClick={handleDeleteButtonClick}>
-                  {deleteMode
-                    ? deleteTargets.length
-                      ? `Hapus (${deleteTargets.length})`
-                      : 'Batal'
-                    : 'Hapus'}
-                </Button>
-              </div>
+          <div className={styles.headerRow}>
+            <h3 className={styles.sectionTitle}>Riwayat Kegiatan Kredensial</h3>
+            <div className={styles.actionButtons}>
+              <Button variant="success" size="small" icon={<MdAdd />} iconPosition="left" onClick={openAddModal}>
+                Tambah
+              </Button>
+              <Button variant="danger" size="small" icon={<MdDelete/>} iconPosition='left' onClick={handleDeleteButtonClick}>
+                {deleteMode
+                  ? deleteTargets.length
+                    ? `Hapus (${deleteTargets.length})`
+                    : 'Batal'
+                  : 'Hapus'}
+              </Button>
             </div>
-
-            {deleteMode && (
-              <p className={styles.deleteNotice}>Pilih satu atau lebih data untuk dihapus, lalu klik Hapus.</p>
-            )}
-
-            <div className={styles.toolbar}>
-              <div className={styles.searchBox}>
-                <MdSearch size={18} />
-                <input
-                  type="text"
-                  placeholder="Cari nama kegiatan…"
-                  value={filters.search}
-                  onChange={(e) => setFilters({ ...filters, search: e.target.value })}
-                />
-              </div>
-              <div className={styles.filterRow}>
-                <Input
-                  type="select"
-                  label="Tahun"
-                  value={filters.year}
-                  onChange={(e) => setFilters({ ...filters, year: e.target.value })}
-                  options={yearOptions.map((year) => ({ value: year, label: year }))}
-                />
-                <Input
-                  type="select"
-                  label="Hasil"
-                  value={filters.hasil}
-                  onChange={(e) => setFilters({ ...filters, hasil: e.target.value })}
-                  options={[{ value: 'Semua', label: 'Semua' }, ...HASIL_OPTIONS]}
-                />
-              </div>
-            </div>
-
-            <Table columns={columnsRiwayat} className={`${styles.table} ${styles.riwayatTable}`}>
-              {filteredActivities.length === 0 && (
-                <div className={styles.emptyState}>Belum ada kegiatan sesuai filter.</div>
-              )}
-              {filteredActivities.map((item) => {
-                const badge = getStatusBadge(item.hasil);
-                const hasFile = Boolean(item.fileName);
-                const isSelected = deleteTargets.some((entry) => entry.id === item.id);
-                return (
-                  <div 
-                    key={item.id} 
-                    className={`table-row ${deleteMode ? styles.deleteSelectable : ''} ${isSelected ? styles.deleteSelected : ''}`}
-                    onClick={() => handleSelectForDelete(item)}
-                  >
-                    <div className="table-cell" data-label="Tanggal Terbit">{formatDateToIndonesian(item.tanggal_kegiatan)}</div>
-                    <div className="table-cell" data-label="Tanggal Kadaluarsa">
-                      {item.masa_berlaku ? formatDateToIndonesian(item.masa_berlaku) : '-'}
-                    </div>
-                    <div className={`table-cell ${styles.mainCell}`} data-label="Nama Kegiatan">
-                      <p className={styles.mainTitle}>{item.nama_kegiatan}</p>
-                      <p className={styles.mutedText}>{item.jenis_kegiatan}</p>
-                    </div>
-                    <div className="table-cell" data-label="Jenis">{item.jenis_kegiatan}</div>
-                    <div className="table-cell" data-label="Tahap">{item.tahap}</div>
-                    <div className="table-cell" data-label="Hasil Penilaian">
-                      <span className={`${styles.statusBadge} ${styles[`badge-${badge.variant}`]}`}>
-                        {badge.label}
-                      </span>
-                    </div>
-                    <div className="table-cell" data-label="Catatan">
-                      <p className={styles.mutedText}>{item.catatan || '-'}</p>
-                    </div>
-                    <div className={`table-cell ${styles.actionCol}`} data-label="Aksi">
-                      <Button 
-                        variant="warning" 
-                        size="small" 
-                        icon={<MdEdit />} 
-                        iconPosition='center'
-                        onClick={() => openEditModal(item)}
-                        title="Edit"
-                      />
-                      {hasFile && (
-                        <Button
-                          variant="primary"
-                          size="small"
-                          icon={<MdVisibility />}
-                          iconPosition='center'
-                          onClick={() => handleViewFile(item)}
-                          title="Lihat Dokumen"
-                        />
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </Table>
           </div>
-        )}
 
-        {activeTab === 'rekred' && (
-          <div>
-            <div className={styles.headerRow}>
-              <h3 className={styles.sectionTitle}>Rekredensial</h3>
+          {deleteMode && (
+            <p className={styles.deleteNotice}>Pilih satu atau lebih data untuk dihapus, lalu klik Hapus.</p>
+          )}
+
+          <div className={styles.toolbar}>
+            <div className={styles.searchBox}>
+              <MdSearch size={18} />
+              <input
+                type="text"
+                placeholder="Cari nama kegiatan…"
+                value={filters.search}
+                onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+              />
             </div>
+            <div className={styles.filterRow}>
+              <Input
+                type="select"
+                label="Tahun"
+                value={filters.year}
+                onChange={(e) => setFilters({ ...filters, year: e.target.value })}
+                options={yearOptions.map((year) => ({ value: year, label: year }))}
+              />
+              <Input
+                type="select"
+                label="Hasil"
+                value={filters.hasil}
+                onChange={(e) => setFilters({ ...filters, hasil: e.target.value })}
+                options={[{ value: 'Semua', label: 'Semua' }, ...HASIL_OPTIONS]}
+              />
+              <Input
+                type="select"
+                label="Jenis Kredensial"
+                value={filters.kredensialType}
+                onChange={(e) => setFilters({ ...filters, kredensialType: e.target.value })}
+                options={KREDENSIAL_TYPE_OPTIONS}
+              />
+            </div>
+          </div>
 
-            {deleteMode && (
-              <p className={styles.deleteNotice}>Pilih satu atau lebih data untuk dihapus, lalu klik Hapus.</p>
+          <Table columns={columnsRiwayat} className={`${styles.table} ${styles.riwayatTable}`}>
+            {filteredActivities.length === 0 && (
+              <div className={styles.emptyState}>Belum ada kegiatan sesuai filter.</div>
             )}
-            <Table columns={columnsRekred} className={`${styles.table} ${styles.rekredTable}`}>
-              {rekredActivities.length === 0 && <div className={styles.emptyState}>Belum ada rekredensial.</div>}
-              {rekredActivities.map((item) => {
-                const badge = getStatusBadge(item.hasil);
-                const hasFile = Boolean(item.fileName);
-                const isSelected = deleteTargets.some((entry) => entry.id === item.id);
-                return (
-                  <div 
-                    key={item.id} 
-                    className={`table-row ${deleteMode ? styles.deleteSelectable : ''} ${isSelected ? styles.deleteSelected : ''}`}
-                    onClick={() => handleSelectForDelete(item)}
-                  >
-                    <div className="table-cell" data-label="Tanggal Terbit">{formatDateToIndonesian(item.tanggal_kegiatan)}</div>
-                    <div className="table-cell" data-label="Tanggal Kadaluarsa">
-                      {item.masa_berlaku ? formatDateToIndonesian(item.masa_berlaku) : '-'}
-                    </div>
-                    <div className="table-cell" data-label="Hasil">
-                      <span className={`${styles.statusBadge} ${styles[`badge-${badge.variant}`]}`}>
-                        {badge.label}
-                      </span>
-                    </div>
-                    <div className="table-cell" data-label="Catatan">
-                      <p className={styles.mutedText}>{item.catatan || '-'}</p>
-                    </div>
-                    <div className={`table-cell ${styles.actionCol}`} data-label="Aksi">
-                      <Button 
-                        variant="warning" 
-                        size="small" 
-                        icon={<MdEdit/>}
+            {filteredActivities.map((item) => {
+              const badge = getStatusBadge(item.hasil);
+              const hasFile = Boolean(item.fileName);
+              const isSelected = deleteTargets.some((entry) => entry.id === item.id);
+              return (
+                <div 
+                  key={item.id} 
+                  className={`table-row ${deleteMode ? styles.deleteSelectable : ''} ${isSelected ? styles.deleteSelected : ''}`}
+                  onClick={() => handleSelectForDelete(item)}
+                >
+                  <div className="table-cell" data-label="Tanggal Terbit">{formatDateToIndonesian(item.tanggal_kegiatan)}</div>
+                  <div className="table-cell" data-label="Tanggal Kadaluarsa">
+                    {item.masa_berlaku ? formatDateToIndonesian(item.masa_berlaku) : '-'}
+                  </div>
+                  <div className={`table-cell ${styles.mainCell}`} data-label="Nama Kegiatan">
+                    <p className={styles.mainTitle}>{item.nama_kegiatan}</p>
+                    <p className={styles.mutedText}>{item.jenis_kegiatan}</p>
+                  </div>
+                  <div className="table-cell" data-label="Jenis">{item.jenis_kegiatan}</div>
+                  <div className="table-cell" data-label="Tahap">{item.tahap}</div>
+                  <div className="table-cell" data-label="Hasil Penilaian">
+                    <span className={`${styles.statusBadge} ${styles[`badge-${badge.variant}`]}`}>
+                      {badge.label}
+                    </span>
+                  </div>
+                  <div className="table-cell" data-label="Catatan">
+                    <p className={styles.mutedText}>{item.catatan || '-'}</p>
+                  </div>
+                  <div className={`table-cell ${styles.actionCol}`} data-label="Aksi">
+                    <Button 
+                      variant="warning" 
+                      size="small" 
+                      icon={<MdEdit />} 
+                      iconPosition='center'
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openEditModal(item);
+                      }}
+                      title="Edit"
+                    />
+                    {hasFile && (
+                      <Button
+                        variant="primary"
+                        size="small"
+                        icon={<MdVisibility />}
                         iconPosition='center'
                         onClick={(e) => {
                           e.stopPropagation();
-                          openEditModal(item);
+                          handleViewFile(item);
                         }}
-                        title="Edit"
+                        title="Lihat Dokumen"
                       />
-                      {hasFile && (
-                        <Button
-                          variant="primary"
-                          size="small"
-                          icon={<MdVisibility />}
-                          iconPosition='center'
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleViewFile(item);
-                          }}
-                          title="Lihat Dokumen"
-                        />
-                      )}
-                    </div>
+                    )}
                   </div>
-                );
-              })}
-            </Table>
-          </div>
-        )}
+                </div>
+              );
+            })}
+          </Table>
         </div>
       </div>
 
