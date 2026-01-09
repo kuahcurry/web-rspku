@@ -1,5 +1,4 @@
 // Auth Pages (Shared)
-import Login from "./pages/auth/login/Login";
 import LoginUser from "./pages/auth/login/LoginUser";
 import LoginAdmin from "./pages/auth/login/LoginAdmin";
 import Register from "./pages/auth/register/Register";
