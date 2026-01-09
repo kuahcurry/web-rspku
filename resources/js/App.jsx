@@ -1,5 +1,7 @@
 // Auth Pages (Shared)
 import Login from "./pages/auth/login/Login";
+import LoginUser from "./pages/auth/login/LoginUser";
+import LoginAdmin from "./pages/auth/login/LoginAdmin";
 import Register from "./pages/auth/register/Register";
 import VerifyEmail from "./pages/auth/verifikasiEmail/VerifikasiEmail";
 import ForgotPassword from "./pages/auth/lupaPassword/LupaPassword";
@@ -39,8 +41,9 @@ function App() {
     <Router>
       <UserProvider>
         <Routes>
-        <Route path="/" element={<Login />} />
-        <Route path="/login" element={<Login />} />
+        <Route path="/" element={<LoginUser />} />
+        <Route path="/login" element={<LoginUser />} />
+        <Route path="/admin/login" element={<LoginAdmin />} />
         <Route path="/register" element={<Register />} />
         <Route path="/verifikasi-email" element={<VerifyEmail />} />
         <Route path="/lupa-password" element={<ForgotPassword />} />
