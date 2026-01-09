@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { MdAdminPanelSettings } from 'react-icons/md';
 import Input from '../../../components/input/Input';
 import Button from '../../../components/button/Button';
 import Form from '../../../components/form/Form';
@@ -163,12 +162,6 @@ function LoginUser() {
                 <div className={styles['auth-row']}>
                   <p>Belum punya akun?</p>
                   <Link to="/register" className={styles['auth-link']}>Buat di sini</Link>
-                </div>
-                <div className={styles['auth-row']}>
-                  <Link to="/admin/login" className={styles['admin-link']}>
-                    <MdAdminPanelSettings size={16} />
-                    <span>Login sebagai Admin</span>
-                  </Link>
                 </div>
               </div>
             </Form>
