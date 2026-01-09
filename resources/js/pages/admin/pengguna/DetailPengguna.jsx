@@ -60,6 +60,8 @@ const DetailPengguna = () => {
     jenis_kelamin: 'Laki-laki',
     agama: 'Islam',
     status_kepegawaian: 'Pegawai Tetap',
+    jabatan: 'Dokter Spesialis',
+    unit_kerja: 'Poli Interna',
     tanggal_mulai_kerja: '2010-01-01',
     foto_profil: null
   };
@@ -67,42 +69,52 @@ const DetailPengguna = () => {
   const mockDocuments = [
     { id: 1, jenis: 'STR', nomor: 'STR-001-2023-0001', tanggal_terbit: '2023-01-15', tanggal_kadaluwarsa: '2028-01-15', status: 'Aktif', file: 'str_ahmad.pdf' },
     { id: 2, jenis: 'SIP', nomor: 'SIP-001-2023-0002', tanggal_terbit: '2023-02-01', tanggal_kadaluwarsa: '2026-02-01', status: 'Aktif', file: 'sip_ahmad.pdf' },
-    { id: 3, jenis: 'Surat Keterangan', nomor: 'SK-2023-001', tanggal_terbit: '2023-01-01', tanggal_kadaluwarsa: null, status: 'Aktif', file: 'sk_ahmad.pdf' }
+    { id: 3, jenis: 'Surat Keterangan', nomor: 'SK-2023-001', tanggal_terbit: '2023-01-01', tanggal_kadaluwarsa: null, status: 'Aktif', file: 'sk_ahmad.pdf' },
+    { id: 4, jenis: 'Sertifikat Kompetensi', nomor: 'SERTKOM-2023-001', tanggal_terbit: '2023-03-15', tanggal_kadaluwarsa: '2026-03-15', status: 'Aktif', file: 'sertifikat_kompetensi.pdf' }
   ];
 
   const mockEducation = [
     { id: 1, jenis: 'Ijazah', judul: 'S1 Kedokteran', institusi: 'Universitas Gadjah Mada', tahun: '2008', file: 'ijazah_s1.pdf' },
     { id: 2, jenis: 'Ijazah', judul: 'Spesialis Penyakit Dalam', institusi: 'Universitas Indonesia', tahun: '2015', file: 'ijazah_spesialis.pdf' },
     { id: 3, jenis: 'Sertifikat Pelatihan', judul: 'ACLS Provider', institusi: 'PERKI', tahun: '2022', file: 'sertifikat_acls.pdf' },
-    { id: 4, jenis: 'Sertifikat Workshop', judul: 'Penanganan COVID-19', institusi: 'RS PKU Muhammadiyah Gombong', tahun: '2020', file: 'workshop_covid.pdf' }
+    { id: 4, jenis: 'Sertifikat Pelatihan', judul: 'BLS Provider', institusi: 'PPGD', tahun: '2021', file: 'sertifikat_bls.pdf' },
+    { id: 5, jenis: 'Sertifikat Workshop', judul: 'Penanganan COVID-19', institusi: 'RS PKU Muhammadiyah Gombong', tahun: '2020', file: 'workshop_covid.pdf' },
+    { id: 6, jenis: 'Sertifikat Workshop', judul: 'Patient Safety', institusi: 'KARS', tahun: '2022', file: 'workshop_patient_safety.pdf' }
   ];
 
   const mockEthics = [
-    { id: 1, jenis: 'Etik', keterangan: 'Tidak ada catatan pelanggaran etik', tanggal: '2023-12-01', status: 'Bersih', file: 'etik_2023.pdf' }
+    { id: 1, jenis: 'Etik', tanggal: '2023-12-01', jenis_pelanggaran: 'Pelanggaran Kode Etik Ringan', uraian: 'Keterlambatan dokumentasi rekam medis', tingkat: 'Ringan', status: 'Selesai', tanggal_selesai: '2023-12-15', catatan: 'Sudah ditindaklanjuti dengan pembinaan', file: 'etik_2023.pdf' },
+    { id: 2, jenis: 'Disiplin', tanggal: '2023-08-15', jenis_pelanggaran: 'Keterlambatan Hadir', uraian: 'Terlambat hadir 3 kali dalam 1 bulan', tindakan: 'Teguran Tertulis', status: 'Selesai', tanggal_selesai: '2023-08-20', catatan: 'SP1', file: 'disiplin_2023.pdf' }
   ];
 
   const mockCredentials = [
-    { id: 1, jenis: 'Observasi Klinis', nomor: 'OBS-2023-001', tanggal_terbit: '2023-01-10', tanggal_kadaluwarsa: '2025-01-10', status: 'Aktif', file: 'observasi_klinis.pdf' },
-    { id: 2, jenis: 'Uji Kompetensi Klinis', nomor: 'UKK-2023-002', tanggal_terbit: '2023-02-05', tanggal_kadaluwarsa: '2025-02-05', status: 'Aktif', file: 'uji_kompetensi_klinis.pdf' },
-    { id: 3, jenis: 'Praktik Mandiri Terbimbing', nomor: 'PMT-2023-003', tanggal_terbit: '2023-03-12', tanggal_kadaluwarsa: '2025-03-12', status: 'Aktif', file: 'praktik_mandiri.pdf' },
-    { id: 4, jenis: 'Seminar Khusus Kredensial', nomor: 'SKK-2023-004', tanggal_terbit: '2023-04-18', tanggal_kadaluwarsa: '2025-04-18', status: 'Aktif', file: 'seminar_kredensial.pdf' },
-    { id: 5, jenis: 'Kegiatan SKP Kredensial', nomor: 'SKP-2023-005', tanggal_terbit: '2023-05-20', tanggal_kadaluwarsa: '2025-05-20', status: 'Aktif', file: 'skp_kredensial.pdf' },
-    { id: 6, jenis: 'Lainnya', nomor: 'LNY-2023-006', tanggal_terbit: '2023-06-25', tanggal_kadaluwarsa: '2025-06-25', status: 'Aktif', file: 'kredensial_lainnya.pdf' }
+    { id: 1, nama_kegiatan: 'Observasi Klinis - Penanganan Pasien Diabetes', jenis_kegiatan: 'Observasi Klinis', kredensial_type: 'Kredensial Awal', tanggal_berlaku: '2023-01-10', tanggal_selesai: '2025-01-10', hasil_penilaian: 'Kompeten', catatan: 'Supervisi Dr. Budi', file: 'observasi_klinis.pdf' },
+    { id: 2, nama_kegiatan: 'Uji Kompetensi Klinis - Prosedur Endoskopi', jenis_kegiatan: 'Uji Kompetensi Klinis', kredensial_type: 'Kredensial Awal', tanggal_berlaku: '2023-02-05', tanggal_selesai: '2025-02-05', hasil_penilaian: 'Kompeten', catatan: '', file: 'uji_kompetensi_klinis.pdf' },
+    { id: 3, nama_kegiatan: 'Praktik Mandiri Terbimbing - Poli Interna', jenis_kegiatan: 'Praktik Mandiri Terbimbing', kredensial_type: 'Kredensial Awal', tanggal_berlaku: '2023-03-12', tanggal_selesai: '2025-03-12', hasil_penilaian: 'Kompeten', catatan: '', file: 'praktik_mandiri.pdf' },
+    { id: 4, nama_kegiatan: 'Seminar Update Tatalaksana Hipertensi', jenis_kegiatan: 'Seminar Khusus Kredensial', kredensial_type: 'Kredensial Awal', tanggal_berlaku: '2023-04-18', tanggal_selesai: '2025-04-18', hasil_penilaian: 'Kompeten', catatan: 'Akreditasi IDI', file: 'seminar_kredensial.pdf' },
+    { id: 5, nama_kegiatan: 'SKP - Workshop Emergency Medicine', jenis_kegiatan: 'Kegiatan SKP Kredensial', kredensial_type: 'Kredensial Awal', tanggal_berlaku: '2023-05-20', tanggal_selesai: '2025-05-20', hasil_penilaian: 'Kompeten', catatan: '25 SKP', file: 'skp_kredensial.pdf' },
+    { id: 6, nama_kegiatan: 'Rekredensial Periode 2023-2025', jenis_kegiatan: 'Lainnya', kredensial_type: 'Rekredensial', tanggal_berlaku: '2023-06-25', tanggal_selesai: '2025-06-25', hasil_penilaian: 'Kompeten', catatan: 'Perpanjangan kewenangan', file: 'rekredensial.pdf' },
+    { id: 7, nama_kegiatan: 'Penilaian Kinerja Klinis Tahunan', jenis_kegiatan: 'Lainnya', kredensial_type: 'Kredensial Awal', tanggal_berlaku: '2023-07-10', tanggal_selesai: '2025-07-10', hasil_penilaian: 'Kompeten', catatan: 'Evaluasi tahunan', file: 'kredensial_lainnya.pdf' }
   ];
 
   const mockAssignments = [
-    { id: 1, jenis: 'Penugasan', keterangan: 'Dokter Spesialis Penyakit Dalam - Poli Interna', tanggal_mulai: '2015-03-01', tanggal_selesai: null, status: 'Aktif', file: 'penugasan_interna.pdf' },
-    { id: 2, jenis: 'Pengabdian', keterangan: 'Bakti Sosial Desa Semanding', tanggal_mulai: '2023-06-01', tanggal_selesai: '2023-06-01', status: 'Selesai', file: 'pengabdian_sosial.pdf' }
+    { id: 1, jenis: 'Penugasan', unit: 'Poli Interna', penanggung_jawab: 'Dr. Budi Santoso, Sp.PD', tanggal_mulai: '2015-03-01', tanggal_selesai: null, status: 'Aktif', file: 'penugasan_interna.pdf' },
+    { id: 2, jenis: 'Penugasan', unit: 'IGD', penanggung_jawab: 'Dr. Siti Nurjanah', tanggal_mulai: '2020-01-01', tanggal_selesai: null, status: 'Aktif', file: 'penugasan_igd.pdf' },
+    { id: 3, jenis: 'Pengabdian', unit: 'Desa Semanding', penanggung_jawab: 'Puskesmas Gombong', tanggal_mulai: '2023-06-01', tanggal_selesai: '2023-06-01', status: 'Selesai', file: 'pengabdian_sosial.pdf' },
+    { id: 4, jenis: 'Pengabdian', unit: 'Kelurahan Sidayu', penanggung_jawab: 'Dinkes Kebumen', tanggal_mulai: '2023-09-15', tanggal_selesai: '2023-09-15', status: 'Selesai', file: 'pengabdian_penyuluhan.pdf' }
   ];
 
   const mockAchievements = [
-    { id: 1, judul: 'Dokter Teladan RS PKU Muhammadiyah', penyelenggara: 'RS PKU Muhammadiyah Gombong', tahun: '2023', tingkat: 'Institusi', file: 'penghargaan_teladan.pdf' },
-    { id: 2, judul: 'Penghargaan Pengabdian 10 Tahun', penyelenggara: 'Kemenkes RI', tahun: '2020', tingkat: 'Nasional', file: 'pengabdian_10_tahun.pdf' }
+    { id: 1, jenis: 'Prestasi', judul: 'Prestasi Penelitian Terbaik', penyelenggara: 'IDI Cabang Kebumen', tahun: '2022', file: 'prestasi_penelitian.pdf' },
+    { id: 2, jenis: 'Penghargaan', judul: 'Dokter Teladan RS PKU Muhammadiyah', penyelenggara: 'RS PKU Muhammadiyah Gombong', tahun: '2023', file: 'penghargaan_teladan.pdf' },
+    { id: 3, jenis: 'Penghargaan', judul: 'Satyalancana Karya Satya X Tahun', penyelenggara: 'Presiden RI', tahun: '2021', file: 'satyalancana.pdf' },
+    { id: 4, jenis: 'Kompetensi Utama', judul: 'Sertifikasi Kompetensi Penyakit Dalam', penyelenggara: 'PAPDI', tahun: '2020', file: 'kompetensi_papdi.pdf' }
   ];
 
   const mockAuthorities = [
     { id: 1, jenis: 'SPK', nomor: 'SPK-2023-010', tanggal_terbit: '2023-01-15', tanggal_kadaluwarsa: '2025-01-15', status: 'Aktif', file: 'spk_2023.pdf' },
-    { id: 2, jenis: 'RKK', nomor: 'RKK-2023-010', tanggal_terbit: '2023-01-15', tanggal_kadaluwarsa: '2025-01-15', status: 'Aktif', file: 'rkk_2023.pdf' }
+    { id: 2, jenis: 'RKK', nomor: 'RKK-2023-010', tanggal_terbit: '2023-01-15', tanggal_kadaluwarsa: '2025-01-15', status: 'Aktif', file: 'rkk_2023.pdf' },
+    { id: 3, jenis: 'SPK', nomor: 'SPK-2024-015', tanggal_terbit: '2024-01-10', tanggal_kadaluwarsa: '2026-01-10', status: 'Aktif', file: 'spk_2024.pdf' }
   ];
 
   useEffect(() => {
@@ -244,6 +256,14 @@ const DetailPengguna = () => {
             <span className={styles.infoValue}>{user?.status_kepegawaian}</span>
           </div>
           <div className={styles.infoItem}>
+            <span className={styles.infoLabel}>Jabatan</span>
+            <span className={styles.infoValue}>{user?.jabatan}</span>
+          </div>
+          <div className={styles.infoItem}>
+            <span className={styles.infoLabel}>Unit Kerja</span>
+            <span className={styles.infoValue}>{user?.unit_kerja}</span>
+          </div>
+          <div className={styles.infoItem}>
             <span className={styles.infoLabel}>Tanggal Mulai Kerja</span>
             <span className={styles.infoValue}>{user?.tanggal_mulai_kerja}</span>
           </div>
@@ -359,13 +379,31 @@ const DetailPengguna = () => {
               </div>
               <div className={styles.infoGrid}>
                 <div className={styles.infoItem}>
-                  <span className={styles.infoLabel}>Keterangan</span>
-                  <span className={styles.infoValue}>{ethic.keterangan}</span>
+                  <span className={styles.infoLabel}>Jenis Pelanggaran</span>
+                  <span className={styles.infoValue}>{ethic.jenis_pelanggaran}</span>
+                </div>
+                <div className={styles.infoItem}>
+                  <span className={styles.infoLabel}>Uraian</span>
+                  <span className={styles.infoValue}>{ethic.uraian}</span>
+                </div>
+                <div className={styles.infoItem}>
+                  <span className={styles.infoLabel}>{ethic.jenis === 'Etik' ? 'Tingkat' : 'Tindakan Disiplin'}</span>
+                  <span className={styles.infoValue}>{ethic.jenis === 'Etik' ? ethic.tingkat : ethic.tindakan}</span>
                 </div>
                 <div className={styles.infoItem}>
                   <span className={styles.infoLabel}>Tanggal</span>
                   <span className={styles.infoValue}>{ethic.tanggal}</span>
                 </div>
+                <div className={styles.infoItem}>
+                  <span className={styles.infoLabel}>Tanggal Selesai</span>
+                  <span className={styles.infoValue}>{ethic.tanggal_selesai || '-'}</span>
+                </div>
+                {ethic.catatan && (
+                  <div className={styles.infoItem}>
+                    <span className={styles.infoLabel}>Catatan</span>
+                    <span className={styles.infoValue}>{ethic.catatan}</span>
+                  </div>
+                )}
               </div>
               <div className={styles.listItemFooter}>
                 <Button
@@ -395,31 +433,41 @@ const DetailPengguna = () => {
           {credentials.map((cred) => (
             <div key={cred.id} className={styles.listItem}>
               <div className={styles.listItemHeader}>
-                <span className={`${styles.itemType} ${styles.credType}`}>{cred.jenis}</span>
-                <span className={`${styles.statusBadge} ${getStatusBadgeClass(cred.status)}`}>
-                  {cred.status}
+                <span className={`${styles.itemType} ${styles.credType}`}>{cred.jenis_kegiatan}</span>
+                <span className={`${styles.statusBadge} ${cred.hasil_penilaian === 'Kompeten' ? styles.statusSuccess : styles.statusDanger}`}>
+                  {cred.hasil_penilaian}
                 </span>
               </div>
               <div className={styles.infoGrid}>
                 <div className={styles.infoItem}>
-                  <span className={styles.infoLabel}>Nomor</span>
-                  <span className={styles.infoValue}>{cred.nomor}</span>
+                  <span className={styles.infoLabel}>Nama Kegiatan</span>
+                  <span className={styles.infoValue}>{cred.nama_kegiatan}</span>
                 </div>
                 <div className={styles.infoItem}>
-                  <span className={styles.infoLabel}>Tanggal Terbit</span>
-                  <span className={styles.infoValue}>{cred.tanggal_terbit || '-'}</span>
+                  <span className={styles.infoLabel}>Tahap</span>
+                  <span className={styles.infoValue}>{cred.kredensial_type}</span>
                 </div>
                 <div className={styles.infoItem}>
-                  <span className={styles.infoLabel}>Tanggal Kadaluarsa</span>
-                  <span className={styles.infoValue}>{cred.tanggal_kadaluwarsa || '-'}</span>
+                  <span className={styles.infoLabel}>Tanggal Berlaku</span>
+                  <span className={styles.infoValue}>{cred.tanggal_berlaku || '-'}</span>
                 </div>
+                <div className={styles.infoItem}>
+                  <span className={styles.infoLabel}>Tanggal Selesai</span>
+                  <span className={styles.infoValue}>{cred.tanggal_selesai || '-'}</span>
+                </div>
+                {cred.catatan && (
+                  <div className={styles.infoItem}>
+                    <span className={styles.infoLabel}>Catatan</span>
+                    <span className={styles.infoValue}>{cred.catatan}</span>
+                  </div>
+                )}
               </div>
               <div className={styles.listItemFooter}>
                 <Button
                   className={styles.listActionButton}
                   variant="outline"
                   size="sm"
-                  onClick={() => openDocumentModal(cred, cred.jenis)}
+                  onClick={() => openDocumentModal(cred, cred.jenis_kegiatan)}
                 >
                   Lihat Dokumen
                 </Button>
@@ -449,8 +497,12 @@ const DetailPengguna = () => {
               </div>
               <div className={styles.infoGrid}>
                 <div className={styles.infoItem}>
-                  <span className={styles.infoLabel}>Keterangan</span>
-                  <span className={styles.infoValue}>{assign.keterangan}</span>
+                  <span className={styles.infoLabel}>Unit</span>
+                  <span className={styles.infoValue}>{assign.unit}</span>
+                </div>
+                <div className={styles.infoItem}>
+                  <span className={styles.infoLabel}>Penanggung Jawab</span>
+                  <span className={styles.infoValue}>{assign.penanggung_jawab}</span>
                 </div>
                 <div className={styles.infoItem}>
                   <span className={styles.infoLabel}>Periode</span>
@@ -485,7 +537,7 @@ const DetailPengguna = () => {
           {achievements.map((achievement) => (
             <div key={achievement.id} className={styles.listItem}>
               <div className={styles.listItemHeader}>
-                <span className={`${styles.itemType} ${styles.achievementType}`}>{achievement.tingkat}</span>
+                <span className={`${styles.itemType} ${styles.achievementType}`}>{achievement.jenis}</span>
                 <span className={styles.itemYear}>{achievement.tahun}</span>
               </div>
               <div className={styles.infoGrid}>

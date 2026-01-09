@@ -656,7 +656,7 @@ const EtikDisiplinAdmin = () => {
                     <th>Pegawai</th>
                     <th>Tanggal</th>
                     <th>Jenis Pelanggaran</th>
-                    <th>Tindakan</th>
+                    <th>Tindakan Disiplin</th>
                     <th>Status</th>
                     <th>Aksi</th>
                   </tr>
@@ -770,7 +770,7 @@ const EtikDisiplinAdmin = () => {
 
           {activeTab === 'disiplin' && (
             <div className={styles.filterGroup}>
-              <label>Tindakan</label>
+              <label>Tindakan Disiplin</label>
               <select
                 value={filtersDisiplin.tingkat}
                 onChange={(e) => setFiltersDisiplin({ ...filtersDisiplin, tingkat: e.target.value })}
@@ -993,7 +993,7 @@ const EtikDisiplinAdmin = () => {
             </div>
 
             <div className={styles.formGroup}>
-              <label>Tindakan <span className={styles.required}>*</span></label>
+              <label>Tindakan Disiplin <span className={styles.required}>*</span></label>
               <select
                 value={disiplinForm.tindakan}
                 onChange={(e) => setDisiplinForm({ ...disiplinForm, tindakan: e.target.value })}
