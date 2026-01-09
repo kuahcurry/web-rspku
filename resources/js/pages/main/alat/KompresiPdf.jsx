@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import MainLayout from '../../../layout/main/MainLayout';
 import Card from '../../../components/card/Card';
 import Button from '../../../components/button/Button';
+import Banner from '../../../components/banner/Banner';
 import { MdCloudUpload, MdCompress, MdDelete, MdCheckCircle, MdDownload, MdRefresh, MdDescription, MdSpeed, MdDataUsage, MdTimer } from 'react-icons/md';
 import { authenticatedFetch } from '../../../utils/auth';
 import styles from '../../admin/alat/Alat.module.css';
@@ -11,6 +12,7 @@ function KompresiPdf() {
   const [file, setFile] = useState(null);
   const [level, setLevel] = useState('medium');
   const [status, setStatus] = useState('');
+  const [banner, setBanner] = useState({ message: '', variant: '' });
   const [isProcessing, setIsProcessing] = useState(false);
   const [originalSize, setOriginalSize] = useState(0);
   const [compressedSize, setCompressedSize] = useState(0);
@@ -21,7 +23,7 @@ function KompresiPdf() {
   const processFile = (fileObj, eventRef) => {
     if (!fileObj) return;
     if (fileObj.type !== 'application/pdf') {
-      alert('Hanya file PDF yang diperbolehkan');
+      setBanner({ message: 'Hanya file PDF yang diperbolehkan', variant: 'warning' });
       if (eventRef?.target) eventRef.target.value = '';
       return;
     }
@@ -60,7 +62,6 @@ function KompresiPdf() {
       const contentType = response.headers.get('content-type');
       if (!contentType || !contentType.includes('application/json')) {
         const text = await response.text();
-        console.error('Non-JSON response:', text.substring(0, 500));
         throw new Error('Server error: Expected JSON response');
       }
 
@@ -100,7 +101,6 @@ function KompresiPdf() {
       setIsConverted(true);
       setStatus(`✓ PDF berhasil dikompres! Pengurangan ukuran: ${result.reduction_percentage}%`);
     } catch (error) {
-      console.error('Error compressing PDF:', error);
       setStatus(`✗ Gagal mengompres PDF: ${error.message}`);
     } finally {
       setIsProcessing(false);
@@ -185,7 +185,6 @@ function KompresiPdf() {
               <Button
                 variant="outline"
                 icon={<MdCloudUpload />}
-                type="button"
                 onClick={(e) => {
                   e.stopPropagation();
                   fileInputRef.current?.click();

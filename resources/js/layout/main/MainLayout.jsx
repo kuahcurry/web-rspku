@@ -31,11 +31,11 @@ const MainLayout = ({ children }) => {
       icon: MdSchool, 
       label: 'Pendidikan dan Prestasi',
       subMenus: [
-        { path: '/riwayat-pendidikan', label: 'Pendidikan & Pelatihan' },
-        { path: '/prestasi-penghargaan', label: 'Prestasi & Penghargaan' }
+        { path: '/riwayat-pendidikan', label: 'Pendidikan, Pelatihan & Workshop' },
+        { path: '/prestasi-penghargaan', label: 'Prestasi, Penghargaan & Kompetensi' }
       ]
     },
-    { path: '/penugasan', icon: MdAssignment, label: 'Penugasan' },
+    { path: '/penugasan', icon: MdAssignment, label: 'Penugasan & Pengabdian' },
     { 
       key: 'kredensial',
       icon: IoShieldCheckmarkSharp, 
@@ -52,8 +52,7 @@ const MainLayout = ({ children }) => {
       label: 'Alat PDF',
       subMenus: [
         { path: '/alat/gambar-ke-pdf', label: 'Gambar ke PDF' },
-        { path: '/alat/kompresi-pdf', label: 'Kompresi File PDF' },
-        { path: '/alat/cetak-pdf', label: 'Cetak PDF' }
+        { path: '/alat/kompresi-pdf', label: 'Kompresi File PDF' }
       ]
     },
     { path: '/faq', icon: MdHelp, label: 'Bantuan & FAQ' }

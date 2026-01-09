@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MainLayout from '../../../layout/main/MainLayout';
+import Banner from '../../../components/banner/Banner';
 import Button from '../../../components/button/Button';
 import Input from '../../../components/input/Input';
 import Form from '../../../components/form/Form';
@@ -17,6 +18,7 @@ const Pengaturan = () => {
   const navigate = useNavigate();
   const { user, loading: userLoading, refreshUser, clearUser } = useUser();
   const [avatarError, setAvatarError] = useState(false);
+  const [banner, setBanner] = useState({ message: '', variant: '' });
   const [profilePicture, setProfilePicture] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [activeTab, setActiveTab] = useState('profile'); // 'profile' or 'account'
@@ -131,7 +133,6 @@ const Pengaturan = () => {
         setProfilePicture(data.data.foto_profil_url);
       }
     } catch (error) {
-      console.error('[Pengaturan] Error fetching profile picture:', error);
     }
   };
 
@@ -191,13 +192,13 @@ const Pengaturan = () => {
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
-      alert('Hanya file gambar yang diizinkan');
+      setBanner({ message: 'Hanya file gambar yang diizinkan', variant: 'error' });
       return;
     }
 
     // Validate file size (max 2MB)
     if (file.size > 2 * 1024 * 1024) {
-      alert('Ukuran file maksimal 2MB');
+      setBanner({ message: 'Ukuran file maksimal 2MB', variant: 'error' });
       return;
     }
 
@@ -221,14 +222,12 @@ const Pengaturan = () => {
         setProfilePicture(data.data.foto_profil_url);
         setAvatarError(false);
         await refreshUser();
-        alert('Foto profil berhasil diupload');
+        setBanner({ message: 'Foto profil berhasil diupload', variant: 'success' });
       } else {
-        console.error('[Pengaturan] Upload failed:', data);
         throw new Error(data.message || 'Gagal upload foto profil');
       }
     } catch (error) {
-      console.error('[Pengaturan] Error uploading profile picture:', error);
-      alert('Gagal upload foto profil: ' + error.message);
+      setBanner({ message: 'Gagal upload foto profil: ' + error.message, variant: 'error' });
     } finally {
       setUploading(false);
     }
@@ -280,7 +279,6 @@ const Pengaturan = () => {
         }
       }
     } catch (error) {
-      console.error('Error updating profile:', error);
       setProfileErrors({ general: 'Terjadi kesalahan saat memperbarui profil' });
     }
   };
@@ -328,7 +326,6 @@ const Pengaturan = () => {
         }
       }
     } catch (error) {
-      console.error('Error updating account:', error);
       setAccountErrors({ general: 'Terjadi kesalahan saat memperbarui akun' });
     }
   };
@@ -375,7 +372,6 @@ const Pengaturan = () => {
         }
       }
     } catch (error) {
-      console.error('Error deleting account:', error);
       setDeleteErrors({ general: 'Terjadi kesalahan saat menghapus akun' });
     } finally {
       setIsDeleting(false);
@@ -414,6 +410,7 @@ const Pengaturan = () => {
 
   return (
     <MainLayout>
+      <Banner message={banner.message} variant={banner.variant} autoRefresh={banner.variant === 'success'} />
       <header className={styles['page-header']}>
         <h1 className={styles['page-title']}>Pengaturan</h1>
         <p className={styles['page-subtitle']}>Ubah informasi profil dan pengaturan akun Anda.</p>
@@ -439,11 +436,7 @@ const Pengaturan = () => {
                       <img 
                         src={profilePicture} 
                         alt="Foto Profil" 
-                        onLoad={() => console.log('[Pengaturan] Image loaded successfully:', profilePicture)}
-                        onError={(e) => {
-                          console.error('[Pengaturan] Image failed to load:', profilePicture, 'Error:', e);
-                          setAvatarError(true);
-                        }} 
+                        onError={() => setAvatarError(true)} 
                       />
                     ) : (
                       <div className={styles['avatar-initials']}>

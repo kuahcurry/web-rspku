@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import MainLayout from '../../../layout/main/MainLayout';
+import Banner from '../../../components/banner/Banner';
 import Card from '../../../components/card/Card';
 import Button from '../../../components/button/Button';
 import Modal from '../../../components/modal/Modal';
@@ -58,6 +59,7 @@ const getStatusBadge = (hasil) => {
 const Kredensial = () => {
   const navigate = useNavigate();
   const [activities, setActivities] = useState([]);
+  const [banner, setBanner] = useState({ message: '', variant: '' });
   const [loading, setLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [filters, setFilters] = useState({
@@ -133,7 +135,6 @@ const Kredensial = () => {
         setActivities((data.data.riwayat || []).map(mapRecord));
       }
     } catch (error) {
-      console.error('Error fetching kredensial records:', error);
     } finally {
       setLoading(false);
     }
@@ -224,12 +225,12 @@ const Kredensial = () => {
   const processFile = (file, eventRef) => {
     if (!file) return;
     if (file.type !== 'application/pdf') {
-      alert('Hanya file PDF yang diperbolehkan');
+      setBanner({ message: 'Hanya file PDF yang diperbolehkan', variant: 'error' });
       if (eventRef?.target) eventRef.target.value = '';
       return;
     }
     if (file.size > 5 * 1024 * 1024) {
-      alert('File terlalu besar. Maksimal 5MB');
+      setBanner({ message: 'File terlalu besar. Maksimal 5MB', variant: 'error' });
       if (eventRef?.target) eventRef.target.value = '';
       return;
     }
@@ -243,7 +244,7 @@ const Kredensial = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.nama_kegiatan || !formData.tanggal_berlaku || !formData.jenis_kegiatan || !formData.hasil_penilaian || !formData.file) {
-      alert('Mohon lengkapi semua field dan upload file.');
+      setBanner({ message: 'Mohon lengkapi semua field dan upload file.', variant: 'warning' });
       return;
     }
 
@@ -274,7 +275,7 @@ const Kredensial = () => {
       });
 
       if (response.ok) {
-        await fetchData(); // Refresh data
+        setBanner({ message: 'Data berhasil disimpan', variant: 'success' });
         setShowModal(false);
         setEditingId(null);
         setFormData({
@@ -290,11 +291,10 @@ const Kredensial = () => {
         });
       } else {
         const error = await response.json();
-        alert(error.message || 'Gagal menyimpan data');
+        setBanner({ message: error.message || 'Gagal menyimpan data', variant: 'error' });
       }
     } catch (error) {
-      console.error('Error saving kredensial:', error);
-      alert('Terjadi kesalahan saat menyimpan data');
+      setBanner({ message: 'Terjadi kesalahan saat menyimpan data', variant: 'error' });
     } finally {
       setIsSubmitting(false);
     }
@@ -302,7 +302,7 @@ const Kredensial = () => {
 
   const handleViewFile = async (item) => {
     if (!item.fileName && !item.fileUrl) {
-      alert('Sertifikat belum diupload.');
+      setBanner({ message: 'Sertifikat belum diupload.', variant: 'warning' });
       return;
     }
 
@@ -317,12 +317,11 @@ const Kredensial = () => {
         const url = URL.createObjectURL(blob);
         setPdfUrl(url);
       } else {
-        alert('Gagal memuat dokumen');
+        setBanner({ message: 'Gagal memuat dokumen', variant: 'error' });
         setShowViewModal(false);
       }
     } catch (error) {
-      console.error('Error viewing file:', error);
-      alert('Terjadi kesalahan saat memuat dokumen');
+      setBanner({ message: 'Terjadi kesalahan saat memuat dokumen', variant: 'error' });
       setShowViewModal(false);
     } finally {
       setLoadingPdf(false);
@@ -378,7 +377,7 @@ const Kredensial = () => {
       });
 
       if (response.ok) {
-        await fetchData(); // Refresh data
+        setBanner({ message: `${idsToDelete.length} data berhasil dihapus`, variant: 'success' });
         if (selectedItem && idsToDelete.includes(selectedItem.id)) {
           setSelectedItem(null);
           setShowViewModal(false);
@@ -388,11 +387,10 @@ const Kredensial = () => {
         setShowDeleteModal(false);
       } else {
         const error = await response.json();
-        alert(error.message || 'Gagal menghapus data');
+        setBanner({ message: error.message || 'Gagal menghapus data', variant: 'error' });
       }
     } catch (error) {
-      console.error('Error deleting records:', error);
-      alert('Terjadi kesalahan saat menghapus data');
+      setBanner({ message: 'Terjadi kesalahan saat menghapus data', variant: 'error' });
     }
   };
 
@@ -400,8 +398,8 @@ const Kredensial = () => {
 
   const columnsRiwayat = useMemo(
     () => [
-      { key: 'tanggal', label: 'Tanggal Terbit' },
-      { key: 'kadaluwarsa', label: 'Tanggal Kadaluarsa' },
+      { key: 'tanggal', label: 'Tanggal Mulai' },
+      { key: 'kadaluwarsa', label: 'Berlaku Sampai' },
       { key: 'nama', label: 'Nama Kegiatan' },
       { key: 'jenis', label: 'Jenis' },
       { key: 'tahap', label: 'Kredensial Awal / Rekredensial' },
@@ -426,6 +424,7 @@ const Kredensial = () => {
 
   return (
     <MainLayout>
+      <Banner message={banner.message} variant={banner.variant} autoRefresh={banner.variant === 'success'} />
       <header className={styles.pageHeader}>
         <h1 className={styles.pageTitle}>Kredensial & Rekredensial</h1>
         <p className={styles.pageSubtitle}>
@@ -504,8 +503,8 @@ const Kredensial = () => {
                   className={`table-row ${deleteMode ? styles.deleteSelectable : ''} ${isSelected ? styles.deleteSelected : ''}`}
                   onClick={() => handleSelectForDelete(item)}
                 >
-                  <div className="table-cell" data-label="Tanggal Terbit">{formatDateToIndonesian(item.tanggal_kegiatan)}</div>
-                  <div className="table-cell" data-label="Tanggal Kadaluarsa">
+                  <div className="table-cell" data-label="Tanggal Mulai">{formatDateToIndonesian(item.tanggal_kegiatan)}</div>
+                  <div className="table-cell" data-label="Berlaku Sampai">
                     {item.masa_berlaku ? formatDateToIndonesian(item.masa_berlaku) : '-'}
                   </div>
                   <div className={`table-cell ${styles.mainCell}`} data-label="Nama Kegiatan">
@@ -595,7 +594,7 @@ const Kredensial = () => {
         <Form onSubmit={handleSubmit} className={styles.modalContent}>
           <Form.Row columns={2} className={styles.formRow}>
             <Input
-              label="Tanggal Terbit"
+              label="Tanggal Mulai"
               type="date"
               name="tanggal_berlaku"
               value={formData.tanggal_berlaku}
@@ -603,7 +602,7 @@ const Kredensial = () => {
               required
             />
             <Input
-              label="Tanggal Kadaluarsa"
+              label="Berlaku Sampai"
               type="date"
               name="tanggal_selesai"
               value={formData.tanggal_selesai}
@@ -714,9 +713,15 @@ const Kredensial = () => {
         <div className={styles.viewDetail}>
           <div className={styles.detailGrid}>
             <div className={styles.detailRow}>
-              <span className={styles.detailLabel}>Tanggal Terbit</span>
+              <span className={styles.detailLabel}>Tanggal Mulai</span>
               <span className={styles.detailValue}>
                 {selectedItem?.tanggal_kegiatan ? formatDateToIndonesian(selectedItem.tanggal_kegiatan) : '-'}
+              </span>
+            </div>
+            <div className={styles.detailRow}>
+              <span className={styles.detailLabel}>Berlaku Sampai</span>
+              <span className={styles.detailValue}>
+                {selectedItem?.tanggal_selesai ? formatDateToIndonesian(selectedItem.tanggal_selesai) : '-'}
               </span>
             </div>
             <div className={styles.detailRow}>
@@ -741,7 +746,7 @@ const Kredensial = () => {
               </span>
             </div>
             <div className={styles.detailRow}>
-              <span className={styles.detailLabel}>Tanggal Kadaluarsa</span>
+              <span className={styles.detailLabel}>Masa Berlaku Kredensial</span>
               <span className={styles.detailValue}>
                 {selectedItem?.masa_berlaku ? formatDateToIndonesian(selectedItem.masa_berlaku) : 'Belum diatur'}
               </span>

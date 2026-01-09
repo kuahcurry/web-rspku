@@ -134,7 +134,6 @@ function GambarKePdf() {
       setIsConverted(true);
       setStatus(`✓ Berhasil! PDF dengan ${images.length} gambar siap diunduh.`);
     } catch (error) {
-      console.error('Error converting images to PDF:', error);
       setStatus('✗ Terjadi kesalahan saat konversi. Silakan coba lagi.');
     } finally {
       setIsProcessing(false);
@@ -221,7 +220,6 @@ function GambarKePdf() {
               <Button
                 variant="outline"
                 icon={<MdCloudUpload />}
-                type="button"
                 onClick={(e) => {
                   e.stopPropagation();
                   fileInputRef.current?.click();

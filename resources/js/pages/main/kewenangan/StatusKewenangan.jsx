@@ -7,6 +7,7 @@ import Modal from '../../../components/modal/Modal';
 import Form from '../../../components/form/Form';
 import Input from '../../../components/input/Input';
 import Tabs from '../../../components/tabs/Tabs';
+import Banner from '../../../components/banner/Banner';
 import { MdVisibility, MdAdd, MdCloudUpload, MdSave, MdDownload, MdDelete } from 'react-icons/md';
 import { authenticatedFetch, isAuthenticated } from '../../../utils/auth';
 import { formatDateToIndonesian } from '../../../utils/dateFormatter';
@@ -28,6 +29,7 @@ const StatusKewenangan = () => {
   const [selectedItem, setSelectedItem] = useState(null);
   const [pdfUrl, setPdfUrl] = useState(null);
   const [loadingPdf, setLoadingPdf] = useState(false);
+  const [banner, setBanner] = useState({ message: '', variant: '' });
   const [dataByTab, setDataByTab] = useState({
     spk: [],
     rkk: []
@@ -65,7 +67,7 @@ const StatusKewenangan = () => {
         });
       }
     } catch (error) {
-      console.error('Error fetching authority records:', error);
+      setBanner({ message: 'Gagal memuat data', variant: 'error' });
     } finally {
       setLoading(false);
     }
@@ -96,8 +98,7 @@ const StatusKewenangan = () => {
       const url = URL.createObjectURL(blob);
       setPdfUrl(url);
     } catch (error) {
-      console.error('Error fetching PDF:', error);
-      alert('Gagal memuat dokumen');
+      setBanner({ message: 'Gagal memuat dokumen', variant: 'error' });
     } finally {
       setLoadingPdf(false);
     }
@@ -161,14 +162,14 @@ const StatusKewenangan = () => {
   const processFile = (file, eventRef) => {
     if (!file) return;
     if (file.type !== 'application/pdf') {
-      alert('Hanya file PDF yang diperbolehkan');
+      setBanner({ message: 'Hanya file PDF yang diperbolehkan', variant: 'warning' });
       if (eventRef?.target) eventRef.target.value = '';
       return;
     }
     
     const maxSize = 5 * 1024 * 1024; // 5MB
     if (file.size > maxSize) {
-      alert('Ukuran file maksimal 5MB');
+      setBanner({ message: 'Ukuran file maksimal 5MB', variant: 'warning' });
       if (eventRef?.target) eventRef.target.value = '';
       return;
     }
@@ -187,7 +188,7 @@ const StatusKewenangan = () => {
     e.preventDefault();
     
     if (!formData.nomor_dokumen || !formData.tanggal_terbit || !formData.masa_berlaku || !formData.file) {
-      alert('Semua field harus diisi');
+      setBanner({ message: 'Semua field harus diisi', variant: 'warning' });
       return;
     }
 
@@ -210,15 +211,13 @@ const StatusKewenangan = () => {
       const data = await response.json();
 
       if (response.ok && data.success) {
-        alert('Data berhasil ditambahkan');
+        setBanner({ message: 'Data berhasil ditambahkan', variant: 'success' });
         handleCloseAddModal();
-        fetchData();
       } else {
         throw new Error(data.message || 'Gagal menambahkan data');
       }
     } catch (error) {
-      console.error('Error adding authority:', error);
-      alert(error.message || 'Gagal menambahkan data');
+      setBanner({ message: error.message || 'Gagal menambahkan data', variant: 'error' });
     } finally {
       setIsSubmitting(false);
     }
@@ -236,7 +235,7 @@ const StatusKewenangan = () => {
 
   const handleConfirmDelete = () => {
     if (deleteTargets.length === 0) {
-      alert('Pilih minimal satu item untuk dihapus');
+      setBanner({ message: 'Pilih minimal satu item untuk dihapus', variant: 'warning' });
       return;
     }
     setShowDeleteModal(true);
@@ -255,17 +254,15 @@ const StatusKewenangan = () => {
       const data = await response.json();
 
       if (response.ok && data.success) {
-        alert('Data berhasil dihapus');
+        setBanner({ message: 'Data berhasil dihapus', variant: 'success' });
         setShowDeleteModal(false);
         setDeleteMode(false);
         setDeleteTargets([]);
-        fetchData();
       } else {
-        throw new Error(data.message || 'Gagal menghapus data');
+        throw new Error(data.message || 'Failed to delete authorities');
       }
     } catch (error) {
-      console.error('Error deleting authorities:', error);
-      alert(error.message || 'Gagal menghapus data');
+      setBanner({ message: error.message || 'Gagal menghapus data', variant: 'error' });
     }
   };
 
@@ -287,6 +284,7 @@ const StatusKewenangan = () => {
 
   return (
     <MainLayout>
+      <Banner message={banner.message} variant={banner.variant} autoRefresh={banner.variant === 'success'} />
       <header className={styles.pageHeader}>
         <h1 className={styles.pageTitle}>Status Kewenangan Klinis</h1>
         <p className={styles.pageSubtitle}>Preview dokumen SPK dan RKK kewenangan klinis</p>
@@ -375,13 +373,13 @@ const StatusKewenangan = () => {
                       <h4 className={styles.itemTitle}>{item.nomor_dokumen || 'Tanpa nomor dokumen'}</h4>
                       <div className={styles.itemMetaGrid}>
                         <div className={styles.itemMetaGroup}>
-                          <span className={styles.itemMetaLabel}>Tanggal Terbit</span>
+                          <span className={styles.itemMetaLabel}>Tanggal Mulai</span>
                           <span className={styles.itemMetaValue}>
                             {item.tanggal_terbit ? formatDateToIndonesian(item.tanggal_terbit) : '-'}
                           </span>
                         </div>
                         <div className={`${styles.itemMetaGroup} ${styles.itemMetaCenter}`}>
-                          <span className={styles.itemMetaLabel}>Tanggal Kadaluarsa</span>
+                          <span className={styles.itemMetaLabel}>Berlaku Sampai</span>
                           <span className={styles.itemMetaValue}>
                             {item.masa_berlaku ? formatDateToIndonesian(item.masa_berlaku) : '-'}
                           </span>
@@ -431,12 +429,12 @@ const StatusKewenangan = () => {
               <span className={styles.detailValue}>{selectedItem?.nomor_dokumen || '-'}</span>
             </div>
             <div className={styles.detailRow}>
-              <span className={styles.detailLabel}>Tanggal Terbit</span>
-              <span className={styles.detailValue}>{selectedItem?.tanggal_terbit || '-'}</span>
+              <span className={styles.detailLabel}>Tanggal Mulai</span>
+              <span className={styles.detailValue}>{selectedItem?.tanggal_terbit ? formatDateToIndonesian(selectedItem.tanggal_terbit) : '-'}</span>
             </div>
             <div className={styles.detailRow}>
               <span className={styles.detailLabel}>Berlaku Sampai</span>
-              <span className={styles.detailValue}>{selectedItem?.masa_berlaku || '-'}</span>
+              <span className={styles.detailValue}>{selectedItem?.masa_berlaku ? formatDateToIndonesian(selectedItem.masa_berlaku) : '-'}</span>
             </div>
           </div>
 
@@ -497,7 +495,7 @@ const StatusKewenangan = () => {
           />
           
           <Input
-            label="Tanggal Terbit"
+            label="Tanggal Mulai"
             name="tanggal_terbit"
             type="date"
             value={formData.tanggal_terbit}
@@ -506,7 +504,7 @@ const StatusKewenangan = () => {
           />
           
           <Input
-            label="Tanggal Kadaluarsa"
+            label="Berlaku Sampai"
             name="masa_berlaku"
             type="date"
             value={formData.masa_berlaku}

@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MainLayout from '../../../layout/main/MainLayout';
+import Banner from '../../../components/banner/Banner';
 import Card from '../../../components/card/Card';
 import Button from '../../../components/button/Button';
 import Modal from '../../../components/modal/Modal';
@@ -33,6 +34,7 @@ const EMPTY_FORM = {
 const PrestasiPenghargaan = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('prestasi');
+  const [banner, setBanner] = useState({ message: '', variant: '' });
   const [showViewModal, setShowViewModal] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -81,7 +83,6 @@ const PrestasiPenghargaan = () => {
         });
       }
     } catch (error) {
-      console.error('Error fetching achievement records:', error);
     } finally {
       setLoading(false);
     }
@@ -119,8 +120,7 @@ const PrestasiPenghargaan = () => {
       const url = URL.createObjectURL(blob);
       setPdfUrl(url);
     } catch (error) {
-      console.error('Error fetching PDF:', error);
-      alert('Gagal memuat dokumen');
+      setBanner({ message: 'Gagal memuat dokumen', variant: 'error' });
     } finally {
       setLoadingPdf(false);
     }
@@ -184,14 +184,14 @@ const PrestasiPenghargaan = () => {
   const processFile = (file, eventRef) => {
     if (!file) return;
     if (file.type !== 'application/pdf') {
-      alert('Hanya file PDF yang diperbolehkan');
+      setBanner({ message: 'Hanya file PDF yang diperbolehkan', variant: 'error' });
       if (eventRef?.target) eventRef.target.value = '';
       return;
     }
     
     const maxSize = 5 * 1024 * 1024; // 5MB
     if (file.size > maxSize) {
-      alert('Ukuran file maksimal 5MB');
+      setBanner({ message: 'Ukuran file maksimal 5MB', variant: 'error' });
       if (eventRef?.target) eventRef.target.value = '';
       return;
     }
@@ -213,7 +213,7 @@ const PrestasiPenghargaan = () => {
     e.preventDefault();
     
     if (!formData.judul || !formData.penyelenggara || !formData.tahun || !formData.file) {
-      alert('Semua field harus diisi');
+      setBanner({ message: 'Semua field harus diisi', variant: 'warning' });
       return;
     }
 
@@ -227,15 +227,6 @@ const PrestasiPenghargaan = () => {
       submitData.append('jenis', JENIS_MAPPING[activeTab]);
       submitData.append('file', formData.file);
 
-      // Debug log
-      console.log('Submitting data:', {
-        judul: formData.judul,
-        penyelenggara: formData.penyelenggara,
-        tahun: formData.tahun,
-        jenis: JENIS_MAPPING[activeTab],
-        file: formData.file?.name
-      });
-
       const response = await authenticatedFetch('/api/prestasi-penghargaan', {
         method: 'POST',
         body: submitData
@@ -244,14 +235,10 @@ const PrestasiPenghargaan = () => {
       const data = await response.json();
 
       if (response.ok && data.success) {
-        alert('Data berhasil ditambahkan');
+        setBanner({ message: 'Data berhasil ditambahkan', variant: 'success' });
         handleCloseAddModal();
-        await fetchData(); // Wait for data to refresh
       } else {
-        // Log validation errors for debugging
-        console.error('Server response:', data);
         if (data.errors) {
-          console.error('Validation errors:', data.errors);
           const errorMessages = Object.entries(data.errors)
             .map(([field, messages]) => `${field}: ${Array.isArray(messages) ? messages.join(', ') : messages}`)
             .join('\n');
@@ -260,8 +247,7 @@ const PrestasiPenghargaan = () => {
         throw new Error(data.message || data.error || 'Gagal menambahkan data');
       }
     } catch (error) {
-      console.error('Error adding achievement:', error);
-      alert(error.message || 'Gagal menambahkan data');
+      setBanner({ message: error.message || 'Gagal menambahkan data', variant: 'error' });
     } finally {
       setIsSubmitting(false);
     }
@@ -314,22 +300,21 @@ const PrestasiPenghargaan = () => {
       const data = await response.json();
 
       if (response.ok && data.success) {
-        alert('Data berhasil dihapus');
+        setBanner({ message: 'Data berhasil dihapus', variant: 'success' });
         setShowDeleteModal(false);
         setDeleteMode(false);
         setDeleteTargets([]);
-        fetchData();
       } else {
         throw new Error(data.message || 'Gagal menghapus data');
       }
     } catch (error) {
-      console.error('Error deleting achievements:', error);
-      alert(error.message || 'Gagal menghapus data');
+      setBanner({ message: error.message || 'Gagal menghapus data', variant: 'error' });
     }
   };
 
   return (
     <MainLayout>
+      <Banner message={banner.message} variant={banner.variant} autoRefresh={banner.variant === 'success'} />
       <header className={styles.pageHeader}>
         <h1 className={styles.pageTitle}>Prestasi, Penghargaan & Kompetensi</h1>
         <p className={styles.pageSubtitle}>Kelola prestasi, penghargaan, dan kompetensi yang pernah diraih</p>

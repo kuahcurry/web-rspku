@@ -18,7 +18,6 @@ import Penugasan from "./pages/main/penugasan/Penugasan";
 import EtikDisiplin from "./pages/main/etikDisiplin/EtikDisiplin";
 import GambarKePdf from "./pages/main/alat/GambarKePdf";
 import KompresiPdf from "./pages/main/alat/KompresiPdf";
-import CetakPdf from "./pages/main/alat/CetakPdf";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
 import { UserProvider } from "./contexts/UserContext";
@@ -139,14 +138,6 @@ function App() {
           element={
             <ProtectedRoute>
               <KompresiPdf />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/alat/cetak-pdf"
-          element={
-            <ProtectedRoute>
-              <CetakPdf />
             </ProtectedRoute>
           }
         />

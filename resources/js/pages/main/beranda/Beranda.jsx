@@ -81,7 +81,7 @@ const Beranda = () => {
           setProfilePicture(data.data.foto_profil_url);
         }
       } catch (error) {
-        console.error('[Beranda] Error fetching profile picture:', error);
+        // Silent fail
       }
     };
 
@@ -211,30 +211,8 @@ const Beranda = () => {
       setKewenanganData(storedKewenangan);
       setEtikData(storedEtik);
       
-      console.log('=== STORED DATA FOR DISPLAY ===');
-      console.log('Dokumen stored:', storedDokumen.length, 'items');
-      console.log('Sample Dokumen:', storedDokumen[0]);
-      console.log('Pendidikan stored:', Object.keys(storedPendidikan).map(k => `${k}: ${storedPendidikan[k]?.length || 0}`));
-      console.log('Sample Ijazah:', storedPendidikan.Ijazah?.[0]);
-      console.log('Sample Pelatihan:', storedPendidikan['Sertifikat Pelatihan']?.[0]);
-      console.log('Sample Workshop:', storedPendidikan['Sertifikat Workshop']?.[0]);
-      console.log('Prestasi stored:', storedPrestasi.Prestasi?.length || 0, 'prestasi,', storedPrestasi.Penghargaan?.length || 0, 'penghargaan,', storedPrestasi['Kompetensi Utama']?.length || 0, 'kompetensi utama');
-      console.log('Sample Prestasi:', storedPrestasi.Prestasi?.[0]);
-      console.log('Sample Penghargaan:', storedPrestasi.Penghargaan?.[0]);
-      console.log('Sample Kompetensi Utama:', storedPrestasi['Kompetensi Utama']?.[0]);
-      console.log('Penugasan stored:', storedPenugasan.Penugasan?.length || 0, 'penugasan,', storedPenugasan.Pengabdian?.length || 0, 'pengabdian');
-      console.log('Sample Penugasan:', storedPenugasan.Penugasan?.[0]);
-      console.log('Kredensial stored:', storedKredensial.length, 'items');
-      console.log('Sample Kredensial:', storedKredensial[0]);
-      console.log('Kewenangan stored:', storedKewenangan.SPK?.length || 0, 'SPK,', storedKewenangan.RKK?.length || 0, 'RKK');
-      console.log('Sample SPK:', storedKewenangan.SPK?.[0]);
-      console.log('Sample RKK:', storedKewenangan.RKK?.[0]);
-      console.log('Etik stored:', storedEtik.etik?.length || 0, 'etik,', storedEtik.disiplin?.length || 0, 'disiplin');
-      console.log('Sample Etik:', storedEtik.etik?.[0]);
-      console.log('Sample Disiplin:', storedEtik.disiplin?.[0]);
-      console.log('===============================');
     } catch (error) {
-      console.error('Error fetching dashboard data:', error);
+      // Silent fail
     } finally {
       setLoading(false);
     }
@@ -319,10 +297,7 @@ const Beranda = () => {
                     <img
                       src={profilePicture}
                       alt={userData?.name || 'User'}
-                      onError={(e) => {
-                        console.error('[Beranda] Image failed to load:', profilePicture, 'Error:', e);
-                        setAvatarError(true);
-                      }}
+                      onError={() => setAvatarError(true)}
                     />
                   ) : (
                     <div className={styles['avatar-initials']}>

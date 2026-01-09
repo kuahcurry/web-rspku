@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MainLayout from '../../../layout/main/MainLayout';
+import Banner from '../../../components/banner/Banner';
 import Card from '../../../components/card/Card';
 import Tabs from '../../../components/tabs/Tabs';
 import Table from '../../../components/table/Table';
@@ -41,6 +42,7 @@ const TINDAKAN_OPTIONS = [
 const EtikDisiplin = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('etik');
+  const [banner, setBanner] = useState({ message: '', variant: '' });
   const [loading, setLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [etikRecords, setEtikRecords] = useState([]);
@@ -126,7 +128,6 @@ const EtikDisiplin = () => {
         setDisiplinRecords((data.data.disiplin || []).map(mapRecord));
       }
     } catch (error) {
-      console.error('Error fetching etik-disiplin records:', error);
     } finally {
       setLoading(false);
     }
@@ -190,12 +191,12 @@ const EtikDisiplin = () => {
   const processEtikFile = (file, eventRef) => {
     if (!file) return;
     if (file.type !== 'application/pdf') {
-      alert('Hanya file PDF yang diperbolehkan');
+      setBanner({ message: 'Hanya file PDF yang diperbolehkan', variant: 'error' });
       if (eventRef?.target) eventRef.target.value = '';
       return;
     }
     if (file.size > 5 * 1024 * 1024) {
-      alert('File terlalu besar. Maksimal 5MB');
+      setBanner({ message: 'File terlalu besar. Maksimal 5MB', variant: 'error' });
       if (eventRef?.target) eventRef.target.value = '';
       return;
     }
@@ -221,12 +222,12 @@ const EtikDisiplin = () => {
   const processDisiplinFile = (file, eventRef) => {
     if (!file) return;
     if (file.type !== 'application/pdf') {
-      alert('Hanya file PDF yang diperbolehkan');
+      setBanner({ message: 'Hanya file PDF yang diperbolehkan', variant: 'error' });
       if (eventRef?.target) eventRef.target.value = '';
       return;
     }
     if (file.size > 5 * 1024 * 1024) {
-      alert('File terlalu besar. Maksimal 5MB');
+      setBanner({ message: 'File terlalu besar. Maksimal 5MB', variant: 'error' });
       if (eventRef?.target) eventRef.target.value = '';
       return;
     }
@@ -276,7 +277,7 @@ const EtikDisiplin = () => {
 
     // Validate file for new record
     if (!etikForm.file) {
-      alert('File dokumen wajib diupload');
+      setBanner({ message: 'File dokumen wajib diupload', variant: 'warning' });
       return;
     }
 
@@ -299,15 +300,14 @@ const EtikDisiplin = () => {
       });
 
       if (response.ok) {
-        await fetchData(); // Refresh data
+        setBanner({ message: 'Data etik berhasil disimpan', variant: 'success' });
         setShowEtikModal(false);
       } else {
         const error = await response.json();
-        alert(error.message || 'Gagal menyimpan data');
+        setBanner({ message: error.message || 'Gagal menyimpan data', variant: 'error' });
       }
     } catch (error) {
-      console.error('Error saving etik:', error);
-      alert('Terjadi kesalahan saat menyimpan data');
+      setBanner({ message: 'Terjadi kesalahan saat menyimpan data', variant: 'error' });
     } finally {
       setIsSubmitting(false);
     }
@@ -319,7 +319,7 @@ const EtikDisiplin = () => {
 
     // Validate file for new record
     if (!disiplinForm.file) {
-      alert('File dokumen wajib diupload');
+      setBanner({ message: 'File dokumen wajib diupload', variant: 'warning' });
       return;
     }
 
@@ -342,15 +342,14 @@ const EtikDisiplin = () => {
       });
 
       if (response.ok) {
-        await fetchData(); // Refresh data
+        setBanner({ message: 'Data disiplin berhasil disimpan', variant: 'success' });
         setShowDisiplinModal(false);
       } else {
         const error = await response.json();
-        alert(error.message || 'Gagal menyimpan data');
+        setBanner({ message: error.message || 'Gagal menyimpan data', variant: 'error' });
       }
     } catch (error) {
-      console.error('Error saving disiplin:', error);
-      alert('Terjadi kesalahan saat menyimpan data');
+      setBanner({ message: 'Terjadi kesalahan saat menyimpan data', variant: 'error' });
     } finally {
       setIsSubmitting(false);
     }
@@ -369,11 +368,10 @@ const EtikDisiplin = () => {
         const url = URL.createObjectURL(blob);
         setPdfUrl(url);
       } else {
-        alert('Gagal memuat dokumen PDF');
+        setBanner({ message: 'Gagal memuat dokumen PDF', variant: 'error' });
       }
     } catch (error) {
-      console.error('Error loading PDF:', error);
-      alert('Terjadi kesalahan saat memuat dokumen');
+      setBanner({ message: 'Terjadi kesalahan saat memuat dokumen', variant: 'error' });
     } finally {
       setLoadingPdf(false);
     }
@@ -385,6 +383,7 @@ const EtikDisiplin = () => {
 
   return (
     <MainLayout>
+      <Banner message={banner.message} variant={banner.variant} autoRefresh={banner.variant === 'success'} />
       <header className={styles.pageHeader}>
         <h1 className={styles.pageTitle}>Etik & Disiplin</h1>
         <p className={styles.pageSubtitle}>
