@@ -284,6 +284,12 @@
   color: var(--info-dark);
 }
 
+.daysLeftBadge.expired {
+  background: #2c2c2c;
+  color: #ffffff;
+  font-weight: 700;
+}
+
 /* Activity List */
 .activityList {
   display: flex;

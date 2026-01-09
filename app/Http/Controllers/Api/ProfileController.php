@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Cache;
+use App\Models\ActivityLog;
 
 class ProfileController extends Controller
 {
@@ -79,6 +80,24 @@ class ProfileController extends Controller
             }
 
             $user->update($updateData);
+
+            // Log profile update activity (non-blocking)
+            try {
+                $changedFields = array_keys($updateData);
+                ActivityLog::create([
+                    'user_id' => $user->id,
+                    'type' => 'update',
+                    'action' => 'Profile updated',
+                    'metadata' => [
+                        'fields_updated' => $changedFields,
+                    ]
+                ]);
+            } catch (\Exception $logException) {
+                \Log::error('Failed to create activity log', [
+                    'error' => $logException->getMessage(),
+                    'user_id' => $user->id
+                ]);
+            }
 
             // Clear user cache after update
             Cache::forget("user_profile_{$user->id}");
