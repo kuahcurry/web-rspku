@@ -179,7 +179,7 @@ export const authenticatedFetch = async (url, options = {}) => {
       
       // Redirect to appropriate login page
       if (isAdmin) {
-        window.location.href = '/login?mode=admin';
+        window.location.href = '/admin/login';
       } else {
         window.location.href = '/login';
       }

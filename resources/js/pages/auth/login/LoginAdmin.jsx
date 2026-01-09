@@ -6,17 +6,11 @@ import Form from '../../../components/form/Form';
 import styles from './Login.module.css';
 import logoImg from '../../../assets/logo.webp';
 
-// Dummy admin credentials
-const DUMMY_ADMIN = {
-  username: 'admin',
-  password: 'admin123'
-};
-
 function LoginAdmin() {
   const navigate = useNavigate();
   
   const [formData, setFormData] = useState({
-    username: '',
+    email: '',
     password: ''
   });
   const [errors, setErrors] = useState({});
@@ -41,22 +35,33 @@ function LoginAdmin() {
     setErrors({});
     setIsSubmitting(true);
 
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-
     try {
-      if (formData.username === DUMMY_ADMIN.username && formData.password === DUMMY_ADMIN.password) {
-        localStorage.setItem('admin_token', 'dummy_admin_token_' + Date.now());
-        localStorage.setItem('admin_user', JSON.stringify({
-          id: 1,
-          username: 'admin',
-          name: 'Administrator',
-          role: 'admin'
-        }));
+      const response = await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        // Store JWT token and admin info
+        localStorage.setItem('access_token', data.data.access_token);
+        localStorage.setItem('token_type', data.data.token_type);
+        localStorage.setItem('user', JSON.stringify(data.data.user));
+        
+        const expiresAt = Date.now() + (data.data.expires_in * 1000);
+        localStorage.setItem('token_expires_at', expiresAt.toString());
+        
         navigate('/admin/dashboard');
       } else {
         setErrors({ 
-          general: 'Username atau password salah. Gunakan: admin / admin123' 
+          general: data.message || 'Email atau password salah' 
         });
       }
     } catch (error) {
@@ -85,15 +90,15 @@ function LoginAdmin() {
               </div>
 
               <Input
-                key="username-input"
-                label="Username"
-                type="text"
-                name="username"
-                placeholder="Masukkan username"
-                value={formData.username}
+                key="email-input"
+                label="Email"
+                type="email"
+                name="email"
+                placeholder="Masukkan email"
+                value={formData.email}
                 onChange={handleChange}
                 required
-                error={errors.username?.[0]}
+                error={errors.email?.[0]}
                 disabled={isSubmitting}
               />
 
@@ -112,10 +117,6 @@ function LoginAdmin() {
               />
 
               {errors.general && <div className={styles['login-error']}>{errors.general}</div>}
-
-              <div className={styles['demo-info']}>
-                <strong>Demo:</strong> admin / admin123
-              </div>
 
               <Button 
                 type="submit" 
