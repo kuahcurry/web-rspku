@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { MdPerson } from 'react-icons/md';
+import { useNavigate } from 'react-router-dom';
 import Input from '../../../components/input/Input';
 import Button from '../../../components/button/Button';
 import Form from '../../../components/form/Form';
@@ -127,15 +126,6 @@ function LoginAdmin() {
               >
                 {isSubmitting ? 'Masuk...' : 'Login'}
               </Button>
-
-              <div className={styles['auth-links']}>
-                <div className={styles['auth-row']}>
-                  <Link to="/login" className={styles['switch-login']}>
-                    <MdPerson size={16} />
-                    <span>Login sebagai User</span>
-                  </Link>
-                </div>
-              </div>
             </Form>
 
             <div className={styles['login-footer']}>
