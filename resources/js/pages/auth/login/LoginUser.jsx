@@ -1,6 +1,5 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, Link, useSearchParams } from 'react-router-dom';
-import { MdAdminPanelSettings, MdPerson } from 'react-icons/md';
+import { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import Input from '../../../components/input/Input';
 import Button from '../../../components/button/Button';
 import Form from '../../../components/form/Form';
@@ -8,45 +7,22 @@ import { useUser } from '../../../contexts/UserContext';
 import styles from './Login.module.css';
 import logoImg from '../../../assets/logo.webp';
 
-function Login() {
+function LoginUser() {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
   const { refreshUser } = useUser();
-  
-  // Initialize login mode from URL param or default to 'user'
-  const [loginMode, setLoginMode] = useState(() => {
-    return searchParams.get('mode') === 'admin' ? 'admin' : 'user';
-  });
   
   const [formData, setFormData] = useState({
     nik: '',
-    username: '',
     password: ''
   });
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const isAdminLogin = loginMode === 'admin';
-
-  // Reset form when switching between admin/user login
-  useEffect(() => {
-    setFormData({
-      nik: '',
-      username: '',
-      password: ''
-    });
-    setErrors({});
-  }, [loginMode]);
-
-  const handleModeSwitch = (mode) => {
-    setLoginMode(mode);
-  };
-
   const handleChange = (e) => {
     const { name, value } = e.target;
     
     // Special handling for NIK input - only numeric and max 16 digits
-    if (name === 'nik' && !isAdminLogin) {
+    if (name === 'nik') {
       // Remove any non-numeric characters
       const numericValue = value.replace(/\D/g, '');
       // Limit to 16 digits
@@ -57,7 +33,6 @@ function Login() {
         [name]: limitedValue
       }));
     } else {
-      // Allow all characters for username and password
       setFormData(prev => ({
         ...prev,
         [name]: value
@@ -70,50 +45,7 @@ function Login() {
     }
   };
 
-  const handleAdminLogin = async (e) => {
-    if (e?.preventDefault) e.preventDefault();
-    setErrors({});
-    setIsSubmitting(true);
-
-    try {
-      const response = await fetch('/api/admin/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: formData.username,
-          password: formData.password,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok && data.success) {
-        // Store JWT token and admin info
-        localStorage.setItem('access_token', data.data.access_token);
-        localStorage.setItem('token_type', data.data.token_type);
-        localStorage.setItem('user', JSON.stringify(data.data.user));
-        
-        const expiresAt = Date.now() + (data.data.expires_in * 1000);
-        localStorage.setItem('token_expires_at', expiresAt.toString());
-        
-        navigate('/admin/dashboard');
-      } else {
-        setErrors({ 
-          general: data.message || 'Email atau password salah' 
-        });
-      }
-    } catch (error) {
-      console.error('Admin login error:', error);
-      setErrors({ general: 'Terjadi kesalahan. Silakan coba lagi.' });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   const handleLogin = async (e) => {
-    // prevent default handled by Form, but keep guard in case called directly
     if (e?.preventDefault) e.preventDefault();
     setErrors({});
     setIsSubmitting(true);
@@ -174,62 +106,27 @@ function Login() {
         {/* Login Card */}
         <div className={styles['login-card']}>
           <div className={styles['login-content']}>
-            <Form onSubmit={isAdminLogin ? handleAdminLogin : handleLogin} className={styles['login-form']}>
+            <Form onSubmit={handleLogin} className={styles['login-form']}>
               <div className={styles['login-header']}>
                 <img src={logoImg} alt="Logo Muhammadiyah" className={styles['header-logo']} />
                 <h1>Selamat Datang</h1>
                 <h2>RS PKU Muhammadiyah Gombong</h2>
               </div>
 
-              {/* Login Mode Tabs */}
-              <div className={styles['login-tabs']}>
-                <button
-                  type="button"
-                  className={`${styles['tab-btn']} ${!isAdminLogin ? styles['tab-active'] : ''}`}
-                  onClick={() => handleModeSwitch('user')}
-                >
-                  <MdPerson size={18} />
-                  <span>User</span>
-                </button>
-                <button
-                  type="button"
-                  className={`${styles['tab-btn']} ${isAdminLogin ? styles['tab-active'] : ''}`}
-                  onClick={() => handleModeSwitch('admin')}
-                >
-                  <MdAdminPanelSettings size={18} />
-                  <span>Admin</span>
-                </button>
-              </div>
-
-              {isAdminLogin ? (
-                <Input
-                  key="username-input"
-                  label="Username"
-                  type="text"
-                  name="username"
-                  placeholder="Masukkan username"
-                  value={formData.username}
-                  onChange={handleChange}
-                  required
-                  error={errors.username?.[0]}
-                  disabled={isSubmitting}
-                />
-              ) : (
-                <Input
-                  key="nik-input"
-                  label="NIK"
-                  type="text"
-                  name="nik"
-                  placeholder="Masukkan NIK (16 digit)"
-                  value={formData.nik}
-                  onChange={handleChange}
-                  required
-                  pattern="[0-9]{16}"
-                  maxLength={16}
-                  error={errors.nik?.[0]}
-                  disabled={isSubmitting}
-                />
-              )}
+              <Input
+                key="nik-input"
+                label="NIK"
+                type="text"
+                name="nik"
+                placeholder="Masukkan NIK (16 digit)"
+                value={formData.nik}
+                onChange={handleChange}
+                required
+                pattern="[0-9]{16}"
+                maxLength={16}
+                error={errors.nik?.[0]}
+                disabled={isSubmitting}
+              />
 
               <Input
                 label="Kata Sandi"
@@ -239,7 +136,7 @@ function Login() {
                 value={formData.password}
                 onChange={handleChange}
                 required
-                minLength={isAdminLogin ? 6 : 8}
+                minLength={8}
                 error={errors.password?.[0]}
                 disabled={isSubmitting}
                 allowPasswordToggle
@@ -247,11 +144,9 @@ function Login() {
 
               {errors.general && <div className={styles['login-error']}>{errors.general}</div>}
 
-              {!isAdminLogin && (
-                <div className={styles['forgot-password']}>
-                  <Link to="/lupa-password">Lupa Password?</Link>
-                </div>
-              )}
+              <div className={styles['forgot-password']}>
+                <Link to="/lupa-password">Lupa Password?</Link>
+              </div>
 
               <Button 
                 type="submit" 
@@ -263,14 +158,12 @@ function Login() {
                 {isSubmitting ? 'Masuk...' : 'Login'}
               </Button>
 
-              {!isAdminLogin && (
-                <div className={styles['auth-links']}>
-                  <div className={styles['auth-row']}>
-                    <p>Belum punya akun?</p>
-                    <Link to="/register" className={styles['auth-link']}>Buat di sini</Link>
-                  </div>
+              <div className={styles['auth-links']}>
+                <div className={styles['auth-row']}>
+                  <p>Belum punya akun?</p>
+                  <Link to="/register" className={styles['auth-link']}>Buat di sini</Link>
                 </div>
-              )}
+              </div>
             </Form>
 
             <div className={styles['login-footer']}>
@@ -289,4 +182,4 @@ function Login() {
   );
 }
 
-export default Login;
+export default LoginUser;

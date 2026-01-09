@@ -675,6 +675,7 @@ const EtikDisiplin = () => {
             style={{ display: 'none' }}
             onChange={handleEtikFile}
             accept=".pdf"
+            required
           />
           <Form.Actions align="right" className={styles.modalActions}>
             <Button variant="secondary" type="button" onClick={() => setShowEtikModal(false)} disabled={isSubmitting}>
@@ -781,6 +782,7 @@ const EtikDisiplin = () => {
             style={{ display: 'none' }}
             onChange={handleDisiplinFile}
             accept=".pdf"
+            required
           />
           <Form.Actions align="right" className={styles.modalActions}>
             <Button variant="secondary" type="button" onClick={() => setShowDisiplinModal(false)} disabled={isSubmitting}>
