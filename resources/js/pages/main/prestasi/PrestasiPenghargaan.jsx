@@ -390,7 +390,7 @@ const PrestasiPenghargaan = () => {
                     </div>
                     <div className={styles.actions}>
                       <Button
-                        variant="outline"
+                        variant="primary"
                         size="small"
                         icon={<MdVisibility />}
                         iconPosition="left"

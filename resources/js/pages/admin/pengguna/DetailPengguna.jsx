@@ -9,6 +9,7 @@ import Modal from '../../../components/modal/Modal';
 import Form from '../../../components/form/Form';
 import Input from '../../../components/input/Input';
 import Popup from '../../../components/popup/Popup';
+import { MdVisibility } from 'react-icons/md';
 import { authenticatedFetch } from '../../../utils/auth';
 import styles from './DetailPengguna.module.css';
 
@@ -69,8 +70,7 @@ const DetailPengguna = () => {
   const mockDocuments = [
     { id: 1, jenis: 'STR', nomor: 'STR-001-2023-0001', tanggal_terbit: '2023-01-15', tanggal_kadaluwarsa: '2028-01-15', status: 'Aktif', file: 'str_ahmad.pdf' },
     { id: 2, jenis: 'SIP', nomor: 'SIP-001-2023-0002', tanggal_terbit: '2023-02-01', tanggal_kadaluwarsa: '2026-02-01', status: 'Aktif', file: 'sip_ahmad.pdf' },
-    { id: 3, jenis: 'Surat Keterangan', nomor: 'SK-2023-001', tanggal_terbit: '2023-01-01', tanggal_kadaluwarsa: null, status: 'Aktif', file: 'sk_ahmad.pdf' },
-    { id: 4, jenis: 'Sertifikat Kompetensi', nomor: 'SERTKOM-2023-001', tanggal_terbit: '2023-03-15', tanggal_kadaluwarsa: '2026-03-15', status: 'Aktif', file: 'sertifikat_kompetensi.pdf' }
+    { id: 3, jenis: 'Surat Keterangan', nomor: 'SK-2023-001', tanggal_terbit: '2023-01-01', tanggal_kadaluwarsa: null, status: 'Aktif', file: 'sk_ahmad.pdf' }
   ];
 
   const mockEducation = [
@@ -108,7 +108,9 @@ const DetailPengguna = () => {
     { id: 1, jenis: 'Prestasi', judul: 'Prestasi Penelitian Terbaik', penyelenggara: 'IDI Cabang Kebumen', tahun: '2022', file: 'prestasi_penelitian.pdf' },
     { id: 2, jenis: 'Penghargaan', judul: 'Dokter Teladan RS PKU Muhammadiyah', penyelenggara: 'RS PKU Muhammadiyah Gombong', tahun: '2023', file: 'penghargaan_teladan.pdf' },
     { id: 3, jenis: 'Penghargaan', judul: 'Satyalancana Karya Satya X Tahun', penyelenggara: 'Presiden RI', tahun: '2021', file: 'satyalancana.pdf' },
-    { id: 4, jenis: 'Kompetensi Utama', judul: 'Sertifikasi Kompetensi Penyakit Dalam', penyelenggara: 'PAPDI', tahun: '2020', file: 'kompetensi_papdi.pdf' }
+    { id: 4, jenis: 'Kompetensi Utama', judul: 'Sertifikasi Kompetensi Penyakit Dalam', penyelenggara: 'PAPDI', tahun: '2020', file: 'kompetensi_papdi.pdf' },
+    { id: 5, jenis: 'Kompetensi Utama', judul: 'Sertifikasi Kompetensi ACLS', penyelenggara: 'American Heart Association', tahun: '2022', file: 'kompetensi_acls.pdf' },
+    { id: 6, jenis: 'Prestasi', judul: 'Juara 1 Lomba Karya Tulis Ilmiah', penyelenggara: 'PERSI Jawa Tengah', tahun: '2023', file: 'prestasi_kti.pdf' }
   ];
 
   const mockAuthorities = [
@@ -306,8 +308,9 @@ const DetailPengguna = () => {
               </div>
               <div className={styles.documentActions}>
                 <Button
-                  variant="outline"
-                  size="sm"
+                  variant="primary"
+                  size="small"
+                  icon={<MdVisibility size={16} />}
                   onClick={() => openDocumentModal(doc, `${doc.jenis} - ${doc.nomor}`)}
                 >
                   Lihat Dokumen
@@ -346,9 +349,9 @@ const DetailPengguna = () => {
               </div>
               <div className={styles.listItemFooter}>
                 <Button
-                  className={styles.listActionButton}
-                  variant="outline"
-                  size="sm"
+                  variant="primary"
+                  size="small"
+                  icon={<MdVisibility size={16} />}
                   onClick={() => openDocumentModal(edu, edu.judul)}
                 >
                   Lihat Dokumen
@@ -407,9 +410,9 @@ const DetailPengguna = () => {
               </div>
               <div className={styles.listItemFooter}>
                 <Button
-                  className={styles.listActionButton}
-                  variant="outline"
-                  size="sm"
+                  variant="primary"
+                  size="small"
+                  icon={<MdVisibility size={16} />}
                   onClick={() => openDocumentModal(ethic, ethic.jenis)}
                 >
                   Lihat Dokumen
@@ -464,9 +467,9 @@ const DetailPengguna = () => {
               </div>
               <div className={styles.listItemFooter}>
                 <Button
-                  className={styles.listActionButton}
-                  variant="outline"
-                  size="sm"
+                  variant="primary"
+                  size="small"
+                  icon={<MdVisibility size={16} />}
                   onClick={() => openDocumentModal(cred, cred.jenis_kegiatan)}
                 >
                   Lihat Dokumen
@@ -511,9 +514,9 @@ const DetailPengguna = () => {
               </div>
               <div className={styles.listItemFooter}>
                 <Button
-                  className={styles.listActionButton}
-                  variant="outline"
-                  size="sm"
+                  variant="primary"
+                  size="small"
+                  icon={<MdVisibility size={16} />}
                   onClick={() => openDocumentModal(assign, assign.jenis)}
                 >
                   Lihat Dokumen
@@ -552,9 +555,9 @@ const DetailPengguna = () => {
               </div>
               <div className={styles.listItemFooter}>
                 <Button
-                  className={styles.listActionButton}
-                  variant="outline"
-                  size="sm"
+                  variant="primary"
+                  size="small"
+                  icon={<MdVisibility size={16} />}
                   onClick={() => openDocumentModal(achievement, achievement.judul)}
                 >
                   Lihat Dokumen
@@ -599,9 +602,9 @@ const DetailPengguna = () => {
               </div>
               <div className={styles.listItemFooter}>
                 <Button
-                  className={styles.listActionButton}
-                  variant="outline"
-                  size="sm"
+                  variant="primary"
+                  size="small"
+                  icon={<MdVisibility size={16} />}
                   onClick={() => openDocumentModal(authority, `${authority.jenis} - ${authority.nomor}`)}
                 >
                   Lihat Dokumen

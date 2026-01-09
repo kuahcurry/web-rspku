@@ -466,7 +466,7 @@ const EtikDisiplin = () => {
                       </div>
                       <div className={`table-cell ${styles.actionCol}`} data-label="Aksi">
                         <Button
-                          variant="outline"
+                          variant="primary"
                           size="small"
                           icon={<MdVisibility />}
                           onClick={(e) => {
@@ -561,7 +561,7 @@ const EtikDisiplin = () => {
                       </div>
                       <div className={`table-cell ${styles.actionCol}`} data-label="Aksi">
                         <Button
-                          variant="outline"
+                          variant="primary"
                           size="small"
                           icon={<MdVisibility />}
                           onClick={(e) => {

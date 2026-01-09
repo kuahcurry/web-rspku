@@ -632,12 +632,22 @@ const EtikDisiplinAdmin = () => {
                           <td>{renderStatusPill(item.status, item.status === 'Selesai' ? 'success' : item.status === 'Proses' ? 'warning' : 'neutral')}</td>
                           <td>
                             <div className={styles.actionBtns}>
-                              <button className={`${styles.iconBtn} ${styles.iconBtnPrimary}`} title="Lihat" onClick={(e) => { e.stopPropagation(); openView(item); }}>
-                                <MdVisibility size={18} />
-                              </button>
-                              <button className={`${styles.iconBtn} ${styles.iconBtnWarning}`} title="Edit" onClick={(e) => { e.stopPropagation(); openEtikModal(item); }}>
-                                <MdEdit size={18} />
-                              </button>
+                              <Button 
+                                variant="primary" 
+                                size="small"
+                                icon={<MdVisibility size={16} />}
+                                onClick={(e) => { e.stopPropagation(); openView(item); }}
+                              >
+                                Lihat
+                              </Button>
+                              <Button 
+                                variant="warning" 
+                                size="small"
+                                icon={<MdEdit size={16} />}
+                                onClick={(e) => { e.stopPropagation(); openEtikModal(item); }}
+                              >
+                                Edit
+                              </Button>
                             </div>
                           </td>
                         </tr>
@@ -693,12 +703,22 @@ const EtikDisiplinAdmin = () => {
                           <td>{renderStatusPill(item.status, item.status === 'Selesai' ? 'success' : item.status === 'Proses' ? 'warning' : 'neutral')}</td>
                           <td>
                             <div className={styles.actionBtns}>
-                              <button className={`${styles.iconBtn} ${styles.iconBtnPrimary}`} title="Lihat" onClick={(e) => { e.stopPropagation(); openView(item); }}>
-                                <MdVisibility size={18} />
-                              </button>
-                              <button className={`${styles.iconBtn} ${styles.iconBtnWarning}`} title="Edit" onClick={(e) => { e.stopPropagation(); openDisiplinModal(item); }}>
-                                <MdEdit size={18} />
-                              </button>
+                              <Button 
+                                variant="primary" 
+                                size="small"
+                                icon={<MdVisibility size={16} />}
+                                onClick={(e) => { e.stopPropagation(); openView(item); }}
+                              >
+                                Lihat
+                              </Button>
+                              <Button 
+                                variant="warning" 
+                                size="small"
+                                icon={<MdEdit size={16} />}
+                                onClick={(e) => { e.stopPropagation(); openDisiplinModal(item); }}
+                              >
+                                Edit
+                              </Button>
                             </div>
                           </td>
                         </tr>

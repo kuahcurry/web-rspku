@@ -246,12 +246,11 @@ const ManajemenPengguna = () => {
                       </td>
                       <td>
                         <Button 
-                          variant="ghost" 
-                          size="sm"
+                          variant="primary" 
+                          size="small"
+                          icon={<MdVisibility size={16} />}
                           onClick={() => handleViewUser(user.id)}
-                          className={styles.viewBtn}
                         >
-                          <MdVisibility size={18} />
                           Lihat Detail
                         </Button>
                       </td>
