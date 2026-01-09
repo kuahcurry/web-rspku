@@ -31,10 +31,39 @@ class PrestasiPenghargaan extends Model
     ];
 
     /**
+     * The accessors to append to the model's array form.
+     *
+     * @var array
+     */
+    protected $appends = ['url', 'file_name'];
+
+    /**
      * Get the user that owns the prestasi/penghargaan record.
      */
     public function user()
     {
         return $this->belongsTo(UserRegistration::class, 'user_id');
+    }
+
+    /**
+     * Get public URL for the document
+     */
+    public function getUrlAttribute(): ?string
+    {
+        if (!$this->file_path) {
+            return null;
+        }
+        return asset('storage/' . $this->file_path);
+    }
+
+    /**
+     * Get the file name from the file path
+     */
+    public function getFileNameAttribute(): ?string
+    {
+        if (!$this->file_path) {
+            return null;
+        }
+        return basename($this->file_path);
     }
 }

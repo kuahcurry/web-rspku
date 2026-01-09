@@ -140,10 +140,10 @@ const DokumenLegalitas = () => {
   const processFile = (file, eventRef) => {
     if (!file) return;
     if (file.type === 'application/pdf') {
-      if (file.size <= 10 * 1024 * 1024) { // 10MB limit
+      if (file.size <= 5 * 1024 * 1024) { // 5MB limit
         setUploadFile(file);
       } else {
-        alert('File terlalu besar. Maksimal 10MB');
+        alert('File terlalu besar. Maksimal 5MB');
         if (eventRef?.target) eventRef.target.value = '';
       }
     } else {
@@ -383,13 +383,14 @@ const DokumenLegalitas = () => {
             >
               <MdCloudUpload size={48} />
               <p>Pilih atau seret file ke sini</p>
-              <span className={styles['upload-hint']}>PDF, maks 10MB</span>
+              <span className={styles['upload-hint']}>PDF, maks 5MB</span>
               <input
                 type="file"
                 accept=".pdf"
                 onChange={handleFileChange}
                 ref={fileInputRef}
                 style={{ display: 'none' }}
+                required
               />
               <Button variant="outline" icon={<MdCloudUpload />} onClick={handleChooseFile} type="button">
                 Pilih File
@@ -417,47 +418,38 @@ const DokumenLegalitas = () => {
           isOpen={showViewModal}
           onClose={() => setShowViewModal(false)}
           title={selectedDoc?.jenis_dokumen || 'Detail Dokumen'}
-          size="large"
-          padding="normal"
+          className={styles.viewModal}
         >
-          <div className={styles.modalContent}>
-            <div className={styles.metaRow}>
-              <div>
-                <p className={styles.metaLabel}>Nomor Dokumen</p>
-                <p className={styles.metaValue}>{selectedDoc?.nomor_sk || '-'}</p>
+          <div className={styles.viewDetail}>
+            <div className={styles.detailGrid}>
+              <div className={styles.detailRow}>
+                <span className={styles.detailLabel}>Nomor Dokumen</span>
+                <span className={styles.detailValue}>{selectedDoc?.nomor_sk || '-'}</span>
               </div>
-              <div>
-                <p className={styles.metaLabel}>Tanggal Mulai</p>
-                <p className={styles.metaValue}>
+              <div className={styles.detailRow}>
+                <span className={styles.detailLabel}>Tanggal Mulai</span>
+                <span className={styles.detailValue}>
                   {selectedDoc?.tanggal_mulai ? formatDateToIndonesian(selectedDoc.tanggal_mulai) : '-'}
-                </p>
+                </span>
               </div>
-              <div>
-                <p className={styles.metaLabel}>Berlaku Sampai</p>
-                <p className={styles.metaValue}>
+              <div className={styles.detailRow}>
+                <span className={styles.detailLabel}>Berlaku Sampai</span>
+                <span className={styles.detailValue}>
                   {selectedDoc?.tanggal_berlaku ? formatDateToIndonesian(selectedDoc.tanggal_berlaku) : '-'}
-                </p>
+                </span>
               </div>
             </div>
-            {loadingPdf && (
-              <div className={styles.pdfFrameWrapper}>
-                <p style={{ textAlign: 'center', padding: '2rem' }}>Memuat dokumen...</p>
-              </div>
-            )}
-            {!loadingPdf && pdfUrl && (
-              <div className={styles.pdfFrameWrapper}>
-                <iframe
-                  src={pdfUrl}
-                  className={styles.pdfFrame}
-                  title="PDF Viewer"
-                />
-              </div>
-            )}
-            {!loadingPdf && !pdfUrl && selectedDoc && (
-              <div className={styles.pdfFrameWrapper}>
-                <p style={{ textAlign: 'center', padding: '2rem' }}>Gagal memuat dokumen</p>
-              </div>
-            )}
+
+            <div className={styles.pdfPreview}>
+              {loadingPdf ? (
+                <div className={styles.pdfEmpty}>Memuat dokumen...</div>
+              ) : pdfUrl ? (
+                <iframe src={pdfUrl} className={styles.pdfFrame} title="PDF Viewer" />
+              ) : (
+                <div className={styles.pdfEmpty}>Dokumen belum tersedia.</div>
+              )}
+            </div>
+
             <div className={styles.modalActions}>
               <Button variant="danger" onClick={() => setShowViewModal(false)}>
                 Tutup

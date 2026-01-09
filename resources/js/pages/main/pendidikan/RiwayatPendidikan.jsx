@@ -158,10 +158,10 @@ const RiwayatPendidikan = () => {
   const processFile = (file) => {
     if (!file) return;
     if (file.type === 'application/pdf') {
-      if (file.size <= 10 * 1024 * 1024) { // 10MB limit
+      if (file.size <= 5 * 1024 * 1024) { // 5MB limit
         setFormData({ ...formData, file });
       } else {
-        setBanner({ message: 'File terlalu besar. Maksimal 10MB', type: 'error' });
+        setBanner({ message: 'File terlalu besar. Maksimal 5MB', type: 'error' });
       }
     } else {
       setBanner({ message: 'Hanya file PDF yang diperbolehkan', type: 'error' });
@@ -241,7 +241,7 @@ const RiwayatPendidikan = () => {
           setShowViewModal(false);
         }
         
-        fetchData(); // Refresh data
+        await fetchData(); // Refresh data
       } else {
         setBanner({ message: 'Gagal menghapus data', type: 'error' });
       }
@@ -285,7 +285,7 @@ const RiwayatPendidikan = () => {
         setBanner({ message: 'Data berhasil ditambahkan!', type: 'success' });
         setShowAddModal(false);
         setFormData({ judul: '', institusi: '', tahun_lulus: '', file: null });
-        fetchData(); // Refresh data
+        await fetchData(); // Refresh data
       } else {
         setBanner({ message: data.message || 'Gagal menambahkan data', type: 'error' });
       }
@@ -462,45 +462,34 @@ const RiwayatPendidikan = () => {
           setPdfUrl(null);
         }}
         title={selectedItem?.judul || 'Lihat Dokumen'}
-        size="large"
-        padding="normal"
+        className={styles.viewModal}
       >
-        <div className={styles.modalContent}>
-          <div className={styles.metaRow}>
-            <div>
-              <p className={styles.metaLabel}>Institusi</p>
-              <p className={styles.metaValue}>{selectedItem?.institusi || '-'}</p>
+        <div className={styles.viewDetail}>
+          <div className={styles.detailGrid}>
+            <div className={styles.detailRow}>
+              <span className={styles.detailLabel}>Institusi</span>
+              <span className={styles.detailValue}>{selectedItem?.institusi || '-'}</span>
             </div>
-            <div>
-              <p className={styles.metaLabel}>Tahun Lulus</p>
-              <p className={styles.metaValue}>{selectedItem?.tahun_lulus || '-'}</p>
+            <div className={styles.detailRow}>
+              <span className={styles.detailLabel}>Tahun Lulus</span>
+              <span className={styles.detailValue}>{selectedItem?.tahun_lulus || '-'}</span>
             </div>
-            <div>
-              <p className={styles.metaLabel}>File</p>
-              <p className={styles.metaValue}>{selectedItem?.file_name || 'File belum tersedia'}</p>
+            <div className={styles.detailRow}>
+              <span className={styles.detailLabel}>File</span>
+              <span className={styles.detailValue}>{selectedItem?.file_name || 'File belum tersedia'}</span>
             </div>
           </div>
-          {loadingPdf ? (
-            <div className={styles.pdfFrameWrapper}>
-              <div style={{ textAlign: 'center', padding: '2rem' }}>
-                <p>Memuat dokumen...</p>
-              </div>
-            </div>
-          ) : pdfUrl ? (
-            <div className={styles.pdfFrameWrapper}>
-              <iframe
-                src={pdfUrl}
-                className={styles.pdfFrame}
-                title="PDF Viewer"
-              />
-            </div>
-          ) : (
-            <div className={styles.pdfFrameWrapper}>
-              <div style={{ textAlign: 'center', padding: '2rem' }}>
-                <p>Dokumen tidak tersedia</p>
-              </div>
-            </div>
-          )}
+
+          <div className={styles.pdfPreview}>
+            {loadingPdf ? (
+              <div className={styles.pdfEmpty}>Memuat dokumen...</div>
+            ) : pdfUrl ? (
+              <iframe src={pdfUrl} className={styles.pdfFrame} title="PDF Viewer" />
+            ) : (
+              <div className={styles.pdfEmpty}>Dokumen tidak tersedia.</div>
+            )}
+          </div>
+
           <div className={styles.modalActions}>
             <Button variant="danger" onClick={() => {
               setShowViewModal(false);
@@ -584,6 +573,7 @@ const RiwayatPendidikan = () => {
               onChange={handleFileChange}
               ref={fileInputRef}
               style={{ display: 'none' }}
+              required
             />
             <Button variant="outline" icon={<MdCloudUpload />} onClick={handleChooseFile}>
               Pilih File

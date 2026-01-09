@@ -8,11 +8,13 @@ use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\DokumenLegalitasController;
 use App\Http\Controllers\Api\RiwayatPendidikanController;
 use App\Http\Controllers\Api\PasswordResetController;
+use App\Http\Controllers\Api\Admin\DashboardController;
 use App\Http\Controllers\PdfCompressionController;
 
 // Public routes
 Route::post('/register', [RegisterController::class, 'register'])->middleware('throttle:5,1');
 Route::post('/login', [AuthController::class, 'login']); // Custom rate limiting inside controller
+Route::post('/admin/login', [AuthController::class, 'adminLogin']); // Admin login endpoint
 Route::post('/verify-email', [RegisterController::class, 'verifyEmail'])->middleware('throttle:10,1');
 Route::post('/resend-verification-code', [RegisterController::class, 'resendVerificationCode'])->middleware('throttle:3,10');
 
@@ -99,4 +101,11 @@ Route::middleware('auth:api')->group(function () {
         Route::get('/{id}', [\App\Http\Controllers\Api\StatusKewenanganController::class, 'view']);
         Route::delete('/{id}', [\App\Http\Controllers\Api\StatusKewenanganController::class, 'delete']);
     });
+});
+
+// Admin Dashboard routes (admin role required)
+Route::middleware(['auth:admin', 'admin'])->prefix('admin')->group(function () {
+    Route::get('/dashboard/statistics', [DashboardController::class, 'getStatistics']);
+    Route::get('/dashboard/expiring-documents', [DashboardController::class, 'getExpiringDocuments']);
+    Route::get('/dashboard/activities', [DashboardController::class, 'getRecentActivities']);
 });

@@ -161,16 +161,26 @@ export const authenticatedFetch = async (url, options = {}) => {
   try {
     const response = await fetch(url, mergedOptions);
     
-    // If unauthorized, try to refresh token once
+    // If unauthorized, check if we should try refresh
     if (response.status === 401) {
-      const refreshed = await refreshToken();
+      const user = getUser();
+      const isAdmin = user && user.role === 'admin';
       
-      if (refreshed) {
-        // Retry the request with new token
-        mergedOptions.headers.Authorization = getAuthHeader();
-        return fetch(url, mergedOptions);
+      // Don't try to refresh admin tokens (they use different guard)
+      if (!isAdmin) {
+        const refreshed = await refreshToken();
+        
+        if (refreshed) {
+          // Retry the request with new token
+          mergedOptions.headers.Authorization = getAuthHeader();
+          return fetch(url, mergedOptions);
+        }
+      }
+      
+      // Redirect to appropriate login page
+      if (isAdmin) {
+        window.location.href = '/login?mode=admin';
       } else {
-        // Redirect to login
         window.location.href = '/login';
       }
     }

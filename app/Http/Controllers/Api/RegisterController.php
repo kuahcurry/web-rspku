@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\PendingRegistration;
 use App\Models\UserRegistration;
+use App\Models\ActivityLog;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Mail;
@@ -159,6 +160,25 @@ class RegisterController extends Controller
                 'password' => $pendingUser->password, // Already hashed
                 'email_verified_at' => now(),
             ]);
+
+            // Log registration activity (non-blocking)
+            try {
+                ActivityLog::create([
+                    'user_id' => $user->id,
+                    'type' => 'register',
+                    'action' => 'User registered and verified email',
+                    'metadata' => [
+                        'email' => $user->email,
+                        'name' => $user->name,
+                        'nik' => $user->nik,
+                    ]
+                ]);
+            } catch (\Exception $logException) {
+                \Log::error('Failed to create activity log', [
+                    'error' => $logException->getMessage(),
+                    'user_id' => $user->id
+                ]);
+            }
 
             // Delete pending registration
             $pendingUser->delete();

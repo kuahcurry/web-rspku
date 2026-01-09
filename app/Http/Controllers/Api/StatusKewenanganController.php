@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\StatusKewenangan;
+use App\Models\ActivityLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
@@ -93,6 +94,17 @@ class StatusKewenanganController extends Controller
                 'file_path' => $filePath,
             ]);
 
+            // Log the activity
+            ActivityLog::create([
+                'user_id' => $user->id,
+                'type' => 'upload',
+                'action' => 'Uploaded status kewenangan',
+                'metadata' => json_encode([
+                    'kategori' => $request->jenis,
+                    'nomor_surat' => $request->nomor_dokumen
+                ])
+            ]);
+
             return response()->json([
                 'success' => true,
                 'message' => 'Record added successfully',
@@ -165,12 +177,26 @@ class StatusKewenanganController extends Controller
                 ], 404);
             }
 
+            // Capture metadata before deletion
+            $metadata = [
+                'kategori' => $record->jenis,
+                'nomor_surat' => $record->nomor_dokumen
+            ];
+
             // Delete file from storage
             if ($record->file_path && Storage::disk('public')->exists($record->file_path)) {
                 Storage::disk('public')->delete($record->file_path);
             }
 
             $record->delete();
+
+            // Log the activity
+            ActivityLog::create([
+                'user_id' => $user->id,
+                'type' => 'delete',
+                'action' => 'Deleted status kewenangan',
+                'metadata' => json_encode($metadata)
+            ]);
 
             return response()->json([
                 'success' => true,
@@ -217,11 +243,21 @@ class StatusKewenanganController extends Controller
                 ], 404);
             }
 
-            // Delete files from storage
+            // Delete files from storage and log activities
             foreach ($records as $record) {
                 if ($record->file_path && Storage::disk('public')->exists($record->file_path)) {
                     Storage::disk('public')->delete($record->file_path);
                 }
+                
+                // Log the activity for each deleted item
+                ActivityLog::create([
+                    'user_id' => $user->id,
+                    'type' => 'delete',
+                    'action' => 'Bulk deleted status kewenangan',
+                    'metadata' => json_encode([
+                        'id' => $record->id
+                    ])
+                ]);
             }
 
             // Delete database records

@@ -333,6 +333,7 @@
   transition: all 0.2s ease;
   color: var(--text-secondary);
   font-size: 0.9rem;
+  text-align: center;
 }
 
 .dropzone:hover {
@@ -342,6 +343,23 @@
 
 .dropzoneIcon {
   color: var(--primary-main);
+}
+
+.dropzoneTitle {
+  margin: 0;
+  font-weight: 700;
+  color: var(--heading-main);
+}
+
+.dropzoneHint {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+}
+
+.dropzoneFileName {
+  color: var(--heading-main);
+  font-weight: 600;
+  word-break: break-word;
 }
 
 /* Modal Actions */
@@ -444,9 +462,9 @@
 }
 
 .fullscreenModal {
-  width: 66vw;
+  width: 75vw;
   height: 90vh;
-  max-width: 960px;
+  max-width: 1080px;
   min-width: 520px;
   max-height: 90vh;
   border-radius: var(--radius-xl);

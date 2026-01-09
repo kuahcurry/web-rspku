@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\PrestasiPenghargaan;
+use App\Models\ActivityLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
@@ -103,6 +104,17 @@ class PrestasiPenghargaanController extends Controller
                 'file_path' => $filePath,
             ]);
 
+            // Log the activity
+            ActivityLog::create([
+                'user_id' => $user->id,
+                'type' => 'upload',
+                'action' => 'Uploaded prestasi penghargaan',
+                'metadata' => json_encode([
+                    'kategori' => $request->jenis,
+                    'nama_prestasi' => $request->judul
+                ])
+            ]);
+
             return response()->json([
                 'success' => true,
                 'message' => 'Record added successfully',
@@ -182,12 +194,26 @@ class PrestasiPenghargaanController extends Controller
                 ], 404);
             }
 
+            // Capture metadata before deletion
+            $metadata = [
+                'kategori' => $record->achievement_type,
+                'nama_prestasi' => $record->judul
+            ];
+
             // Delete file from storage
             if ($record->file_path && Storage::disk('public')->exists($record->file_path)) {
                 Storage::disk('public')->delete($record->file_path);
             }
 
             $record->delete();
+
+            // Log the activity
+            ActivityLog::create([
+                'user_id' => $user->id,
+                'type' => 'delete',
+                'action' => 'Deleted prestasi penghargaan',
+                'metadata' => json_encode($metadata)
+            ]);
 
             return response()->json([
                 'success' => true,

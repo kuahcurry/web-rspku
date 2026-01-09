@@ -8,12 +8,6 @@ import { useUser } from '../../../contexts/UserContext';
 import styles from './Login.module.css';
 import logoImg from '../../../assets/logo.webp';
 
-// Dummy admin credentials
-const DUMMY_ADMIN = {
-  username: 'admin',
-  password: 'admin123'
-};
-
 function Login() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -81,22 +75,33 @@ function Login() {
     setErrors({});
     setIsSubmitting(true);
 
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-
     try {
-      if (formData.username === DUMMY_ADMIN.username && formData.password === DUMMY_ADMIN.password) {
-        localStorage.setItem('admin_token', 'dummy_admin_token_' + Date.now());
-        localStorage.setItem('admin_user', JSON.stringify({
-          id: 1,
-          username: 'admin',
-          name: 'Administrator',
-          role: 'admin'
-        }));
+      const response = await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: formData.username,
+          password: formData.password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        // Store JWT token and admin info
+        localStorage.setItem('access_token', data.data.access_token);
+        localStorage.setItem('token_type', data.data.token_type);
+        localStorage.setItem('user', JSON.stringify(data.data.user));
+        
+        const expiresAt = Date.now() + (data.data.expires_in * 1000);
+        localStorage.setItem('token_expires_at', expiresAt.toString());
+        
         navigate('/admin/dashboard');
       } else {
         setErrors({ 
-          general: 'Username atau password salah. Gunakan: admin / admin123' 
+          general: data.message || 'Email atau password salah' 
         });
       }
     } catch (error) {
@@ -241,12 +246,6 @@ function Login() {
               />
 
               {errors.general && <div className={styles['login-error']}>{errors.general}</div>}
-
-              {isAdminLogin && (
-                <div className={styles['demo-info']}>
-                  <strong>Demo:</strong> admin / admin123
-                </div>
-              )}
 
               {!isAdminLogin && (
                 <div className={styles['forgot-password']}>

@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use App\Models\UserRegistration;
+use App\Models\Admin;
+use App\Models\ActivityLog;
 use App\Mail\VerificationCodeMail;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
@@ -65,8 +67,31 @@ class AuthController extends Controller
         RateLimiter::clear($throttleKey);
 
         try {
+            // Update last login timestamp
+            $user->last_login_at = now();
+            $user->save();
+
             // Generate JWT token
             $token = JWTAuth::fromUser($user);
+
+            // Log login activity (non-blocking)
+            try {
+                ActivityLog::create([
+                    'user_id' => $user->id,
+                    'type' => 'login',
+                    'action' => 'User logged in',
+                    'metadata' => [
+                        'nik' => $user->nik,
+                        'ip_address' => $request->ip(),
+                    ]
+                ]);
+            } catch (\Exception $logException) {
+                // Log the error but don't block login
+                \Log::error('Failed to create activity log', [
+                    'error' => $logException->getMessage(),
+                    'user_id' => $user->id
+                ]);
+            }
 
             return response()->json([
                 'success' => true,
@@ -83,6 +108,80 @@ class AuthController extends Controller
                     'access_token' => $token,
                     'token_type' => 'bearer',
                     'expires_in' => config('jwt.ttl') * 60 // in seconds
+                ]
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Login gagal',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Admin login endpoint
+     */
+    public function adminLogin(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email',
+            'password' => 'required|string',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        // Create throttle key based on email and IP
+        $throttleKey = Str::lower($request->email) . '|' . $request->ip();
+        
+        // Check if too many failed attempts
+        if (RateLimiter::tooManyAttempts($throttleKey, 5)) {
+            $seconds = RateLimiter::availableIn($throttleKey);
+            return response()->json([
+                'success' => false,
+                'message' => "Terlalu banyak percobaan login. Silakan coba lagi dalam {$seconds} detik.",
+                'retry_after' => $seconds
+            ], 429);
+        }
+
+        // Find admin by email
+        $admin = Admin::where('email', $request->email)->first();
+
+        if (!$admin || !Hash::check($request->password, $admin->password)) {
+            RateLimiter::hit($throttleKey, 60);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Email atau password salah'
+            ], 401);
+        }
+
+        // Clear failed attempts on successful login
+        RateLimiter::clear($throttleKey);
+
+        try {
+            // Generate JWT token
+            $token = JWTAuth::fromUser($admin);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Login berhasil',
+                'data' => [
+                    'user' => [
+                        'id' => $admin->id,
+                        'name' => $admin->name,
+                        'email' => $admin->email,
+                        'role' => 'admin',
+                    ],
+                    'access_token' => $token,
+                    'token_type' => 'bearer',
+                    'expires_in' => config('jwt.ttl') * 60
                 ]
             ], 200);
         } catch (\Exception $e) {
