@@ -396,7 +396,7 @@ const StatusKewenangan = () => {
                       </div>
                       <div className={styles.actions}>
                         <Button
-                          variant="outline"
+                          variant="primary"
                           icon={<MdVisibility />}
                           iconPosition="left"
                           size="small"
