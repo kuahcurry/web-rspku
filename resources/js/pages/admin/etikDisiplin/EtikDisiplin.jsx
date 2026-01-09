@@ -69,7 +69,7 @@ const MOCK_DISIPLIN_RECORDS = [
   { id: 4, userId: 5, userName: 'Ns. Andi Pratama', tanggal: '2025-09-05', jenis: 'Keterlambatan', uraian: 'Terlambat lebih dari 30 menit', tindakan: 'Teguran Lisan', status: 'Selesai', tanggal_selesai: '2025-09-06', catatan: '' },
 ];
 
-const EtikDisiplinAdmin = () => {
+const AdminEtikDisiplin = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('etik');
   const [loading, setLoading] = useState(false);
@@ -1219,4 +1219,4 @@ const EtikDisiplinAdmin = () => {
   );
 };
 
-export default EtikDisiplinAdmin;
+export default AdminEtikDisiplin;
