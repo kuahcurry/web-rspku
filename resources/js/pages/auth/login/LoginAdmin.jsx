@@ -50,13 +50,13 @@ function LoginAdmin() {
       const data = await response.json();
 
       if (response.ok && data.success) {
-        // Store JWT token and admin info
-        localStorage.setItem('access_token', data.data.access_token);
-        localStorage.setItem('token_type', data.data.token_type);
-        localStorage.setItem('user', JSON.stringify(data.data.user));
+        // Store JWT token and admin info with admin-specific keys
+        localStorage.setItem('admin_access_token', data.data.access_token);
+        localStorage.setItem('admin_token_type', data.data.token_type);
+        localStorage.setItem('admin_user', JSON.stringify(data.data.user));
         
         const expiresAt = Date.now() + (data.data.expires_in * 1000);
-        localStorage.setItem('token_expires_at', expiresAt.toString());
+        localStorage.setItem('admin_token_expires_at', expiresAt.toString());
         
         navigate('/admin/dashboard');
       } else {

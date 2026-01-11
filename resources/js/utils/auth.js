@@ -2,10 +2,17 @@
 import { clearCache } from './cache';
 
 /**
- * Get the stored JWT token
+ * Get the stored JWT token (for regular users)
  */
 export const getToken = () => {
   return localStorage.getItem('access_token');
+};
+
+/**
+ * Get the admin JWT token
+ */
+export const getAdminToken = () => {
+  return localStorage.getItem('admin_access_token');
 };
 
 /**
@@ -16,9 +23,25 @@ export const getTokenType = () => {
 };
 
 /**
+ * Get the admin token type
+ */
+export const getAdminTokenType = () => {
+  return localStorage.getItem('admin_token_type') || 'bearer';
+};
+
+/**
  * Get the full authorization header value
+ * Checks for admin token first, then user token
  */
 export const getAuthHeader = () => {
+  // Check for admin token first
+  const adminToken = getAdminToken();
+  if (adminToken) {
+    const adminTokenType = getAdminTokenType();
+    return `${adminTokenType} ${adminToken}`;
+  }
+  
+  // Fall back to user token
   const token = getToken();
   const tokenType = getTokenType();
   return token ? `${tokenType} ${token}` : null;
@@ -26,16 +49,37 @@ export const getAuthHeader = () => {
 
 /**
  * Get the logged-in user data
+ * Checks for admin user first, then regular user
  */
 export const getUser = () => {
+  // Check for admin user first
+  const adminUserStr = localStorage.getItem('admin_user');
+  if (adminUserStr) {
+    return JSON.parse(adminUserStr);
+  }
+  
+  // Fall back to regular user
   const userStr = localStorage.getItem('user');
   return userStr ? JSON.parse(userStr) : null;
 };
 
 /**
- * Check if user is authenticated
+ * Check if user is authenticated (admin or regular user)
  */
 export const isAuthenticated = () => {
+  // Check admin auth first
+  const adminToken = getAdminToken();
+  const adminExpiresAt = localStorage.getItem('admin_token_expires_at');
+  
+  if (adminToken && adminExpiresAt) {
+    if (Date.now() > parseInt(adminExpiresAt)) {
+      clearAdminAuth();
+    } else {
+      return true;
+    }
+  }
+  
+  // Check regular user auth
   const token = getToken();
   const expiresAt = localStorage.getItem('token_expires_at');
   
@@ -60,7 +104,17 @@ export const clearAuth = () => {
   localStorage.removeItem('token_type');
   localStorage.removeItem('user');
   localStorage.removeItem('token_expires_at');
-  // Clear all cached API responses to prevent data leakage between accounts
+  clearCache();
+};
+
+/**
+ * Clear admin authentication data
+ */
+export const clearAdminAuth = () => {
+  localStorage.removeItem('admin_access_token');
+  localStorage.removeItem('admin_token_type');
+  localStorage.removeItem('admin_user');
+  localStorage.removeItem('admin_token_expires_at');
   clearCache();
 };
 

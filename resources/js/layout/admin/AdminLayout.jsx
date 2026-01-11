@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { clearAdminAuth, getAdminToken } from '../../utils/auth';
 import { 
   MdDashboard, 
   MdPeople, 
@@ -56,11 +57,11 @@ const AdminLayout = ({ children }) => {
 
   useEffect(() => {
     // Check authentication
-    const token = localStorage.getItem('access_token');
-    const userStr = localStorage.getItem('user');
+    const token = localStorage.getItem('admin_access_token');
+    const userStr = localStorage.getItem('admin_user');
     
     if (!token || !userStr) {
-      console.log('AdminLayout: No token or user found, redirecting to login');
+      console.log('AdminLayout: No admin token or user found, redirecting to login');
       navigate('/admin/login');
       return;
     }
@@ -68,7 +69,7 @@ const AdminLayout = ({ children }) => {
     // Get admin user from localStorage
     try {
       const userData = JSON.parse(userStr);
-      console.log('AdminLayout: User data from localStorage:', userData);
+      console.log('AdminLayout: Admin user data from localStorage:', userData);
       
       // Check if user has admin role
       if (userData.role !== 'admin') {
@@ -81,7 +82,7 @@ const AdminLayout = ({ children }) => {
       console.log('AdminLayout: Admin authenticated successfully');
       setAdminUser(userData);
     } catch (e) {
-      console.error('AdminLayout: Error parsing user data:', e);
+      console.error('AdminLayout: Error parsing admin user data:', e);
       navigate('/admin/login');
     }
   }, [navigate]);
@@ -125,10 +126,7 @@ const AdminLayout = ({ children }) => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('token_type');
-    localStorage.removeItem('user');
-    localStorage.removeItem('token_expires_at');
+    clearAdminAuth();
     navigate('/admin/login');
   };
 
