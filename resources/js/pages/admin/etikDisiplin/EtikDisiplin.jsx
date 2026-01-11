@@ -49,34 +49,14 @@ const TINDAKAN_OPTIONS = [
   { value: 'SP3', label: 'SP3' }
 ];
 
-// Mock data for users
-const MOCK_USERS = [
-  { id: 1, name: 'Dr. Ahmad Sudirman', nip: '198501012010011001' },
-  { id: 2, name: 'Ns. Siti Rahayu', nip: '198703152011012002' },
-  { id: 3, name: 'Dr. Bambang Hartono', nip: '198206202012011003' },
-  { id: 4, name: 'Ns. Dewi Lestari', nip: '199001102015012004' },
-  { id: 5, name: 'Ns. Andi Pratama', nip: '199105182016011005' },
-];
-
-// Mock data for records
-const MOCK_ETIK_RECORDS = [
-  { id: 1, userId: 1, userName: 'Dr. Ahmad Sudirman', tanggal: '2025-06-15', jenis: 'Pelanggaran Kode Etik', uraian: 'Tidak menjaga kerahasiaan pasien', tingkat: 'Sedang', status: 'Selesai', tanggal_selesai: '2025-07-15', catatan: 'Telah dilakukan pembinaan' },
-  { id: 2, userId: 3, userName: 'Dr. Bambang Hartono', tanggal: '2025-08-20', jenis: 'Etika Profesi', uraian: 'Keterlambatan pelayanan', tingkat: 'Ringan', status: 'Proses', tanggal_selesai: null, catatan: '' },
-];
-
-const MOCK_DISIPLIN_RECORDS = [
-  { id: 3, userId: 2, userName: 'Ns. Siti Rahayu', tanggal: '2025-05-10', jenis: 'Ketidakhadiran', uraian: 'Tidak masuk kerja tanpa keterangan', tindakan: 'Teguran Tertulis', status: 'Selesai', tanggal_selesai: '2025-05-20', catatan: 'SP pertama' },
-  { id: 4, userId: 5, userName: 'Ns. Andi Pratama', tanggal: '2025-09-05', jenis: 'Keterlambatan', uraian: 'Terlambat lebih dari 30 menit', tindakan: 'Teguran Lisan', status: 'Selesai', tanggal_selesai: '2025-09-06', catatan: '' },
-];
-
 const AdminEtikDisiplin = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('etik');
   const [loading, setLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [etikRecords, setEtikRecords] = useState(MOCK_ETIK_RECORDS);
-  const [disiplinRecords, setDisiplinRecords] = useState(MOCK_DISIPLIN_RECORDS);
-  const [users, setUsers] = useState(MOCK_USERS);
+  const [etikRecords, setEtikRecords] = useState([]);
+  const [disiplinRecords, setDisiplinRecords] = useState([]);
+  const [users, setUsers] = useState([]);
   
   const [filtersEtik, setFiltersEtik] = useState({ search: '', year: 'Semua', status: 'Semua', user: 'Semua' });
   const [filtersDisiplin, setFiltersDisiplin] = useState({ search: '', year: 'Semua', tingkat: 'Semua', status: 'Semua', user: 'Semua' });
@@ -126,16 +106,65 @@ const AdminEtikDisiplin = () => {
   });
 
   useEffect(() => {
-    // In real implementation, fetch data from API
     fetchData();
+    fetchUsers();
   }, []);
+
+  const fetchUsers = async () => {
+    try {
+      const response = await authenticatedFetch('/api/admin/users/approved');
+      const data = await response.json();
+      if (data.success) {
+        setUsers(data.data);
+      }
+    } catch (error) {
+      console.error('Error fetching users:', error);
+    }
+  };
 
   const fetchData = async () => {
     try {
       setLoading(true);
-      // Mock API call delay
-      await new Promise(resolve => setTimeout(resolve, 500));
-      // Data already set from mock
+      
+      // Fetch etik records
+      const etikResponse = await authenticatedFetch('/api/admin/etik-disiplin?jenis=etik');
+      const etikData = await etikResponse.json();
+      if (etikData.success) {
+        const formattedEtik = etikData.data.map(item => ({
+          id: item.id,
+          userId: item.user_id,
+          userName: item.user_name,
+          tanggal: item.tanggal_kejadian,
+          jenis: item.jenis_pelanggaran,
+          uraian: item.uraian_singkat,
+          tingkat: item.tingkat,
+          status: item.status_penyelesaian,
+          tanggal_selesai: item.tanggal_penyelesaian,
+          catatan: item.catatan,
+          dokumenUrl: item.file_url
+        }));
+        setEtikRecords(formattedEtik);
+      }
+      
+      // Fetch disiplin records
+      const disiplinResponse = await authenticatedFetch('/api/admin/etik-disiplin?jenis=disiplin');
+      const disiplinData = await disiplinResponse.json();
+      if (disiplinData.success) {
+        const formattedDisiplin = disiplinData.data.map(item => ({
+          id: item.id,
+          userId: item.user_id,
+          userName: item.user_name,
+          tanggal: item.tanggal_kejadian,
+          jenis: item.jenis_pelanggaran,
+          uraian: item.uraian_singkat,
+          tindakan: item.tindakan,
+          status: item.status_penyelesaian,
+          tanggal_selesai: item.tanggal_penyelesaian,
+          catatan: item.catatan,
+          dokumenUrl: item.file_url
+        }));
+        setDisiplinRecords(formattedDisiplin);
+      }
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
@@ -209,8 +238,8 @@ const AdminEtikDisiplin = () => {
       if (eventRef?.target) eventRef.target.value = '';
       return;
     }
-    if (file.size > 5 * 1024 * 1024) {
-      alert('File terlalu besar. Maksimal 5MB');
+    if (file.size > 2 * 1024 * 1024) {
+      alert('File terlalu besar. Maksimal 2MB');
       if (eventRef?.target) eventRef.target.value = '';
       return;
     }
@@ -240,8 +269,8 @@ const AdminEtikDisiplin = () => {
       if (eventRef?.target) eventRef.target.value = '';
       return;
     }
-    if (file.size > 5 * 1024 * 1024) {
-      alert('File terlalu besar. Maksimal 5MB');
+    if (file.size > 2 * 1024 * 1024) {
+      alert('File terlalu besar. Maksimal 2MB');
       if (eventRef?.target) eventRef.target.value = '';
       return;
     }
@@ -326,33 +355,44 @@ const AdminEtikDisiplin = () => {
       return;
     }
 
+    if (!etikForm.file) {
+      alert('Mohon upload dokumen pendukung');
+      return;
+    }
+
     setIsSubmitting(true);
     try {
-      // Mock save
-      const user = users.find(u => u.id.toString() === etikForm.userId.toString());
-      const newRecord = {
-        id: editingEtikId || Date.now(),
-        userId: parseInt(etikForm.userId),
-        userName: user?.name || 'Unknown',
-        tanggal: etikForm.tanggal,
-        jenis: etikForm.jenis,
-        uraian: etikForm.uraian,
-        tingkat: etikForm.tingkat,
-        status: etikForm.status,
-        tanggal_selesai: etikForm.tanggal_selesai,
-        catatan: etikForm.catatan,
-        fileUrl: etikForm.fileUrl || null,
-        fileName: etikForm.file?.name || null
-      };
-
-      if (editingEtikId) {
-        setEtikRecords(prev => prev.map(r => r.id === editingEtikId ? newRecord : r));
-      } else {
-        setEtikRecords(prev => [...prev, newRecord]);
+      const formData = new FormData();
+      formData.append('user_id', etikForm.userId);
+      formData.append('jenis', 'etik');
+      formData.append('tanggal_kejadian', etikForm.tanggal);
+      formData.append('jenis_pelanggaran', etikForm.jenis);
+      formData.append('uraian_singkat', etikForm.uraian);
+      formData.append('tingkat', etikForm.tingkat);
+      formData.append('status_penyelesaian', etikForm.status);
+      if (etikForm.tanggal_selesai) {
+        formData.append('tanggal_penyelesaian', etikForm.tanggal_selesai);
       }
+      if (etikForm.catatan) {
+        formData.append('catatan', etikForm.catatan);
+      }
+      formData.append('file', etikForm.file);
 
-      setShowEtikModal(false);
-      setEditingEtikId(null);
+      const response = await authenticatedFetch('/api/admin/etik-disiplin', {
+        method: 'POST',
+        body: formData
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        alert('Data berhasil disimpan');
+        setShowEtikModal(false);
+        setEditingEtikId(null);
+        fetchData();
+      } else {
+        alert(data.message || 'Gagal menyimpan data');
+      }
     } catch (error) {
       console.error('Error saving etik:', error);
       alert('Terjadi kesalahan saat menyimpan data');
@@ -368,33 +408,44 @@ const AdminEtikDisiplin = () => {
       return;
     }
 
+    if (!disiplinForm.file) {
+      alert('Mohon upload dokumen pendukung');
+      return;
+    }
+
     setIsSubmitting(true);
     try {
-      // Mock save
-      const user = users.find(u => u.id.toString() === disiplinForm.userId.toString());
-      const newRecord = {
-        id: editingDisiplinId || Date.now(),
-        userId: parseInt(disiplinForm.userId),
-        userName: user?.name || 'Unknown',
-        tanggal: disiplinForm.tanggal,
-        jenis: disiplinForm.jenis,
-        uraian: disiplinForm.uraian,
-        tindakan: disiplinForm.tindakan,
-        status: disiplinForm.status,
-        tanggal_selesai: disiplinForm.tanggal_selesai,
-        catatan: disiplinForm.catatan,
-        fileUrl: disiplinForm.fileUrl || null,
-        fileName: disiplinForm.file?.name || null
-      };
-
-      if (editingDisiplinId) {
-        setDisiplinRecords(prev => prev.map(r => r.id === editingDisiplinId ? newRecord : r));
-      } else {
-        setDisiplinRecords(prev => [...prev, newRecord]);
+      const formData = new FormData();
+      formData.append('user_id', disiplinForm.userId);
+      formData.append('jenis', 'disiplin');
+      formData.append('tanggal_kejadian', disiplinForm.tanggal);
+      formData.append('jenis_pelanggaran', disiplinForm.jenis);
+      formData.append('uraian_singkat', disiplinForm.uraian);
+      formData.append('tindakan', disiplinForm.tindakan);
+      formData.append('status_penyelesaian', disiplinForm.status);
+      if (disiplinForm.tanggal_selesai) {
+        formData.append('tanggal_penyelesaian', disiplinForm.tanggal_selesai);
       }
+      if (disiplinForm.catatan) {
+        formData.append('catatan', disiplinForm.catatan);
+      }
+      formData.append('file', disiplinForm.file);
 
-      setShowDisiplinModal(false);
-      setEditingDisiplinId(null);
+      const response = await authenticatedFetch('/api/admin/etik-disiplin', {
+        method: 'POST',
+        body: formData
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        alert('Data berhasil disimpan');
+        setShowDisiplinModal(false);
+        setEditingDisiplinId(null);
+        fetchData();
+      } else {
+        alert(data.message || 'Gagal menyimpan data');
+      }
     } catch (error) {
       console.error('Error saving disiplin:', error);
       alert('Terjadi kesalahan saat menyimpan data');
@@ -445,12 +496,34 @@ const AdminEtikDisiplin = () => {
 
     setIsSubmitting(true);
     try {
-      // Mock delete
-      if (activeTab === 'etik') {
-        setEtikRecords(prev => prev.filter(r => !idsToDelete.includes(r.id)));
+      if (idsToDelete.length === 1) {
+        // Single delete
+        const response = await authenticatedFetch(`/api/admin/etik-disiplin/${idsToDelete[0]}`, {
+          method: 'DELETE'
+        });
+        const data = await response.json();
+        if (!data.success) {
+          alert(data.message || 'Gagal menghapus data');
+          return;
+        }
       } else {
-        setDisiplinRecords(prev => prev.filter(r => !idsToDelete.includes(r.id)));
+        // Bulk delete
+        const response = await authenticatedFetch('/api/admin/etik-disiplin/bulk-delete', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ ids: idsToDelete })
+        });
+        const data = await response.json();
+        if (!data.success) {
+          alert(data.message || 'Gagal menghapus data');
+          return;
+        }
       }
+      
+      alert('Data berhasil dihapus');
+      fetchData();
       handleCancelDelete();
     } catch (error) {
       console.error('Error deleting records:', error);
@@ -932,7 +1005,7 @@ const AdminEtikDisiplin = () => {
               >
                 <MdCloudUpload size={32} className={styles.dropzoneIcon} />
                 <p className={styles.dropzoneTitle}>Pilih atau seret file ke sini</p>
-                <span className={styles.dropzoneHint}>PDF, maks 5MB</span>
+                <span className={styles.dropzoneHint}>PDF, maks 2MB</span>
                 <Button
                   variant="outline"
                   size="small"
@@ -954,7 +1027,6 @@ const AdminEtikDisiplin = () => {
                   accept=".pdf"
                   onChange={handleEtikFile}
                   style={{ display: 'none' }}
-                  required
                 />
               </div>
             </div>
@@ -1083,7 +1155,7 @@ const AdminEtikDisiplin = () => {
               >
                 <MdCloudUpload size={32} className={styles.dropzoneIcon} />
                 <p className={styles.dropzoneTitle}>Pilih atau seret file ke sini</p>
-                <span className={styles.dropzoneHint}>PDF, maks 5MB</span>
+                <span className={styles.dropzoneHint}>PDF, maks 2MB</span>
                 <Button
                   variant="outline"
                   size="small"
@@ -1105,7 +1177,6 @@ const AdminEtikDisiplin = () => {
                   accept=".pdf"
                   onChange={handleDisiplinFile}
                   style={{ display: 'none' }}
-                  required
                 />
               </div>
             </div>
