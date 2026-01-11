@@ -3,6 +3,7 @@ import AdminLayout from '../../../layout/admin/AdminLayout';
 import Card from '../../../components/card/Card';
 import Button from '../../../components/button/Button';
 import { MdCloudUpload, MdCompress, MdDelete, MdCheckCircle, MdDownload, MdRefresh, MdDescription, MdDataUsage, MdTimer } from 'react-icons/md';
+import { authenticatedFetch } from '../../../utils/auth';
 import styles from './Alat.module.css';
 
 function KompresiPdf() {
@@ -51,12 +52,9 @@ function KompresiPdf() {
       formData.append('pdf', file);
       formData.append('level', level);
 
-      const response = await fetch('/api/compress-pdf', {
+      const response = await authenticatedFetch('/api/compress-pdf', {
         method: 'POST',
-        body: formData,
-        headers: {
-          'Accept': 'application/json',
-        },
+        body: formData
       });
 
       const contentType = response.headers.get('content-type');

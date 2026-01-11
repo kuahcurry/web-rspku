@@ -7,6 +7,7 @@ import Modal from '../../../components/modal/Modal';
 import Form from '../../../components/form/Form';
 import Table from '../../../components/table/Table';
 import Popup from '../../../components/popup/Popup';
+import { authenticatedFetch } from '../../../utils/auth';
 import { 
   MdAdd, 
   MdEdit, 
@@ -31,17 +32,9 @@ const ManajemenRole = () => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    username: '',
     password: '',
     role: 'admin'
   });
-
-  // Mock data
-  const mockAdmins = [
-    { id: 1, name: 'Super Admin', email: 'superadmin@pku.com', username: 'superadmin', role: 'super_admin', created_at: '2025-01-01' },
-    { id: 2, name: 'Admin Kepegawaian', email: 'admin.kepegawaian@pku.com', username: 'adminkepegawaian', role: 'admin', created_at: '2025-06-15' },
-    { id: 3, name: 'Admin Kredensial', email: 'admin.kredensial@pku.com', username: 'adminkredensial', role: 'admin', created_at: '2025-08-20' },
-  ];
 
   const roleOptions = [
     { value: 'super_admin', label: 'Super Admin' },
@@ -55,15 +48,19 @@ const ManajemenRole = () => {
   const fetchAdmins = async () => {
     try {
       setLoading(true);
-      // In production, this would be an API call
-      setTimeout(() => {
-        setAdmins(mockAdmins);
-        setLoading(false);
-      }, 500);
+      const response = await authenticatedFetch('/api/admin/admins');
+      const data = await response.json();
+      
+      if (data.success) {
+        setAdmins(data.data);
+      } else {
+        showPopup(data.message || 'Gagal memuat data admin', 'error');
+      }
     } catch (error) {
       console.error('Error fetching admins:', error);
-      setLoading(false);
       showPopup('Gagal memuat data admin', 'error');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -77,15 +74,13 @@ const ManajemenRole = () => {
 
   const filteredAdmins = admins.filter(admin => 
     admin.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    admin.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    admin.username.toLowerCase().includes(searchTerm.toLowerCase())
+    admin.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleAddClick = () => {
     setFormData({
       name: '',
       email: '',
-      username: '',
       password: '',
       role: 'admin'
     });
@@ -97,7 +92,6 @@ const ManajemenRole = () => {
     setFormData({
       name: admin.name,
       email: admin.email,
-      username: admin.username,
       password: '',
       role: admin.role
     });
@@ -118,19 +112,25 @@ const ManajemenRole = () => {
     setIsSubmitting(true);
     
     try {
-      // In production, this would be an API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const response = await authenticatedFetch('/api/admin/admins', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+      });
       
-      const newAdmin = {
-        id: admins.length + 1,
-        ...formData,
-        created_at: new Date().toISOString().split('T')[0]
-      };
+      const data = await response.json();
       
-      setAdmins(prev => [...prev, newAdmin]);
-      setShowAddModal(false);
-      showPopup('Admin berhasil ditambahkan', 'success');
+      if (data.success) {
+        await fetchAdmins();
+        setShowAddModal(false);
+        showPopup('Admin berhasil ditambahkan', 'success');
+      } else {
+        showPopup(data.message || 'Gagal menambahkan admin', 'error');
+      }
     } catch (error) {
+      console.error('Error adding admin:', error);
       showPopup('Gagal menambahkan admin', 'error');
     } finally {
       setIsSubmitting(false);
@@ -142,17 +142,25 @@ const ManajemenRole = () => {
     setIsSubmitting(true);
     
     try {
-      // In production, this would be an API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const response = await authenticatedFetch(`/api/admin/admins/${selectedAdmin.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+      });
       
-      setAdmins(prev => prev.map(admin => 
-        admin.id === selectedAdmin.id 
-          ? { ...admin, ...formData }
-          : admin
-      ));
-      setShowEditModal(false);
-      showPopup('Admin berhasil diperbarui', 'success');
+      const data = await response.json();
+      
+      if (data.success) {
+        await fetchAdmins();
+        setShowEditModal(false);
+        showPopup('Admin berhasil diperbarui', 'success');
+      } else {
+        showPopup(data.message || 'Gagal memperbarui admin', 'error');
+      }
     } catch (error) {
+      console.error('Error updating admin:', error);
       showPopup('Gagal memperbarui admin', 'error');
     } finally {
       setIsSubmitting(false);
@@ -163,13 +171,21 @@ const ManajemenRole = () => {
     setIsSubmitting(true);
     
     try {
-      // In production, this would be an API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const response = await authenticatedFetch(`/api/admin/admins/${selectedAdmin.id}`, {
+        method: 'DELETE'
+      });
       
-      setAdmins(prev => prev.filter(admin => admin.id !== selectedAdmin.id));
-      setShowDeleteModal(false);
-      showPopup('Admin berhasil dihapus', 'success');
+      const data = await response.json();
+      
+      if (data.success) {
+        await fetchAdmins();
+        setShowDeleteModal(false);
+        showPopup('Admin berhasil dihapus', 'success');
+      } else {
+        showPopup(data.message || 'Gagal menghapus admin', 'error');
+      }
     } catch (error) {
+      console.error('Error deleting admin:', error);
       showPopup('Gagal menghapus admin', 'error');
     } finally {
       setIsSubmitting(false);
@@ -228,7 +244,7 @@ const ManajemenRole = () => {
                 columns={[
                   { key: 'name', label: 'Nama' },
                   { key: 'email', label: 'Email' },
-                  { key: 'username', label: 'Username' },
+
                   { key: 'role', label: 'Role' },
                   { key: 'created_at', label: 'Tanggal Dibuat' },
                   { key: 'action', label: 'Aksi' }
@@ -250,7 +266,6 @@ const ManajemenRole = () => {
                       </div>
                     </div>
                     <div className="table-cell" data-label="Email">{admin.email}</div>
-                    <div className="table-cell" data-label="Username">{admin.username}</div>
                     <div className="table-cell" data-label="Role">{getRoleBadge(admin.role)}</div>
                     <div className="table-cell" data-label="Tanggal Dibuat">{admin.created_at}</div>
                     <div className={`table-cell ${styles.actionCell}`} data-label="Aksi">
@@ -301,7 +316,7 @@ const ManajemenRole = () => {
               />
             </Form.Group>
             
-            <Form.Row columns={2}>
+            <Form.Group>
               <Input
                 label="Email"
                 type="email"
@@ -310,15 +325,7 @@ const ManajemenRole = () => {
                 onChange={(e) => handleInputChange('email', e.target.value)}
                 required
               />
-              <Input
-                label="Username"
-                type="text"
-                placeholder="Masukkan username"
-                value={formData.username}
-                onChange={(e) => handleInputChange('username', e.target.value)}
-                required
-              />
-            </Form.Row>
+            </Form.Group>
             
             <Form.Row columns={2}>
               <Input
@@ -370,7 +377,7 @@ const ManajemenRole = () => {
               />
             </Form.Group>
             
-            <Form.Row columns={2}>
+            <Form.Group>
               <Input
                 label="Email"
                 type="email"
@@ -379,15 +386,7 @@ const ManajemenRole = () => {
                 onChange={(e) => handleInputChange('email', e.target.value)}
                 required
               />
-              <Input
-                label="Username"
-                type="text"
-                placeholder="Masukkan username"
-                value={formData.username}
-                onChange={(e) => handleInputChange('username', e.target.value)}
-                required
-              />
-            </Form.Row>
+            </Form.Group>
             
             <Form.Row columns={2}>
               <Input
