@@ -1,8 +1,8 @@
 import { Navigate } from 'react-router-dom';
 
 const ProtectedAdminRoute = ({ children }) => {
-  // Check if admin is authenticated
-  const adminToken = localStorage.getItem('admin_token');
+  // Check if admin is authenticated (using correct admin token key)
+  const adminToken = localStorage.getItem('admin_access_token');
   const adminUser = localStorage.getItem('admin_user');
 
   if (!adminToken || !adminUser) {

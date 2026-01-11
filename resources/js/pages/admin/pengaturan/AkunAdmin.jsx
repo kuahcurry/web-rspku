@@ -5,6 +5,7 @@ import Button from '../../../components/button/Button';
 import Input from '../../../components/input/Input';
 import Form from '../../../components/form/Form';
 import Popup from '../../../components/popup/Popup';
+import { authenticatedFetch } from '../../../utils/auth';
 import { 
   MdPerson,
   MdEmail,
@@ -24,14 +25,12 @@ const AkunAdmin = () => {
   const [adminData, setAdminData] = useState({
     name: '',
     email: '',
-    username: '',
     role: ''
   });
 
   const [formData, setFormData] = useState({
     name: '',
-    email: '',
-    username: ''
+    email: ''
   });
 
   const [passwordData, setPasswordData] = useState({
@@ -47,36 +46,17 @@ const AkunAdmin = () => {
   const fetchAdminProfile = async () => {
     try {
       setLoading(true);
-      // In production, this would be an API call
-      // Get admin user from localStorage for now
-      const storedAdmin = localStorage.getItem('admin_user');
-      if (storedAdmin) {
-        const admin = JSON.parse(storedAdmin);
-        setAdminData({
-          name: admin.name || 'Administrator',
-          email: admin.email || 'admin@pku.com',
-          username: admin.username || 'admin',
-          role: admin.role || 'admin'
-        });
+      const response = await authenticatedFetch('/api/admin/profile');
+      const data = await response.json();
+      
+      if (data.success) {
+        setAdminData(data.data);
         setFormData({
-          name: admin.name || 'Administrator',
-          email: admin.email || 'admin@pku.com',
-          username: admin.username || 'admin'
+          name: data.data.name,
+          email: data.data.email
         });
       } else {
-        // Mock data if no admin in localStorage
-        const mockAdmin = {
-          name: 'Super Admin',
-          email: 'superadmin@pku.com',
-          username: 'superadmin',
-          role: 'super_admin'
-        };
-        setAdminData(mockAdmin);
-        setFormData({
-          name: mockAdmin.name,
-          email: mockAdmin.email,
-          username: mockAdmin.username
-        });
+        showPopup(data.message || 'Gagal memuat profil', 'error');
       }
     } catch (error) {
       console.error('Error fetching admin profile:', error);
@@ -103,8 +83,7 @@ const AkunAdmin = () => {
       // Cancel editing - restore original data
       setFormData({
         name: adminData.name,
-        email: adminData.email,
-        username: adminData.username
+        email: adminData.email
       });
     }
     setIsEditing(!isEditing);
@@ -115,22 +94,29 @@ const AkunAdmin = () => {
     setIsSubmitting(true);
     
     try {
-      // In production, this would be an API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const response = await authenticatedFetch('/api/admin/profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+      });
       
-      // Update local state
-      setAdminData(prev => ({ ...prev, ...formData }));
+      const data = await response.json();
       
-      // Update localStorage
-      const storedAdmin = localStorage.getItem('admin_user');
-      if (storedAdmin) {
-        const admin = JSON.parse(storedAdmin);
-        localStorage.setItem('admin_user', JSON.stringify({ ...admin, ...formData }));
+      if (data.success) {
+        setAdminData(data.data);
+        
+        // Update localStorage
+        localStorage.setItem('admin_user', JSON.stringify(data.data));
+        
+        setIsEditing(false);
+        showPopup('Profil berhasil diperbarui', 'success');
+      } else {
+        showPopup(data.message || 'Gagal memperbarui profil', 'error');
       }
-      
-      setIsEditing(false);
-      showPopup('Profil berhasil diperbarui', 'success');
     } catch (error) {
+      console.error('Error updating profile:', error);
       showPopup('Gagal memperbarui profil', 'error');
     } finally {
       setIsSubmitting(false);
@@ -153,17 +139,29 @@ const AkunAdmin = () => {
     setIsSubmitting(true);
     
     try {
-      // In production, this would be an API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      setPasswordData({
-        current_password: '',
-        new_password: '',
-        confirm_password: ''
+      const response = await authenticatedFetch('/api/admin/profile/change-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(passwordData)
       });
-      setIsChangingPassword(false);
-      showPopup('Password berhasil diubah', 'success');
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        setPasswordData({
+          current_password: '',
+          new_password: '',
+          confirm_password: ''
+        });
+        setIsChangingPassword(false);
+        showPopup('Password berhasil diubah', 'success');
+      } else {
+        showPopup(data.message || 'Gagal mengubah password', 'error');
+      }
     } catch (error) {
+      console.error('Error changing password:', error);
       showPopup('Gagal mengubah password', 'error');
     } finally {
       setIsSubmitting(false);
@@ -239,17 +237,6 @@ const AkunAdmin = () => {
                   />
                 </Form.Group>
                 
-                <Form.Group>
-                  <Input
-                    label="Username"
-                    type="text"
-                    placeholder="Masukkan username"
-                    value={formData.username}
-                    onChange={(e) => handleInputChange('username', e.target.value)}
-                    required
-                  />
-                </Form.Group>
-                
                 <Form.Actions>
                   <Button variant="danger" onClick={handleEditToggle}>
                     Batal
@@ -268,10 +255,6 @@ const AkunAdmin = () => {
                 <div className={styles.profileItem}>
                   <span className={styles.profileLabel}>Email</span>
                   <span className={styles.profileValue}>{adminData.email}</span>
-                </div>
-                <div className={styles.profileItem}>
-                  <span className={styles.profileLabel}>Username</span>
-                  <span className={styles.profileValue}>{adminData.username}</span>
                 </div>
                 <div className={styles.profileItem}>
                   <span className={styles.profileLabel}>Role</span>

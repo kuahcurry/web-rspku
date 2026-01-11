@@ -9,6 +9,9 @@ use App\Http\Controllers\Api\DokumenLegalitasController;
 use App\Http\Controllers\Api\RiwayatPendidikanController;
 use App\Http\Controllers\Api\PasswordResetController;
 use App\Http\Controllers\Api\Admin\DashboardController;
+use App\Http\Controllers\Api\Admin\UserManagementController;
+use App\Http\Controllers\Api\Admin\EtikDisiplinController;
+use App\Http\Controllers\Api\Admin\AdminManagementController;
 use App\Http\Controllers\PdfCompressionController;
 
 // Public routes
@@ -105,7 +108,30 @@ Route::middleware('auth:api')->group(function () {
 
 // Admin Dashboard routes (admin role required)
 Route::middleware(['auth:admin', 'admin'])->prefix('admin')->group(function () {
+    // Dashboard
     Route::get('/dashboard/statistics', [DashboardController::class, 'getStatistics']);
     Route::get('/dashboard/expiring-documents', [DashboardController::class, 'getExpiringDocuments']);
     Route::get('/dashboard/activities', [DashboardController::class, 'getRecentActivities']);
+    
+    // User Management
+    Route::get('/pengguna', [UserManagementController::class, 'index']);
+    Route::get('/pengguna/{id}', [UserManagementController::class, 'show']);
+    
+    // Etik dan Disiplin Management
+    Route::get('/etik-disiplin', [EtikDisiplinController::class, 'index']);
+    Route::post('/etik-disiplin', [EtikDisiplinController::class, 'store']);
+    Route::delete('/etik-disiplin/{id}', [EtikDisiplinController::class, 'destroy']);
+    Route::post('/etik-disiplin/bulk-delete', [EtikDisiplinController::class, 'bulkDelete']);
+    Route::get('/users/approved', [EtikDisiplinController::class, 'getApprovedUsers']);
+    
+    // Admin Management (super admin only)
+    Route::get('/admins', [AdminManagementController::class, 'index']);
+    Route::post('/admins', [AdminManagementController::class, 'store']);
+    Route::put('/admins/{id}', [AdminManagementController::class, 'update']);
+    Route::delete('/admins/{id}', [AdminManagementController::class, 'destroy']);
+    
+    // Admin Profile Management (own account)
+    Route::get('/profile', [AdminManagementController::class, 'profile']);
+    Route::put('/profile', [AdminManagementController::class, 'updateProfile']);
+    Route::post('/profile/change-password', [AdminManagementController::class, 'changePassword']);
 });

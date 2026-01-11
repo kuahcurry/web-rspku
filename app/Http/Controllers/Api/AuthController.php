@@ -166,8 +166,8 @@ class AuthController extends Controller
         RateLimiter::clear($throttleKey);
 
         try {
-            // Generate JWT token
-            $token = JWTAuth::fromUser($admin);
+            // Generate JWT token using admin guard
+            $token = auth('admin')->login($admin);
 
             return response()->json([
                 'success' => true,
