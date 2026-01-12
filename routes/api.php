@@ -16,8 +16,8 @@ use App\Http\Controllers\PdfCompressionController;
 
 // Public routes
 Route::post('/register', [RegisterController::class, 'register'])->middleware('throttle:5,1');
-Route::post('/login', [AuthController::class, 'login']); // Custom rate limiting inside controller
-Route::post('/admin/login', [AuthController::class, 'adminLogin']); // Admin login endpoint
+Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
+Route::post('/admin/login', [AuthController::class, 'adminLogin'])->middleware('throttle:5,1');
 Route::post('/verify-email', [RegisterController::class, 'verifyEmail'])->middleware('throttle:10,1');
 Route::post('/resend-verification-code', [RegisterController::class, 'resendVerificationCode'])->middleware('throttle:3,10');
 
@@ -107,7 +107,7 @@ Route::middleware('auth:api')->group(function () {
 });
 
 // Admin Dashboard routes (admin role required)
-Route::middleware(['auth:admin', 'admin'])->prefix('admin')->group(function () {
+Route::middleware(['auth:admin', 'admin', 'throttle:60,1'])->prefix('admin')->group(function () {
     // Dashboard
     Route::get('/dashboard/statistics', [DashboardController::class, 'getStatistics']);
     Route::get('/dashboard/expiring-documents', [DashboardController::class, 'getExpiringDocuments']);
@@ -125,10 +125,12 @@ Route::middleware(['auth:admin', 'admin'])->prefix('admin')->group(function () {
     Route::get('/users/approved', [EtikDisiplinController::class, 'getApprovedUsers']);
     
     // Admin Management (super admin only)
-    Route::get('/admins', [AdminManagementController::class, 'index']);
-    Route::post('/admins', [AdminManagementController::class, 'store']);
-    Route::put('/admins/{id}', [AdminManagementController::class, 'update']);
-    Route::delete('/admins/{id}', [AdminManagementController::class, 'destroy']);
+    Route::middleware('super_admin')->group(function () {
+        Route::get('/admins', [AdminManagementController::class, 'index']);
+        Route::post('/admins', [AdminManagementController::class, 'store']);
+        Route::put('/admins/{id}', [AdminManagementController::class, 'update']);
+        Route::delete('/admins/{id}', [AdminManagementController::class, 'destroy']);
+    });
     
     // Admin Profile Management (own account)
     Route::get('/profile', [AdminManagementController::class, 'profile']);

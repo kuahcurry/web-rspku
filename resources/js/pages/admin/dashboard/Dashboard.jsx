@@ -199,7 +199,7 @@ const Dashboard = () => {
                 <div className={styles.statInfo}>
                   <span className={styles.statLabel}>Kasus Etik & Disiplin</span>
                   <h2 className={styles.statValue}>{loading ? '-' : stats.etikDisiplinCases}</h2>
-                  <span className={styles.statAction} onClick={() => navigate('/admin/etik-disiplin')}>
+                  <span className={styles.statAction} onClick={() => navigate('/etik-disiplin')}>
                     Lihat daftar
                   </span>
                 </div>

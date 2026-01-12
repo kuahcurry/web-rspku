@@ -59,7 +59,7 @@ class AuthController extends Controller
             
             return response()->json([
                 'success' => false,
-                'message' => 'NIK atau password salah'
+                'message' => 'Kredensial yang Anda masukkan salah'
             ], 401);
         }
 
@@ -158,7 +158,7 @@ class AuthController extends Controller
             
             return response()->json([
                 'success' => false,
-                'message' => 'Email atau password salah'
+                'message' => 'Kredensial yang Anda masukkan salah'
             ], 401);
         }
 

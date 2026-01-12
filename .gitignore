@@ -22,5 +22,11 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+/.md
+build-komite.zip
+database-export.sql
+.env.local
+modules.zip
+.env.production.hostinger
 PERFORMANCE_OPTIMIZATION.md
 EMAIL_VERIFICATION_GUIDE.md

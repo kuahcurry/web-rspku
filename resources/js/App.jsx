@@ -37,12 +37,20 @@ import AdminFaq from "./pages/admin/faq/Faq";
 import UserFaq from "./pages/main/faq/Faq";
 
 function App() {
+  // Detect if we're on the admin subdomain
+  const isAdminSubdomain = window.location.hostname.startsWith('komite.');
+  
   return (
     <Router>
       <UserProvider>
         <Routes>
-        <Route path="/" element={<LoginUser />} />
-        <Route path="/login" element={<LoginUser />} />
+        {/* Root and login routes - different for admin subdomain */}
+        <Route path="/" element={isAdminSubdomain ? <LoginAdmin /> : <LoginUser />} />
+        <Route path="/login" element={isAdminSubdomain ? <LoginAdmin /> : <LoginUser />} />
+        
+        {/* User-only routes (main domain) */}
+        {!isAdminSubdomain && (
+          <>
         <Route path="/register" element={<Register />} />
         <Route path="/verifikasi-email" element={<VerifyEmail />} />
         <Route path="/lupa-password" element={<ForgotPassword />} />
@@ -158,11 +166,14 @@ function App() {
             </ProtectedRoute>
           }
         />
+          </>
+        )}
 
-        {/* Admin Routes */}
-        <Route path="/admin/login" element={<LoginAdmin />} />
+        {/* Admin Routes (komite subdomain) */}
+        {isAdminSubdomain && (
+          <>
         <Route 
-          path="/admin/dashboard" 
+          path="/dashboard" 
           element={
             <ProtectedAdminRoute>
               <Dashboard />
@@ -170,7 +181,7 @@ function App() {
           } 
         />
         <Route 
-          path="/admin/pengguna" 
+          path="/pengguna" 
           element={
             <ProtectedAdminRoute>
               <ManajemenPengguna />
@@ -178,7 +189,7 @@ function App() {
           } 
         />
         <Route 
-          path="/admin/pengguna/:userId" 
+          path="/pengguna/:userId" 
           element={
             <ProtectedAdminRoute>
               <DetailPengguna />
@@ -186,7 +197,7 @@ function App() {
           } 
         />
         <Route 
-          path="/admin/etik-disiplin" 
+          path="/etik-disiplin" 
           element={
             <ProtectedAdminRoute>
               <AdminEtikDisiplin />
@@ -194,7 +205,7 @@ function App() {
           } 
         />
         <Route 
-          path="/admin/alat/kompresi-pdf" 
+          path="/alat/kompresi-pdf" 
           element={
             <ProtectedAdminRoute>
               <AdminKompresiPdf />
@@ -202,7 +213,7 @@ function App() {
           } 
         />
         <Route 
-          path="/admin/alat/gambar-ke-pdf" 
+          path="/alat/gambar-ke-pdf" 
           element={
             <ProtectedAdminRoute>
               <AdminGambarKePdf />
@@ -210,7 +221,7 @@ function App() {
           } 
         />
         <Route 
-          path="/admin/pengaturan/role" 
+          path="/pengaturan/role" 
           element={
             <ProtectedAdminRoute>
               <ManajemenRole />
@@ -218,7 +229,7 @@ function App() {
           } 
         />
         <Route 
-          path="/admin/pengaturan/akun" 
+          path="/pengaturan/akun" 
           element={
             <ProtectedAdminRoute>
               <AkunAdmin />
@@ -226,7 +237,7 @@ function App() {
           } 
         />
         <Route 
-          path="/admin/pengaturan" 
+          path="/pengaturan" 
           element={
             <ProtectedAdminRoute>
               <AkunAdmin />
@@ -234,13 +245,15 @@ function App() {
           } 
         />
         <Route 
-          path="/admin/faq" 
+          path="/faq" 
           element={
             <ProtectedAdminRoute>
               <AdminFaq />
             </ProtectedAdminRoute>
           } 
         />
+          </>
+        )}
       </Routes>
       </UserProvider>
     </Router>

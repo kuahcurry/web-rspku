@@ -124,7 +124,7 @@ const ManajemenPengguna = () => {
   };
 
   const handleViewUser = (userId) => {
-    navigate(`/admin/pengguna/${userId}`);
+    navigate(`/pengguna/${userId}`);
   };
 
   const handlePageChange = (page) => {

@@ -589,7 +589,7 @@ const DetailPengguna = () => {
       <div className={styles.container}>
         {/* Breadcrumb */}
         <div className={styles.breadcrumb}>
-          <Link to="/admin/pengguna">Manajemen Pengguna</Link>
+          <Link to="/pengguna">Manajemen Pengguna</Link>
           <span className={styles.breadcrumbDivider}>/</span>
           <span className={styles.breadcrumbCurrent}>{user?.name}</span>
         </div>
