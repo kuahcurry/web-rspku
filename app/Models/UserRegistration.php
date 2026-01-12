@@ -33,10 +33,24 @@ class UserRegistration extends Authenticatable implements JWTSubject
         'unit_kerja',
         'tanggal_mulai_kerja',
         'password',
+        'foto_profil',
+        'email_verification_code',
+        'email_verification_code_expires_at',
+        'email_verified_at',
+        'last_login_at',
+        'role',
     ];
 
     protected $hidden = [
         'password',
+    ];
+
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'last_login_at' => 'datetime',
+        'email_verification_code_expires_at' => 'datetime',
+        'tanggal_lahir' => 'date',
+        'tanggal_mulai_kerja' => 'date',
     ];
 
     /**
