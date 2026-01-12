@@ -151,6 +151,7 @@ function LoginUser() {
               <Button 
                 type="submit" 
                 variant="success" 
+                className={styles['login-button']}
                 size="large" 
                 fullWidth
                 disabled={isSubmitting}

@@ -6,6 +6,7 @@ import Button from '../../../components/button/Button';
 import Modal from '../../../components/modal/Modal';
 import Form from '../../../components/form/Form';
 import Input from '../../../components/input/Input';
+import Banner from '../../../components/banner/Banner';
 import { MdCloudUpload, MdDownload, MdUpload, MdVisibility, MdSave } from 'react-icons/md';
 import { authenticatedFetch, isAuthenticated } from '../../../utils/auth';
 import { formatDateToIndonesian } from '../../../utils/dateFormatter';
@@ -47,6 +48,7 @@ const DokumenLegalitas = () => {
   const [selectedDoc, setSelectedDoc] = useState(null);
   const [pdfUrl, setPdfUrl] = useState(null);
   const [uploadFile, setUploadFile] = useState(null);
+  const [banner, setBanner] = useState({ message: '', variant: '' });
   const [uploadData, setUploadData] = useState({
     jenis_dokumen: '',
     nomor_sk: '',
@@ -75,7 +77,7 @@ const DokumenLegalitas = () => {
         setDocuments(data.data);
       }
     } catch (error) {
-      console.error('Error fetching documents:', error);
+      setBanner({ message: 'Gagal memuat dokumen', variant: 'error' });
     } finally {
       setLoading(false);
     }
@@ -107,11 +109,10 @@ const DokumenLegalitas = () => {
         const url = URL.createObjectURL(blob);
         setPdfUrl(url);
       } else {
-        alert('Gagal memuat dokumen');
+        setBanner({ message: 'Gagal memuat dokumen', variant: 'error' });
       }
     } catch (error) {
-      console.error('Error loading PDF:', error);
-      alert('Terjadi kesalahan saat memuat dokumen');
+      setBanner({ message: 'Terjadi kesalahan saat memuat dokumen', variant: 'error' });
     } finally {
       setLoadingPdf(false);
     }
@@ -143,11 +144,11 @@ const DokumenLegalitas = () => {
       if (file.size <= 5 * 1024 * 1024) { // 5MB limit
         setUploadFile(file);
       } else {
-        alert('File terlalu besar. Maksimal 5MB');
+        setBanner({ message: 'File terlalu besar. Maksimal 5MB', variant: 'warning' });
         if (eventRef?.target) eventRef.target.value = '';
       }
     } else {
-      alert('Hanya file PDF yang diperbolehkan');
+      setBanner({ message: 'Hanya file PDF yang diperbolehkan', variant: 'warning' });
       if (eventRef?.target) eventRef.target.value = '';
     }
   };
@@ -160,7 +161,7 @@ const DokumenLegalitas = () => {
     e.preventDefault();
     
     if (!uploadFile || !uploadData.jenis_dokumen) {
-      alert('Mohon lengkapi semua field yang diperlukan');
+      setBanner({ message: 'Mohon lengkapi semua field yang diperlukan', variant: 'warning' });
       return;
     }
 
@@ -183,15 +184,13 @@ const DokumenLegalitas = () => {
       const data = await response.json();
 
       if (response.ok && data.success) {
-        alert('Dokumen berhasil diupload!');
+        setBanner({ message: 'Dokumen berhasil diupload!', variant: 'success' });
         setShowUploadModal(false);
-        fetchDocuments(); // Refresh the list
       } else {
-        alert(data.message || 'Gagal mengupload dokumen');
+        setBanner({ message: data.message || 'Gagal mengupload dokumen', variant: 'error' });
       }
     } catch (error) {
-      console.error('Error uploading document:', error);
-      alert('Terjadi kesalahan saat mengupload dokumen');
+      setBanner({ message: 'Terjadi kesalahan saat mengupload dokumen', variant: 'error' });
     } finally {
       setIsSubmitting(false);
     }
@@ -226,11 +225,10 @@ const DokumenLegalitas = () => {
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
       } else {
-        alert('Gagal mendownload dokumen');
+        setBanner({ message: 'Gagal mendownload dokumen', variant: 'error' });
       }
     } catch (error) {
-      console.error('Error downloading PDF:', error);
-      alert('Terjadi kesalahan saat mendownload dokumen');
+      setBanner({ message: 'Terjadi kesalahan saat mendownload dokumen', variant: 'error' });
     }
   };
 
@@ -248,6 +246,7 @@ const DokumenLegalitas = () => {
 
   return (
     <MainLayout>
+        <Banner message={banner.message} variant={banner.variant} autoRefresh={banner.variant === 'success'} />
         <div className={styles['dokumen-header']}>
           <h1 className={styles['dokumen-title']}>Dokumen Legalitas</h1>
           <p className={styles['dokumen-subtitle']}>
@@ -351,7 +350,7 @@ const DokumenLegalitas = () => {
               disabled={!!uploadData.jenis_dokumen}
             />
             <Input
-              label="Nomor SK/Surat"
+              label="Nomor Surat/Dokumen"
               type="text"
               name="nomor_sk"
               value={uploadData.nomor_sk}

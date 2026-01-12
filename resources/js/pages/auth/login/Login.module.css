@@ -116,7 +116,6 @@
 
 .login-container .forgot-password {
   text-align: right;
-  margin-bottom: 0.75rem;
   margin-top: 0.70rem;
 }
 
@@ -133,13 +132,16 @@
   text-decoration: underline;
 }
 
+.login-container .login-button {
+  margin-top: 0.75rem;
+}
+
 .auth-links {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 0.35rem;
   margin-top: 0.75rem;
-  margin-bottom: 1.4rem;
   color: color-mix(in srgb, var(--text-inverse) 75%, transparent);
   font-weight: 500;
 }
@@ -176,7 +178,7 @@
   color: var(--pure-white);
   font-size: 0.75rem;
   line-height: 1.5;
-  margin-top: 0.6rem;
+  margin-top: 1rem;
   padding-top: 0.2rem;
   border-top: 1px solid color-mix(in srgb, var(--pure-white) 14%, transparent);
 }

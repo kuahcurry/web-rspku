@@ -89,7 +89,7 @@ const ProfileSaya = () => {
         setProfilePicture(data.data.foto_profil_url);
       }
     } catch (error) {
-      console.error('[ProfilSaya] Error fetching profile picture:', error);
+      // Silent fail
     }
   };
 
@@ -112,7 +112,7 @@ const ProfileSaya = () => {
         village: villageName || ''
       });
     } catch (error) {
-      console.error('Error fetching region names:', error);
+      // Silent fail
     }
   };
 
@@ -164,10 +164,7 @@ const ProfileSaya = () => {
                     <img 
                       src={profilePicture} 
                       alt="Foto Profil" 
-                      onError={(e) => {
-                        console.error('[ProfilSaya] Image failed to load:', profilePicture, 'Error:', e);
-                        setAvatarError(true);
-                      }} 
+                      onError={() => setAvatarError(true)} 
                     />
                   ) : (
                     <div className={styles['avatar-initials']}>
