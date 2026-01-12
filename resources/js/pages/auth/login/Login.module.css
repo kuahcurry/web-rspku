@@ -4,7 +4,7 @@
   justify-content: center;
   min-height: 100vh;
   padding: 2rem 1rem;
-  background: url('../../assets/loginBackground.png');
+  background: url('../../../assets/loginBackground.png');
   background-size: cover;
   background-position: center; 
 }
@@ -74,17 +74,35 @@
 .login-container .login-header {
   position: relative;
   text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.login-container .header-logo {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  margin-bottom: 0.75rem;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15));
 }
 
 .login-container .login-header h1 {
   color: var(--text-inverse);
   font-size: 3.3rem;
   font-weight: 700;
-  margin: 0 0 0.5rem 0;
+  margin: 0 0 0.25rem 0;
   text-align: center;
   text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
   letter-spacing: 0.02em;
   position: relative;
+}
+
+.login-container .login-header h2 {
+  color: var(--text-inverse);
+  font-size: 1.35rem;
+  font-weight: 500;
+  margin-bottom: 30px;
+  text-align: center;
+  opacity: 0.95;
 }
 
 .login-container :global(.input-label){
@@ -98,7 +116,6 @@
 
 .login-container .forgot-password {
   text-align: right;
-  margin-bottom: 0.75rem;
   margin-top: 0.70rem;
 }
 
@@ -115,29 +132,45 @@
   text-decoration: underline;
 }
 
-.login-container .register-link {
-  text-align: center;
-  margin-top: 0.7rem;
-  margin-bottom: 1.5rem;
+.login-container .login-button {
+  margin-top: 0.75rem;
 }
 
-.login-container .register-link a {
-  color: var(--pure-white);
-  text-decoration: none;
+.auth-links {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.75rem;
+  color: color-mix(in srgb, var(--text-inverse) 75%, transparent);
   font-weight: 500;
-  font-size: 0.9rem;
-  transition: color 0.3s ease;
 }
 
-.login-container .register-link a:hover {
-  color: rgba(255, 255, 255, 0.8);
+.auth-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.auth-link {
+  color: var(--secondary-light);
+  font-weight: 700;
+  text-decoration: none;
+  transition: opacity 0.2s ease, text-decoration 0.2s ease, transform 0.2s ease;
+}
+
+.auth-link:hover {
+  opacity: 0.9;
   text-decoration: underline;
+  transform: translateY(-1px);
 }
 
 .login-error {
-  color: var(--error-red);
-  margin: 0.5rem 0 0.75rem 0;
-  font-weight: 600;
+  margin: 0.5rem 0 0 0;
+  color: var(--error-light);
+  font-weight: 500;
+  font-size: 0.95rem;
+  line-height: 1.5;
 }
 
 .login-container .login-footer {
@@ -145,13 +178,118 @@
   color: var(--pure-white);
   font-size: 0.75rem;
   line-height: 1.5;
-  margin-top: 0.6rem;
+  margin-top: 1rem;
   padding-top: 0.2rem;
   border-top: 1px solid color-mix(in srgb, var(--pure-white) 14%, transparent);
 }
 
 .login-container .login-footer p {
   margin: 0.2rem 0;
+}
+
+/* Admin Badge */
+.admin-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: var(--secondary-main);
+  color: var(--text-primary);
+  padding: 0.35rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Demo Info */
+.demo-info {
+  background: rgba(255, 255, 255, 0.15);
+  color: var(--text-inverse);
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  text-align: center;
+  margin-bottom: 0.75rem;
+  border: 1px dashed rgba(255, 255, 255, 0.3);
+}
+
+/* Login Tabs */
+.login-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.35rem;
+  border-radius: 12px;
+}
+
+.tab-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.tab-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-inverse);
+}
+
+.tab-btn.tab-active {
+  background: var(--pure-white);
+  color: var(--primary-main);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.tab-btn.tab-active:hover {
+  background: var(--pure-white);
+  color: var(--primary-main);
+}
+
+/* Admin Link */
+.admin-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  color: var(--secondary-light);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-decoration: none;
+  margin-top: 0.5rem;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.admin-link:hover {
+  opacity: 0.85;
+  transform: translateY(-1px);
+}
+
+/* Switch Login */
+.switch-login {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--text-inverse);
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: opacity 0.2s ease;
+}
+
+.switch-login:hover {
+  opacity: 0.85;
+  text-decoration: underline;
 }
 
 /* Right Panel */
@@ -165,24 +303,11 @@
   z-index: 1;
 }
 
-.login-container .logo-container {
-  position: absolute;
-  top: 2rem;
-  right: 2rem;
-  z-index: 2;
-}
-
-.login-container .logo {
-  width: 80px;
-  height: 80px;
-  object-fit: contain;
-  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
-}
 
 .login-container .building-image {
   width: 100%;
   height: 100%;
-  background: url('../../assets/loginBuilding.png');
+  background: url('../../../assets/loginBuilding.png');
   background-size: cover;
   background-position: center;
   filter: drop-shadow(0 12px 28px rgba(0, 0, 0, 0.12));
@@ -209,7 +334,16 @@
   }
   .login-container .login-header h1 {
     font-size: 3.2rem;
-    margin: 0 0 2.5rem 0;
+    margin: 0 0 0.25rem 0;
+  }
+
+  .login-container .login-header h2 {
+    font-size: 1.25rem;
+  }
+
+  .login-container .header-logo {
+    width: 70px;
+    height: 70px;
   }
 
   .login-container .login-content {
@@ -230,7 +364,16 @@
 
   .login-container .login-header h1 {
     font-size: 3rem;
-    margin: 0 0 2.5rem 0;
+    margin: 0 0 0.25rem 0;
+  }
+
+  .login-container .login-header h2 {
+    font-size: 1.15rem;
+  }
+
+  .login-container .header-logo {
+    width: 65px;
+    height: 65px;
   }
 }
 
@@ -246,6 +389,15 @@
 
   .login-container .login-header h1 {
     font-size: 2rem;
-    margin: 0 0 2rem 0;
+    margin: 0 0 0.2rem 0;
+  }
+
+  .login-container .login-header h2 {
+    font-size: 1rem;
+  }
+
+  .login-container .header-logo {
+    width: 55px;
+    height: 55px;
   }
 }

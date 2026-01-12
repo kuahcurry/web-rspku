@@ -9,3 +9,4 @@ Route::get('/login', function () {
 Route::get('/{any}', function () {
     return view('app');
 })->where('any', '.*');
+Route::get('/test', function() { return 'Hello World'; });

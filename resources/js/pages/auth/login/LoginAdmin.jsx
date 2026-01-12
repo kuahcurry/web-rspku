@@ -58,7 +58,7 @@ function LoginAdmin() {
         const expiresAt = Date.now() + (data.data.expires_in * 1000);
         localStorage.setItem('admin_token_expires_at', expiresAt.toString());
         
-        navigate('/admin/dashboard');
+        navigate('/dashboard');
       } else {
         setErrors({ 
           general: data.message || 'Email atau password salah' 

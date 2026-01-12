@@ -4,7 +4,7 @@
   justify-content: center;
   min-height: 100vh;
   padding: 2rem 1rem;
-  background: url('../../assets/loginBackground.png');
+  background: url('../../../assets/loginBackground.png');
   background-size: cover;
   background-position: center;
   /* Hide page scrollbar while preserving scroll */
@@ -32,6 +32,7 @@
   --btn-width: 100%;
   --btn-tablet-width: 100%;
   --btn-mobile-width: 100%;
+  margin-top: 1rem;
 }
 
 /* Left Panel */
@@ -45,24 +46,10 @@
   z-index: 0;
 }
 
-.register-container .logo-container {
-  position: absolute;
-  top: 2rem;
-  left: 2rem;
-  z-index: 2;
-}
-
-.register-container .logo {
-  width: 80px;
-  height: 80px;
-  object-fit: contain;
-  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
-}
-
 .register-container .building-image {
   width: 100%;
   height: 100%;
-  background: url('../../assets/loginBuilding.png');
+  background: url('../../../assets/loginBuilding.png');
   background-size: cover;
   background-position: center;
   filter: drop-shadow(0 12px 28px rgba(0, 0, 0, 0.12));
@@ -123,17 +110,51 @@
   min-height: 0;
 }
 
+/* Header Logo - above Daftar Akun */
+.header-logo-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 0.75rem;
+}
+
+.header-logo {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+}
+
 .register-form {
   flex: 1;
   min-height: 0;
-  max-height: 300px;
+  max-height: 400px;
   overflow-y: auto;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+  padding-right: 8px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.5) rgba(255, 255, 255, 0.1);
 }
 
 .register-form::-webkit-scrollbar {
-  display: none;
+  width: 8px;
+}
+
+.register-form::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  margin: 4px 0;
+}
+
+.register-form::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  transition: background 0.2s ease;
+}
+
+.register-form::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.7);
+  background-clip: padding-box;
 }
 
 .register-header {
@@ -145,8 +166,9 @@
   color: var(--text-inverse);
   font-size: 4rem;
   font-weight: 700;
-  margin: 0 0 1rem 0;
+  margin: 0 0 0rem 0;
   text-align: center;
+  margin-bottom: 30px;
   text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
   letter-spacing: 0.02em;
   position: relative;
@@ -167,23 +189,43 @@
 .register-container form{
   margin-bottom: 1rem;
 }
-.login-link {
-  text-align: center;
-  margin-top: 0.5rem;
-  margin-bottom: 0.5rem;
-}
 
-.login-link a {
-  color: var(--pure-white);
-  text-decoration: none;
+.register-content :global(.error-message) {
+  display: block;
+  margin-top: 0.35rem;
+  color: var(--error-light);
   font-weight: 500;
-  font-size: 0.9rem;
-  transition: color 0.3s ease;
+  line-height: 1.4;
 }
 
-.login-link a:hover {
-  color: rgba(255, 255, 255, 0.8);
+.auth-links {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.75rem;
+  margin-bottom: 1.4rem;
+  color: color-mix(in srgb, var(--text-inverse) 75%, transparent);
+  font-weight: 500;
+}
+
+.auth-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.auth-link {
+  color: var(--secondary-light);
+  font-weight: 700;
+  text-decoration: none;
+  transition: opacity 0.2s ease, text-decoration 0.2s ease, transform 0.2s ease;
+}
+
+.auth-link:hover {
+  opacity: 0.9;
   text-decoration: underline;
+  transform: translateY(-1px);
 }
 
 .register-footer {
@@ -198,6 +240,18 @@
 
 .register-footer p {
   margin: 0.2rem 0;
+}
+
+.register-error {
+  margin: 0.5rem 0 0.75rem 0;
+  padding: 0.75rem 0.9rem;
+  border-radius: var(--radius-md);
+  background: var(--error-light);
+  color: var(--error-dark);
+  border: 1px solid color-mix(in srgb, var(--error-red) 35%, transparent);
+  font-weight: 600;
+  font-size: 0.95rem;
+  line-height: 1.5;
 }
 
 /* Responsive Design */

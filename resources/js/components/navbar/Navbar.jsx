@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { 
   MdMenu,
   MdClose,
@@ -9,16 +9,43 @@ import {
   MdSettings
 } from 'react-icons/md';
 import { useUser } from '../../contexts/UserContext';
+import { authenticatedFetch, logout } from '../../utils/auth';
 import './Navbar.css';
 
 const Navbar = ({ onMenuToggle, sidebarOpen }) => {
+  const navigate = useNavigate();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [avatarError, setAvatarError] = useState(false);
-  const { user } = useUser();
-  const avatarUrl = 'https://i.pravatar.cc/100?img=3';
+  const [profilePicture, setProfilePicture] = useState(null);
+  const { user, clearUser } = useUser();
 
   const userName = user?.name || 'Nama Lengkap';
   const userRole = user?.jabatan || 'Belum ada jabatan!';
+
+  const handleLogout = async () => {
+    setDropdownOpen(false);
+    await logout();
+    clearUser();
+    navigate('/login');
+  };
+
+  useEffect(() => {
+    const fetchProfilePicture = async () => {
+      try {
+        const response = await authenticatedFetch('/api/profile/foto-profil');
+        const data = await response.json();
+        if (data.success && data.data.foto_profil_url) {
+          setProfilePicture(data.data.foto_profil_url);
+        }
+      } catch (error) {
+        console.error('[Navbar] Error fetching profile picture:', error);
+      }
+    };
+
+    if (user) {
+      fetchProfilePicture();
+    }
+  }, [user]);
 
   return (
     <nav className="top-navbar">
@@ -31,14 +58,19 @@ const Navbar = ({ onMenuToggle, sidebarOpen }) => {
         <div className="user-profile-wrapper">
           <div className="user-profile" onClick={() => setDropdownOpen(!dropdownOpen)}>
             <div className="user-avatar">
-              {!avatarError ? (
+              {profilePicture && !avatarError ? (
                 <img
-                  src={avatarUrl}
+                  src={profilePicture}
                   alt="User avatar"
-                  onError={() => setAvatarError(true)}
+                  onError={(e) => {
+                    console.error('[Navbar] Image failed to load:', profilePicture, 'Error:', e);
+                    setAvatarError(true);
+                  }}
                 />
               ) : (
-                <span className="user-initials">NL</span>
+                <span className="user-initials">
+                  {userName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}
+                </span>
               )}
             </div>
             <div className="user-info">
@@ -58,10 +90,10 @@ const Navbar = ({ onMenuToggle, sidebarOpen }) => {
                 <span>Pengaturan</span>
               </Link>
               <div className="dropdown-divider"></div>
-              <Link to="/login" className="dropdown-item logout" onClick={() => setDropdownOpen(false)}>
+              <button className="dropdown-item logout" onClick={handleLogout}>
                 <MdLogout size={18} />
                 <span>Keluar</span>
-              </Link>
+              </button>
             </div>
           )}
         </div>

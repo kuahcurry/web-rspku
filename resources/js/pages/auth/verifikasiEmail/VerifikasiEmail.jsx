@@ -128,7 +128,6 @@ function VerifikasiEmail() {
 
       if (response.ok && data.success) {
         localStorage.removeItem('pending_verification_email');
-        alert('Email berhasil diverifikasi! Silakan login.');
         navigate('/login');
       } else {
         setError(data.message || 'Kode verifikasi tidak valid');
@@ -162,7 +161,6 @@ function VerifikasiEmail() {
       const data = await response.json();
 
       if (response.ok && data.success) {
-        alert('Kode verifikasi baru telah dikirim ke email Anda');
         setTimeLeft(15 * 60);
         setCanResend(false);
         setCode(['', '', '', '', '', '']);

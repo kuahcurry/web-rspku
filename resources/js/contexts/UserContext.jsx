@@ -10,8 +10,25 @@ export const UserProvider = ({ children }) => {
 
   const fetchUser = async () => {
     if (!isAuthenticated()) {
+      setUser(null);
       setLoading(false);
       return;
+    }
+
+    // Check if current user is admin - skip fetching from /api/me
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      try {
+        const userData = JSON.parse(storedUser);
+        if (userData.role === 'admin') {
+          // Admin users don't use /api/me endpoint
+          setUser(null);
+          setLoading(false);
+          return;
+        }
+      } catch (e) {
+        // Continue with normal fetch if parsing fails
+      }
     }
 
     try {
@@ -21,9 +38,11 @@ export const UserProvider = ({ children }) => {
       if (response.ok && data.success) {
         setUser(data.data);
       } else {
+        setUser(null);
         setError('Failed to fetch user data');
       }
     } catch (err) {
+      setUser(null);
       setError(err.message);
       console.error('Error fetching user data:', err);
     } finally {
@@ -31,9 +50,14 @@ export const UserProvider = ({ children }) => {
     }
   };
 
-  const refreshUser = () => {
+  const refreshUser = async () => {
     setLoading(true);
-    fetchUser();
+    await fetchUser();
+  };
+
+  const clearUser = () => {
+    setUser(null);
+    setError(null);
   };
 
   useEffect(() => {
@@ -41,7 +65,7 @@ export const UserProvider = ({ children }) => {
   }, []);
 
   return (
-    <UserContext.Provider value={{ user, loading, error, refreshUser }}>
+    <UserContext.Provider value={{ user, loading, error, refreshUser, clearUser }}>
       {children}
     </UserContext.Provider>
   );

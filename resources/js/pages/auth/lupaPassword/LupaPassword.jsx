@@ -204,7 +204,6 @@ function LupaSandi() {
       const data = await response.json();
 
       if (response.ok && data.success) {
-        alert('Password berhasil direset! Silakan login dengan password baru.');
         window.location.href = '/masuk';
       } else {
         if (data.errors) {

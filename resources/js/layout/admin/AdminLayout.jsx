@@ -31,16 +31,16 @@ const AdminLayout = ({ children }) => {
   const [adminUser, setAdminUser] = useState(null);
 
   const menuItems = [
-    { path: '/admin/dashboard', icon: MdDashboard, label: 'Dashboard' },
-    { path: '/admin/pengguna', icon: MdPeople, label: 'Manajemen Pengguna' },
-    { path: '/admin/etik-disiplin', icon: MdGavel, label: 'Etik & Disiplin' },
+    { path: '/dashboard', icon: MdDashboard, label: 'Dashboard' },
+    { path: '/pengguna', icon: MdPeople, label: 'Manajemen Pengguna' },
+    { path: '/etik-disiplin', icon: MdGavel, label: 'Etik & Disiplin' },
     { 
       key: 'alat',
       icon: MdPictureAsPdf, 
       label: 'Alat PDF',
       subMenus: [
-        { path: '/admin/alat/gambar-ke-pdf', label: 'Gambar ke PDF' },
-        { path: '/admin/alat/kompresi-pdf', label: 'Kompresi PDF' }
+        { path: '/alat/gambar-ke-pdf', label: 'Gambar ke PDF' },
+        { path: '/alat/kompresi-pdf', label: 'Kompresi PDF' }
       ]
     },
     { 
@@ -48,11 +48,11 @@ const AdminLayout = ({ children }) => {
       icon: MdSettings, 
       label: 'Pengaturan',
       subMenus: [
-        { path: '/admin/pengaturan/role', label: 'Manajemen Role' },
-        { path: '/admin/pengaturan/akun', label: 'Akun Admin' }
+        { path: '/pengaturan/role', label: 'Manajemen Role' },
+        { path: '/pengaturan/akun', label: 'Akun Admin' }
       ]
     },
-    { path: '/admin/faq', icon: MdHelp, label: 'Bantuan & FAQ' }
+    { path: '/faq', icon: MdHelp, label: 'Bantuan & FAQ' }
   ];
 
   useEffect(() => {
@@ -62,7 +62,7 @@ const AdminLayout = ({ children }) => {
     
     if (!token || !userStr) {
       console.log('AdminLayout: No admin token or user found, redirecting to login');
-      navigate('/admin/login');
+      navigate('/login');
       return;
     }
     
@@ -75,7 +75,7 @@ const AdminLayout = ({ children }) => {
       if (userData.role !== 'admin') {
         console.log('AdminLayout: User role is not admin:', userData.role);
         alert('Akses ditolak: Anda tidak memiliki hak akses admin.');
-        navigate('/admin/login');
+        navigate('/login');
         return;
       }
       
@@ -83,7 +83,7 @@ const AdminLayout = ({ children }) => {
       setAdminUser(userData);
     } catch (e) {
       console.error('AdminLayout: Error parsing admin user data:', e);
-      navigate('/admin/login');
+      navigate('/login');
     }
   }, [navigate]);
 
@@ -127,7 +127,7 @@ const AdminLayout = ({ children }) => {
 
   const handleLogout = () => {
     clearAdminAuth();
-    navigate('/admin/login');
+    navigate('/login');
   };
 
   return (
@@ -222,7 +222,7 @@ const AdminLayout = ({ children }) => {
               </button>
               {dropdownOpen && (
                 <div className="admin-user-dropdown">
-                  <Link to="/admin/pengaturan" className="admin-dropdown-item" onClick={() => setDropdownOpen(false)}>
+                  <Link to="/pengaturan" className="admin-dropdown-item" onClick={() => setDropdownOpen(false)}>
                     <MdSettings size={18} />
                     <span>Pengaturan Akun</span>
                   </Link>
