@@ -122,6 +122,7 @@ function LoginAdmin() {
                 type="submit" 
                 variant="success" 
                 size="large" 
+                className={styles['login-button']}
                 fullWidth
                 disabled={isSubmitting}
               >
