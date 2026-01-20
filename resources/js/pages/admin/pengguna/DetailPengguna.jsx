@@ -645,7 +645,7 @@ const DetailPengguna = () => {
             <div className={styles.documentMeta}>
               <div className={styles.documentMetaItem}>
                 <span className={styles.documentMetaLabel}>Nama Dokumen</span>
-                <span className={styles.documentMetaValue}>{docItem?.file || '-'}</span>
+                <span className={styles.documentMetaValue}>{docItem?.file_name || docItem?.file || '-'}</span>
               </div>
               {docItem?.status && (
                 <div className={styles.documentMetaItem}>

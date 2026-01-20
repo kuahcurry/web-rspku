@@ -363,14 +363,22 @@ const EtikDisiplin = () => {
 
     try {
       const response = await authenticatedFetch(`/api/etik-disiplin/${item.id}`);
-      if (response.ok) {
-        const blob = await response.blob();
-        const url = URL.createObjectURL(blob);
-        setPdfUrl(url);
-      } else {
-        setBanner({ message: 'Gagal memuat dokumen PDF', variant: 'error' });
+      
+      if (!response.ok) {
+        try {
+          const errorData = await response.json();
+          setBanner({ message: errorData.message || 'Gagal memuat dokumen PDF', variant: 'error' });
+        } catch {
+          setBanner({ message: 'Gagal memuat dokumen PDF', variant: 'error' });
+        }
+        return;
       }
+
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      setPdfUrl(url);
     } catch (error) {
+      console.error('Error loading document:', error);
       setBanner({ message: 'Terjadi kesalahan saat memuat dokumen', variant: 'error' });
     } finally {
       setLoadingPdf(false);
@@ -674,7 +682,6 @@ const EtikDisiplin = () => {
             style={{ display: 'none' }}
             onChange={handleEtikFile}
             accept=".pdf"
-            required
           />
           <Form.Actions align="right" className={styles.modalActions}>
             <Button variant="secondary" type="button" onClick={() => setShowEtikModal(false)} disabled={isSubmitting}>
@@ -781,7 +788,6 @@ const EtikDisiplin = () => {
             style={{ display: 'none' }}
             onChange={handleDisiplinFile}
             accept=".pdf"
-            required
           />
           <Form.Actions align="right" className={styles.modalActions}>
             <Button variant="secondary" type="button" onClick={() => setShowDisiplinModal(false)} disabled={isSubmitting}>

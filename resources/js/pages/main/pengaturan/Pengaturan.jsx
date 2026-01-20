@@ -130,9 +130,13 @@ const Pengaturan = () => {
       const response = await authenticatedFetch('/api/profile/foto-profil');
       const data = await response.json();
       if (data.success && data.data.foto_profil_url) {
-        setProfilePicture(data.data.foto_profil_url);
+        // Add cache buster to prevent caching issues
+        const imageUrl = data.data.foto_profil_url + '?t=' + Date.now();
+        setProfilePicture(imageUrl);
+        console.log('Fetched profile picture:', imageUrl);
       }
     } catch (error) {
+      console.error('Error fetching profile picture:', error);
     }
   };
 
@@ -219,10 +223,19 @@ const Pengaturan = () => {
       const data = await response.json();
 
       if (response.ok && data.success) {
-        setProfilePicture(data.data.foto_profil_url);
+        // Add cache buster to force image reload
+        const imageUrl = data.data.foto_profil_url + '?t=' + Date.now();
+        setProfilePicture(imageUrl);
         setAvatarError(false);
         await refreshUser();
         setBanner({ message: 'Foto profil berhasil diupload', variant: 'success' });
+        
+        // Log for debugging
+        console.log('Profile picture uploaded:', {
+          url: data.data.foto_profil_url,
+          path: data.data.foto_profil,
+          cachedUrl: imageUrl
+        });
       } else {
         throw new Error(data.message || 'Gagal upload foto profil');
       }
@@ -436,7 +449,11 @@ const Pengaturan = () => {
                       <img 
                         src={profilePicture} 
                         alt="Foto Profil" 
-                        onError={() => setAvatarError(true)} 
+                        onError={(e) => {
+                          console.error('Image failed to load:', profilePicture);
+                          setAvatarError(true);
+                        }}
+                        onLoad={() => console.log('Image loaded successfully:', profilePicture)}
                       />
                     ) : (
                       <div className={styles['avatar-initials']}>

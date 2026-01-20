@@ -4,11 +4,13 @@ import Form from '../../../components/form/Form';
 import Input from '../../../components/input/Input';
 import Button from '../../../components/button/Button';
 import { useIndonesiaRegion } from '../../../hooks/useIndonesiaRegion';
+import { useRecaptchaToken } from '../../../hooks/useRecaptcha';
 import styles from './Register.module.css';
 import logoImg from '../../../assets/logo.webp';
 
 function Daftar() {
   const navigate = useNavigate();
+  const getRecaptchaToken = useRecaptchaToken();
   const {
     provinces,
     regencies,
@@ -135,6 +137,15 @@ function Daftar() {
     setIsSubmitting(true);
 
     try {
+      // Get reCAPTCHA token
+      const recaptchaToken = await getRecaptchaToken('register');
+      
+      if (!recaptchaToken) {
+        setErrors({ general: 'reCAPTCHA verification failed. Please try again.' });
+        setIsSubmitting(false);
+        return;
+      }
+
       // Submit IDs directly (no conversion needed)
       const response = await fetch('/api/register', {
         method: 'POST',
@@ -142,7 +153,10 @@ function Daftar() {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          recaptcha_token: recaptchaToken
+        }),
       });
 
       const data = await response.json();

@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Cache;
 use App\Models\ActivityLog;
+use App\Rules\StrongPassword;
 
 class ProfileController extends Controller
 {
@@ -42,7 +43,7 @@ class ProfileController extends Controller
                 'tanggal_mulai_kerja' => 'sometimes|date',
                 // Account fields
                 'email' => 'sometimes|email|max:255|unique:users_registration,email,' . $user->id,
-                'password' => 'sometimes|string|min:8',
+                'password' => ['sometimes', 'string', new StrongPassword()],
             ]);
 
             if ($validator->fails()) {
@@ -154,9 +155,8 @@ class ProfileController extends Controller
                 'foto_profil' => $filePath
             ]);
 
-            $profileUrl = Storage::disk('public')->url($filePath);
-            // Normalize URL to remove double slashes
-            $profileUrl = preg_replace('#(?<!:)//+#', '/', $profileUrl);
+            // Generate full URL for profile picture
+            $profileUrl = env('APP_URL') . '/storage/' . $filePath;
             
             \Log::info('Profile picture uploaded', [
                 'user_id' => $user->id,
@@ -210,9 +210,7 @@ class ProfileController extends Controller
             }
 
             $fileExists = Storage::disk('public')->exists($user->foto_profil);
-            $profileUrl = Storage::disk('public')->url($user->foto_profil);
-            // Normalize URL to remove double slashes
-            $profileUrl = preg_replace('#(?<!:)//+#', '/', $profileUrl);
+            $profileUrl = env('APP_URL') . '/storage/' . $user->foto_profil;
             
             \Log::info('Profile picture details', [
                 'file_path' => $user->foto_profil,

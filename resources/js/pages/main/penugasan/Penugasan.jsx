@@ -96,16 +96,23 @@ const Penugasan = () => {
     setPdfUrl(null);
 
     try {
-      const response = await authenticatedFetch(`/api/penugasan/view/${item.id}`);
+      const response = await authenticatedFetch(`/api/penugasan/${item.id}`);
       
-      if (response.ok) {
-        const blob = await response.blob();
-        const url = URL.createObjectURL(blob);
-        setPdfUrl(url);
-      } else {
-        setBanner({ message: 'Gagal memuat dokumen', variant: 'error' });
+      if (!response.ok) {
+        try {
+          const errorData = await response.json();
+          setBanner({ message: errorData.message || 'Gagal memuat dokumen', variant: 'error' });
+        } catch {
+          setBanner({ message: 'Gagal memuat dokumen', variant: 'error' });
+        }
+        return;
       }
+
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      setPdfUrl(url);
     } catch (error) {
+      console.error('Error loading document:', error);
       setBanner({ message: 'Terjadi kesalahan saat memuat dokumen', variant: 'error' });
     } finally {
       setLoadingPdf(false);

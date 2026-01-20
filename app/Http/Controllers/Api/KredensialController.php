@@ -244,6 +244,47 @@ class KredensialController extends Controller
     }
 
     /**
+     * Download a document (force download instead of inline view)
+     */
+    public function download($id)
+    {
+        try {
+            $user = auth()->user();
+            $record = Kredensial::where('user_id', $user->id)
+                ->where('id', $id)
+                ->firstOrFail();
+
+            if (!$record->file_path) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No file attached to this record'
+                ], 404);
+            }
+
+            $filePath = storage_path('app/public/' . $record->file_path);
+
+            if (!file_exists($filePath)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'File not found'
+                ], 404);
+            }
+
+            $fileName = basename($filePath);
+            
+            return response()->download($filePath, $fileName, [
+                'Content-Type' => 'application/pdf',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to download document',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Delete a single kredensial record
      */
     public function delete($id)

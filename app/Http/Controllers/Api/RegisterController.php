@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\PendingRegistration;
 use App\Models\UserRegistration;
 use App\Models\ActivityLog;
+use App\Rules\StrongPassword;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Mail;
@@ -28,7 +29,7 @@ class RegisterController extends Controller
             'district' => 'required|string',
             'village' => 'required|string',
             'address' => 'required|string',
-            'password' => 'required|string|min:8',
+            'password' => ['required', 'string', new StrongPassword()],
             'confirmPassword' => 'required|same:password',
         ]);
 

@@ -249,6 +249,40 @@ class EtikDisiplinController extends Controller
     }
 
     /**
+     * Download a document (force download instead of inline view)
+     */
+    public function download($id)
+    {
+        try {
+            $user = auth()->user();
+            $record = EtikDisiplin::where('user_id', $user->id)
+                ->where('id', $id)
+                ->firstOrFail();
+
+            $filePath = storage_path('app/public/' . $record->file_path);
+
+            if (!file_exists($filePath)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'File not found'
+                ], 404);
+            }
+
+            $fileName = basename($filePath);
+            
+            return response()->download($filePath, $fileName, [
+                'Content-Type' => 'application/pdf',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to download document',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Delete a single record
      */
     public function delete($id)

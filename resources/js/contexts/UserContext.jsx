@@ -16,6 +16,16 @@ export const UserProvider = ({ children }) => {
     }
 
     // Check if current user is admin - skip fetching from /api/me
+    // Admin users are stored under 'admin_user' key
+    const adminUser = localStorage.getItem('admin_user');
+    if (adminUser) {
+      // Admin users don't use /api/me endpoint
+      setUser(null);
+      setLoading(false);
+      return;
+    }
+    
+    // Also check regular user storage
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
       try {

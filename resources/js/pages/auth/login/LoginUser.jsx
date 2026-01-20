@@ -4,12 +4,14 @@ import Input from '../../../components/input/Input';
 import Button from '../../../components/button/Button';
 import Form from '../../../components/form/Form';
 import { useUser } from '../../../contexts/UserContext';
+import { useRecaptchaToken } from '../../../hooks/useRecaptcha';
 import styles from './Login.module.css';
 import logoImg from '../../../assets/logo.webp';
 
 function LoginUser() {
   const navigate = useNavigate();
   const { refreshUser } = useUser();
+  const getRecaptchaToken = useRecaptchaToken();
   
   const [formData, setFormData] = useState({
     nik: '',
@@ -51,6 +53,15 @@ function LoginUser() {
     setIsSubmitting(true);
 
     try {
+      // Get reCAPTCHA token
+      const recaptchaToken = await getRecaptchaToken('login');
+      
+      if (!recaptchaToken) {
+        setErrors({ general: 'reCAPTCHA verification failed. Please try again.' });
+        setIsSubmitting(false);
+        return;
+      }
+
       const response = await fetch('/api/login', {
         method: 'POST',
         headers: {
@@ -58,7 +69,10 @@ function LoginUser() {
           'Accept': 'application/json',
           'X-Requested-With': 'XMLHttpRequest'
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          recaptcha_token: recaptchaToken
+        }),
       });
 
       const data = await response.json();

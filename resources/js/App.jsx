@@ -1,51 +1,146 @@
-// Auth Pages (Shared)
-import LoginUser from "./pages/auth/login/LoginUser";
-import LoginAdmin from "./pages/auth/login/LoginAdmin";
-import Register from "./pages/auth/register/Register";
-import VerifyEmail from "./pages/auth/verifikasiEmail/VerifikasiEmail";
-import ForgotPassword from "./pages/auth/lupaPassword/LupaPassword";
-
-// Main User Pages
-import Beranda from "./pages/main/beranda/Beranda";
-import Profil from "./pages/main/profil/ProfilSaya";
-import Pengaturan from "./pages/main/pengaturan/Pengaturan";
-import Dokumen from "./pages/main/dokumen/DokumenLegalitas";
-import Kredensial from "./pages/main/kredensial/Kredensial";
-import StatusKewenangan from "./pages/main/kewenangan/StatusKewenangan";
-import Pendidikan from "./pages/main/pendidikan/RiwayatPendidikan"; 
-import PrestasiPenghargaan from "./pages/main/prestasi/PrestasiPenghargaan";
-import Penugasan from "./pages/main/penugasan/Penugasan";
-import EtikDisiplin from "./pages/main/etikDisiplin/EtikDisiplin";
-import GambarKePdf from "./pages/main/alat/GambarKePdf";
-import KompresiPdf from "./pages/main/alat/KompresiPdf";
-import CetakPdf from "./pages/main/alat/CetakPdf";
+import { lazy, Suspense } from 'react';
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { UserProvider } from "./contexts/UserContext";
+import { RecaptchaProvider } from "./contexts/RecaptchaContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
-import { UserProvider } from "./contexts/UserContext";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import LoadingFallback from "./components/LoadingFallback";
 
-// Admin Pages
-import Dashboard from "./pages/admin/dashboard/Dashboard";
-import ManajemenPengguna from "./pages/admin/pengguna/ManajemenPengguna";
-import DetailPengguna from "./pages/admin/pengguna/DetailPengguna";
-import AdminEtikDisiplin from "./pages/admin/etikDisiplin/EtikDisiplin";
-import AdminKompresiPdf from "./pages/admin/alat/KompresiPdf";
-import AdminGambarKePdf from "./pages/admin/alat/GambarKePdf";
-import ManajemenRole from "./pages/admin/pengaturan/ManajemenRole";
-import AkunAdmin from "./pages/admin/pengaturan/AkunAdmin";
-import AdminFaq from "./pages/admin/faq/Faq";
-import UserFaq from "./pages/main/faq/Faq";
+// Auth Pages (Lazy Loaded)
+const LoginUser = lazy(() => import("./pages/auth/login/LoginUser"));
+const LoginAdmin = lazy(() => import("./pages/auth/login/LoginAdmin"));
+const Register = lazy(() => import("./pages/auth/register/Register"));
+const VerifyEmail = lazy(() => import("./pages/auth/verifikasiEmail/VerifikasiEmail"));
+const ForgotPassword = lazy(() => import("./pages/auth/lupaPassword/LupaPassword"));
+
+// Main User Pages (Lazy Loaded)
+const Beranda = lazy(() => import("./pages/main/beranda/Beranda"));
+const Profil = lazy(() => import("./pages/main/profil/ProfilSaya"));
+const Pengaturan = lazy(() => import("./pages/main/pengaturan/Pengaturan"));
+const Dokumen = lazy(() => import("./pages/main/dokumen/DokumenLegalitas"));
+const Kredensial = lazy(() => import("./pages/main/kredensial/Kredensial"));
+const StatusKewenangan = lazy(() => import("./pages/main/kewenangan/StatusKewenangan"));
+const Pendidikan = lazy(() => import("./pages/main/pendidikan/RiwayatPendidikan")); 
+const PrestasiPenghargaan = lazy(() => import("./pages/main/prestasi/PrestasiPenghargaan"));
+const Penugasan = lazy(() => import("./pages/main/penugasan/Penugasan"));
+const EtikDisiplin = lazy(() => import("./pages/main/etikDisiplin/EtikDisiplin"));
+const GambarKePdf = lazy(() => import("./pages/main/alat/GambarKePdf"));
+const KompresiPdf = lazy(() => import("./pages/main/alat/KompresiPdf"));
+const CetakPdf = lazy(() => import("./pages/main/alat/CetakPdf"));
+const UserFaq = lazy(() => import("./pages/main/faq/Faq"));
+
+// Admin Pages (Lazy Loaded)
+const Dashboard = lazy(() => import("./pages/admin/dashboard/Dashboard"));
+const ManajemenPengguna = lazy(() => import("./pages/admin/pengguna/ManajemenPengguna"));
+const DetailPengguna = lazy(() => import("./pages/admin/pengguna/DetailPengguna"));
+const AdminEtikDisiplin = lazy(() => import("./pages/admin/etikDisiplin/EtikDisiplin"));
+const AdminKompresiPdf = lazy(() => import("./pages/admin/alat/KompresiPdf"));
+const AdminGambarKePdf = lazy(() => import("./pages/admin/alat/GambarKePdf"));
+const ManajemenRole = lazy(() => import("./pages/admin/pengaturan/ManajemenRole"));
+const AkunAdmin = lazy(() => import("./pages/admin/pengaturan/AkunAdmin"));
+const AdminFaq = lazy(() => import("./pages/admin/faq/Faq"));
 
 function App() {
+  // Detect if we're on admin subdomain
+  const hostname = window.location.hostname;
+  const isAdminSubdomain = hostname.startsWith('komite.');
+  
   return (
     <Router>
-      <UserProvider>
-        <Routes>
-        <Route path="/" element={<LoginUser />} />
-        <Route path="/login" element={<LoginUser />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/verifikasi-email" element={<VerifyEmail />} />
-        <Route path="/lupa-password" element={<ForgotPassword />} />
+      <RecaptchaProvider>
+        <UserProvider>
+          <Suspense fallback={<LoadingFallback />}>
+          <Routes>
+            {/* Auth Routes */}
+            <Route path="/" element={isAdminSubdomain ? <LoginAdmin /> : <LoginUser />} />
+            <Route path="/login" element={isAdminSubdomain ? <LoginAdmin /> : <LoginUser />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/verifikasi-email" element={<VerifyEmail />} />
+            <Route path="/lupa-password" element={<ForgotPassword />} />
+
+        {/* Admin Routes - Must come BEFORE user routes to avoid conflicts */}
+        <Route 
+          path="/dashboard" 
+          element={
+            <ProtectedAdminRoute>
+              <Dashboard />
+            </ProtectedAdminRoute>
+          } 
+        />
+        <Route 
+          path="/admin/pengguna" 
+          element={
+            <ProtectedAdminRoute>
+              <ManajemenPengguna />
+            </ProtectedAdminRoute>
+          } 
+        />
+        <Route 
+          path="/admin/pengguna/:userId" 
+          element={
+            <ProtectedAdminRoute>
+              <DetailPengguna />
+            </ProtectedAdminRoute>
+          } 
+        />
+        <Route 
+          path="/admin/etik-disiplin" 
+          element={
+            <ProtectedAdminRoute>
+              <AdminEtikDisiplin />
+            </ProtectedAdminRoute>
+          } 
+        />
+        <Route 
+          path="/admin/alat/kompresi-pdf" 
+          element={
+            <ProtectedAdminRoute>
+              <AdminKompresiPdf />
+            </ProtectedAdminRoute>
+          } 
+        />
+        <Route 
+          path="/admin/alat/gambar-ke-pdf" 
+          element={
+            <ProtectedAdminRoute>
+              <AdminGambarKePdf />
+            </ProtectedAdminRoute>
+          } 
+        />
+        <Route 
+          path="/admin/faq" 
+          element={
+            <ProtectedAdminRoute>
+              <AdminFaq />
+            </ProtectedAdminRoute>
+          } 
+        />
+        <Route 
+          path="/pengaturan/role" 
+          element={
+            <ProtectedAdminRoute>
+              <ManajemenRole />
+            </ProtectedAdminRoute>
+          } 
+        />
+        <Route 
+          path="/pengaturan/akun" 
+          element={
+            <ProtectedAdminRoute>
+              <AkunAdmin />
+            </ProtectedAdminRoute>
+          } 
+        />
+        <Route 
+          path="/admin/pengaturan" 
+          element={
+            <ProtectedAdminRoute>
+              <AkunAdmin />
+            </ProtectedAdminRoute>
+          } 
+        />
+
+        {/* User Routes */}
         <Route 
           path="/beranda" 
           element={
@@ -151,98 +246,17 @@ function App() {
           }
         />
         <Route
-          path="/faq"
+            path="/faq"
           element={
             <ProtectedRoute>
               <UserFaq />
             </ProtectedRoute>
           }
         />
-
-        {/* Admin Routes */}
-        <Route path="/login" element={<LoginAdmin />} />
-        <Route 
-          path="/dashboard" 
-          element={
-            <ProtectedAdminRoute>
-              <Dashboard />
-            </ProtectedAdminRoute>
-          } 
-        />
-        <Route 
-          path="/pengguna" 
-          element={
-            <ProtectedAdminRoute>
-              <ManajemenPengguna />
-            </ProtectedAdminRoute>
-          } 
-        />
-        <Route 
-          path="/pengguna/:userId" 
-          element={
-            <ProtectedAdminRoute>
-              <DetailPengguna />
-            </ProtectedAdminRoute>
-          } 
-        />
-        <Route 
-          path="/etik-disiplin" 
-          element={
-            <ProtectedAdminRoute>
-              <AdminEtikDisiplin />
-            </ProtectedAdminRoute>
-          } 
-        />
-        <Route 
-          path="/alat/kompresi-pdf" 
-          element={
-            <ProtectedAdminRoute>
-              <AdminKompresiPdf />
-            </ProtectedAdminRoute>
-          } 
-        />
-        <Route 
-          path="/alat/gambar-ke-pdf" 
-          element={
-            <ProtectedAdminRoute>
-              <AdminGambarKePdf />
-            </ProtectedAdminRoute>
-          } 
-        />
-        <Route 
-          path="/pengaturan/role" 
-          element={
-            <ProtectedAdminRoute>
-              <ManajemenRole />
-            </ProtectedAdminRoute>
-          } 
-        />
-        <Route 
-          path="/pengaturan/akun" 
-          element={
-            <ProtectedAdminRoute>
-              <AkunAdmin />
-            </ProtectedAdminRoute>
-          } 
-        />
-        <Route 
-          path="/pengaturan" 
-          element={
-            <ProtectedAdminRoute>
-              <AkunAdmin />
-            </ProtectedAdminRoute>
-          } 
-        />
-        <Route 
-          path="/faq" 
-          element={
-            <ProtectedAdminRoute>
-              <AdminFaq />
-            </ProtectedAdminRoute>
-          } 
-        />
-      </Routes>
-      </UserProvider>
+          </Routes>
+        </Suspense>
+        </UserProvider>
+      </RecaptchaProvider>
     </Router>
   );
 }

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MainLayout from '../../../layout/main/MainLayout';
 import Card from '../../../components/card/Card';
+import SafeMarkdown from '../../../components/SafeMarkdown';
 import { 
   MdHelp,
   MdKeyboardArrowDown,
@@ -559,19 +560,7 @@ Jika ada pertanyaan tentang catatan Anda, hubungi bagian SDM atau Komite terkait
                   {expandedItems[faq.id] && (
                     <div className={styles.faqAnswer}>
                       <div className={styles.answerContent}>
-                        {faq.answer.split('\n').map((line, index) => (
-                          <p key={index}>
-                            {line.startsWith('**') && line.endsWith('**') ? (
-                              <strong>{line.replace(/\*\*/g, '')}</strong>
-                            ) : line.includes('**') ? (
-                              <span dangerouslySetInnerHTML={{
-                                __html: line.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                              }} />
-                            ) : (
-                              line
-                            )}
-                          </p>
-                        ))}
+                        <SafeMarkdown text={faq.answer} />
                       </div>
                     </div>
                   )}

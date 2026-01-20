@@ -312,19 +312,56 @@ const Kredensial = () => {
 
     try {
       const response = await authenticatedFetch(`/api/kredensial/${item.id}`);
-      if (response.ok) {
-        const blob = await response.blob();
-        const url = URL.createObjectURL(blob);
-        setPdfUrl(url);
-      } else {
-        setBanner({ message: 'Gagal memuat dokumen', variant: 'error' });
+      
+      if (!response.ok) {
+        try {
+          const errorData = await response.json();
+          setBanner({ message: errorData.message || 'Gagal memuat dokumen', variant: 'error' });
+        } catch {
+          setBanner({ message: 'Gagal memuat dokumen', variant: 'error' });
+        }
         setShowViewModal(false);
+        return;
       }
+
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      setPdfUrl(url);
     } catch (error) {
+      console.error('Error loading document:', error);
       setBanner({ message: 'Terjadi kesalahan saat memuat dokumen', variant: 'error' });
       setShowViewModal(false);
     } finally {
       setLoadingPdf(false);
+    }
+  };
+
+  const handleDownloadFile = async (item) => {
+    if (!item.fileName && !item.fileUrl) {
+      setBanner({ message: 'Sertifikat belum diupload.', variant: 'warning' });
+      return;
+    }
+
+    try {
+      const response = await authenticatedFetch(`/api/kredensial/${item.id}/download`);
+      
+      if (!response.ok) {
+        setBanner({ message: 'Gagal mengunduh dokumen', variant: 'error' });
+        return;
+      }
+
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${item.nama_kegiatan || 'kredensial'}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error downloading document:', error);
+      setBanner({ message: 'Terjadi kesalahan saat mengunduh dokumen', variant: 'error' });
     }
   };
 
@@ -501,7 +538,7 @@ const Kredensial = () => {
                 <div 
                   key={item.id} 
                   className={`table-row ${deleteMode ? styles.deleteSelectable : ''} ${isSelected ? styles.deleteSelected : ''}`}
-                  onClick={() => handleSelectForDelete(item)}
+                  onClick={deleteMode ? () => handleSelectForDelete(item) : undefined}
                 >
                   <div className="table-cell" data-label="Tanggal Mulai">{formatDateToIndonesian(item.tanggal_kegiatan)}</div>
                   <div className="table-cell" data-label="Berlaku Sampai">
@@ -763,7 +800,11 @@ const Kredensial = () => {
             {loadingPdf ? (
               <div className={styles.pdfEmpty}>Memuat dokumen...</div>
             ) : pdfUrl ? (
-              <iframe src={pdfUrl} className={styles.pdfFrame} title="PDF Viewer" />
+              <iframe 
+                src={pdfUrl} 
+                className={styles.pdfFrame} 
+                title="PDF Viewer"
+              />
             ) : (
               <div className={styles.pdfEmpty}>Dokumen belum tersedia.</div>
             )}
@@ -777,7 +818,7 @@ const Kredensial = () => {
               variant="primary"
               icon={<MdDownload />}
               iconPosition="left"
-              onClick={() => selectedItem && handleViewFile(selectedItem)}
+              onClick={() => selectedItem && handleDownloadFile(selectedItem)}
               disabled={!selectedItem || (!selectedItem.fileName && !selectedItem.fileUrl)}
             >
               Download

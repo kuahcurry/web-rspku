@@ -3,11 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import Input from '../../../components/input/Input';
 import Button from '../../../components/button/Button';
 import Form from '../../../components/form/Form';
+import { useRecaptchaToken } from '../../../hooks/useRecaptcha';
 import styles from './Login.module.css';
 import logoImg from '../../../assets/logo.webp';
 
 function LoginAdmin() {
   const navigate = useNavigate();
+  const getRecaptchaToken = useRecaptchaToken();
   
   const [formData, setFormData] = useState({
     email: '',
@@ -36,6 +38,15 @@ function LoginAdmin() {
     setIsSubmitting(true);
 
     try {
+      // Get reCAPTCHA token
+      const recaptchaToken = await getRecaptchaToken('admin_login');
+      
+      if (!recaptchaToken) {
+        setErrors({ general: 'reCAPTCHA verification failed. Please try again.' });
+        setIsSubmitting(false);
+        return;
+      }
+
       const response = await fetch('/api/admin/login', {
         method: 'POST',
         headers: {
@@ -44,6 +55,7 @@ function LoginAdmin() {
         body: JSON.stringify({
           email: formData.email,
           password: formData.password,
+          recaptcha_token: recaptchaToken
         }),
       });
 

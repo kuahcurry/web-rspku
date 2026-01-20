@@ -102,16 +102,24 @@ const DokumenLegalitas = () => {
 
     try {
       // Fetch PDF with authentication
-      const response = await authenticatedFetch(`/api/dokumen-legalitas/view/${doc.id}`);
+      const response = await authenticatedFetch(`/api/dokumen-legalitas/${doc.id}`);
       
-      if (response.ok) {
-        const blob = await response.blob();
-        const url = URL.createObjectURL(blob);
-        setPdfUrl(url);
-      } else {
-        setBanner({ message: 'Gagal memuat dokumen', variant: 'error' });
+      if (!response.ok) {
+        // Try to parse error message from JSON response
+        try {
+          const errorData = await response.json();
+          setBanner({ message: errorData.message || 'Gagal memuat dokumen', variant: 'error' });
+        } catch {
+          setBanner({ message: 'Gagal memuat dokumen', variant: 'error' });
+        }
+        return;
       }
+
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      setPdfUrl(url);
     } catch (error) {
+      console.error('Error loading document:', error);
       setBanner({ message: 'Terjadi kesalahan saat memuat dokumen', variant: 'error' });
     } finally {
       setLoadingPdf(false);
@@ -212,7 +220,7 @@ const DokumenLegalitas = () => {
   // Handle download
   const handleDownload = async (doc) => {
     try {
-      const response = await authenticatedFetch(`/api/dokumen-legalitas/view/${doc.id}`);
+      const response = await authenticatedFetch(`/api/dokumen-legalitas/${doc.id}/download`);
       
       if (response.ok) {
         const blob = await response.blob();

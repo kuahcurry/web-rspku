@@ -74,6 +74,7 @@ export const isAuthenticated = () => {
   if (adminToken && adminExpiresAt) {
     if (Date.now() > parseInt(adminExpiresAt)) {
       clearAdminAuth();
+      return false;
     } else {
       return true;
     }
@@ -90,6 +91,26 @@ export const isAuthenticated = () => {
   // Check if token is expired
   if (Date.now() > parseInt(expiresAt)) {
     clearAuth();
+    return false;
+  }
+  
+  return true;
+};
+
+/**
+ * Check if admin is authenticated
+ */
+export const isAdminAuthenticated = () => {
+  const adminToken = getAdminToken();
+  const adminExpiresAt = localStorage.getItem('admin_token_expires_at');
+  
+  if (!adminToken || !adminExpiresAt) {
+    return false;
+  }
+  
+  // Check if token is expired
+  if (Date.now() > parseInt(adminExpiresAt)) {
+    clearAdminAuth();
     return false;
   }
   
@@ -231,12 +252,8 @@ export const authenticatedFetch = async (url, options = {}) => {
         }
       }
       
-      // Redirect to appropriate login page
-      if (isAdmin) {
-        window.location.href = '/admin/login';
-      } else {
-        window.location.href = '/login';
-      }
+      // Redirect to login page
+      window.location.href = '/login';
     }
     
     return response;

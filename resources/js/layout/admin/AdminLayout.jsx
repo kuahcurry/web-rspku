@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { clearAdminAuth, getAdminToken } from '../../utils/auth';
+import { clearAdminAuth, getAdminToken, isAdminAuthenticated } from '../../utils/auth';
 import { 
   MdDashboard, 
   MdPeople, 
@@ -32,15 +32,15 @@ const AdminLayout = ({ children }) => {
 
   const menuItems = [
     { path: '/dashboard', icon: MdDashboard, label: 'Dashboard' },
-    { path: '/pengguna', icon: MdPeople, label: 'Manajemen Pengguna' },
-    { path: '/etik-disiplin', icon: MdGavel, label: 'Etik & Disiplin' },
+    { path: '/admin/pengguna', icon: MdPeople, label: 'Manajemen Pengguna' },
+    { path: '/admin/etik-disiplin', icon: MdGavel, label: 'Etik & Disiplin' },
     { 
       key: 'alat',
       icon: MdPictureAsPdf, 
       label: 'Alat PDF',
       subMenus: [
-        { path: '/alat/gambar-ke-pdf', label: 'Gambar ke PDF' },
-        { path: '/alat/kompresi-pdf', label: 'Kompresi PDF' }
+        { path: '/admin/alat/gambar-ke-pdf', label: 'Gambar ke PDF' },
+        { path: '/admin/alat/kompresi-pdf', label: 'Kompresi PDF' }
       ]
     },
     { 
@@ -52,37 +52,32 @@ const AdminLayout = ({ children }) => {
         { path: '/pengaturan/akun', label: 'Akun Admin' }
       ]
     },
-    { path: '/faq', icon: MdHelp, label: 'Bantuan & FAQ' }
+    { path: '/admin/faq', icon: MdHelp, label: 'Bantuan & FAQ' }
   ];
 
   useEffect(() => {
-    // Check authentication
-    const token = localStorage.getItem('admin_access_token');
-    const userStr = localStorage.getItem('admin_user');
-    
-    if (!token || !userStr) {
-      console.log('AdminLayout: No admin token or user found, redirecting to login');
+    // Check authentication using helper function
+    if (!isAdminAuthenticated()) {
       navigate('/login');
       return;
     }
     
     // Get admin user from localStorage
     try {
+      const userStr = localStorage.getItem('admin_user');
       const userData = JSON.parse(userStr);
-      console.log('AdminLayout: Admin user data from localStorage:', userData);
       
       // Check if user has admin role
       if (userData.role !== 'admin') {
-        console.log('AdminLayout: User role is not admin:', userData.role);
         alert('Akses ditolak: Anda tidak memiliki hak akses admin.');
+        clearAdminAuth();
         navigate('/login');
         return;
       }
       
-      console.log('AdminLayout: Admin authenticated successfully');
       setAdminUser(userData);
     } catch (e) {
-      console.error('AdminLayout: Error parsing admin user data:', e);
+      clearAdminAuth();
       navigate('/login');
     }
   }, [navigate]);
@@ -222,7 +217,7 @@ const AdminLayout = ({ children }) => {
               </button>
               {dropdownOpen && (
                 <div className="admin-user-dropdown">
-                  <Link to="/pengaturan" className="admin-dropdown-item" onClick={() => setDropdownOpen(false)}>
+                  <Link to="/admin/pengaturan" className="admin-dropdown-item" onClick={() => setDropdownOpen(false)}>
                     <MdSettings size={18} />
                     <span>Pengaturan Akun</span>
                   </Link>

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import AdminLayout from '../../../layout/admin/AdminLayout';
 import Card from '../../../components/card/Card';
+import SafeMarkdown from '../../../components/SafeMarkdown';
 import { 
   MdHelp,
   MdKeyboardArrowDown,
@@ -350,19 +351,7 @@ Gunakan filter tanggal untuk melihat aktivitas pada periode tertentu.`
                   {expandedItems[faq.id] && (
                     <div className={styles.faqAnswer}>
                       <div className={styles.answerContent}>
-                        {faq.answer.split('\n').map((line, index) => (
-                          <p key={index}>
-                            {line.startsWith('**') && line.endsWith('**') ? (
-                              <strong>{line.replace(/\*\*/g, '')}</strong>
-                            ) : line.includes('**') ? (
-                              <span dangerouslySetInnerHTML={{
-                                __html: line.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                              }} />
-                            ) : (
-                              line
-                            )}
-                          </p>
-                        ))}
+                        <SafeMarkdown text={faq.answer} />
                       </div>
                     </div>
                   )}

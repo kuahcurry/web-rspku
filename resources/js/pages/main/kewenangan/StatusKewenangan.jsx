@@ -88,17 +88,29 @@ const StatusKewenangan = () => {
     setShowViewModal(true);
 
     try {
-      const response = await authenticatedFetch(`/api/status-kewenangan/${item.id}/file`);
+      const response = await authenticatedFetch(`/api/status-kewenangan/${item.id}`);
       
       if (!response.ok) {
-        throw new Error('Failed to fetch PDF');
+        const errorText = await response.text();
+        setBanner({ message: 'Gagal memuat dokumen', variant: 'error' });
+        setShowViewModal(false);
+        return;
       }
 
       const blob = await response.blob();
+      
+      // Check if blob is too small (likely an error response)
+      if (blob.size < 5000) {
+        setBanner({ message: 'File tidak valid atau tidak ditemukan', variant: 'error' });
+        setShowViewModal(false);
+        return;
+      }
+      
       const url = URL.createObjectURL(blob);
       setPdfUrl(url);
     } catch (error) {
       setBanner({ message: 'Gagal memuat dokumen', variant: 'error' });
+      setShowViewModal(false);
     } finally {
       setLoadingPdf(false);
     }
@@ -442,7 +454,11 @@ const StatusKewenangan = () => {
             {loadingPdf ? (
               <div className={styles.pdfEmpty}>Memuat dokumen...</div>
             ) : pdfUrl ? (
-              <iframe src={pdfUrl} className={styles.pdfFrame} title="PDF Viewer" />
+              <iframe 
+                src={pdfUrl} 
+                className={styles.pdfFrame} 
+                title="PDF Viewer"
+              />
             ) : (
               <div className={styles.pdfEmpty}>Dokumen tidak tersedia.</div>
             )}

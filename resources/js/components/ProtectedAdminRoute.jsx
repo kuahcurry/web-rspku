@@ -1,12 +1,10 @@
 import { Navigate } from 'react-router-dom';
+import { isAdminAuthenticated } from '../utils/auth';
 
 const ProtectedAdminRoute = ({ children }) => {
-  // Check if admin is authenticated (using correct admin token key)
-  const adminToken = localStorage.getItem('admin_access_token');
-  const adminUser = localStorage.getItem('admin_user');
-
-  if (!adminToken || !adminUser) {
-    // Admin is not authenticated, redirect to admin login
+  // Check if admin is authenticated using helper function
+  if (!isAdminAuthenticated()) {
+    // Admin is not authenticated or token expired, redirect to admin login
     return <Navigate to="/login" replace />;
   }
 

@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use App\Models\UserRegistration;
 use App\Mail\PasswordResetMail;
+use App\Rules\StrongPassword;
 
 class PasswordResetController extends Controller
 {
@@ -134,7 +135,7 @@ class PasswordResetController extends Controller
         $validator = Validator::make($request->all(), [
             'email' => 'required|email',
             'code' => 'required|string|size:6',
-            'password' => 'required|string|min:8|confirmed'
+            'password' => ['required', 'string', 'confirmed', new StrongPassword()]
         ]);
 
         if ($validator->fails()) {

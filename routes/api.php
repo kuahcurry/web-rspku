@@ -15,9 +15,9 @@ use App\Http\Controllers\Api\Admin\AdminManagementController;
 use App\Http\Controllers\PdfCompressionController;
 
 // Public routes
-Route::post('/register', [RegisterController::class, 'register'])->middleware('throttle:5,1');
-Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
-Route::post('/admin/login', [AuthController::class, 'adminLogin'])->middleware('throttle:5,1');
+Route::post('/register', [RegisterController::class, 'register'])->middleware(['throttle:5,1', 'recaptcha']);
+Route::post('/login', [AuthController::class, 'login'])->middleware(['throttle:5,1', 'recaptcha']);
+Route::post('/admin/login', [AuthController::class, 'adminLogin'])->middleware(['throttle:5,1', 'recaptcha']);
 Route::post('/verify-email', [RegisterController::class, 'verifyEmail'])->middleware('throttle:10,1');
 Route::post('/resend-verification-code', [RegisterController::class, 'resendVerificationCode'])->middleware('throttle:3,10');
 
@@ -47,6 +47,7 @@ Route::middleware('auth:api')->group(function () {
         Route::get('/', [DokumenLegalitasController::class, 'index']);
         Route::post('/', [DokumenLegalitasController::class, 'upload']);
         Route::get('/{id}', [DokumenLegalitasController::class, 'view']);
+        Route::get('/{id}/download', [DokumenLegalitasController::class, 'download']);
         Route::delete('/{id}', [DokumenLegalitasController::class, 'delete']);
     });
     
@@ -64,6 +65,7 @@ Route::middleware('auth:api')->group(function () {
         Route::post('/', [\App\Http\Controllers\Api\PenugasanController::class, 'store']);
         Route::post('/delete-multiple', [\App\Http\Controllers\Api\PenugasanController::class, 'deleteMultiple']);
         Route::get('/{id}', [\App\Http\Controllers\Api\PenugasanController::class, 'view']);
+        Route::get('/{id}/download', [\App\Http\Controllers\Api\PenugasanController::class, 'download']);
         Route::delete('/{id}', [\App\Http\Controllers\Api\PenugasanController::class, 'delete']);
     });
     
@@ -72,6 +74,7 @@ Route::middleware('auth:api')->group(function () {
         Route::get('/', [\App\Http\Controllers\Api\EtikDisiplinController::class, 'index']);
         Route::post('/', [\App\Http\Controllers\Api\EtikDisiplinController::class, 'store']);
         Route::get('/{id}', [\App\Http\Controllers\Api\EtikDisiplinController::class, 'view']);
+        Route::get('/{id}/download', [\App\Http\Controllers\Api\EtikDisiplinController::class, 'download']);
         Route::put('/{id}', [\App\Http\Controllers\Api\EtikDisiplinController::class, 'update']);
         Route::delete('/{id}', [\App\Http\Controllers\Api\EtikDisiplinController::class, 'delete']);
     });
@@ -82,6 +85,7 @@ Route::middleware('auth:api')->group(function () {
         Route::post('/', [\App\Http\Controllers\Api\KredensialController::class, 'store']);
         Route::post('/delete-multiple', [\App\Http\Controllers\Api\KredensialController::class, 'deleteMultiple']);
         Route::get('/{id}', [\App\Http\Controllers\Api\KredensialController::class, 'view']);
+        Route::get('/{id}/download', [\App\Http\Controllers\Api\KredensialController::class, 'download']);
         Route::put('/{id}', [\App\Http\Controllers\Api\KredensialController::class, 'update']);
         Route::delete('/{id}', [\App\Http\Controllers\Api\KredensialController::class, 'delete']);
     });
