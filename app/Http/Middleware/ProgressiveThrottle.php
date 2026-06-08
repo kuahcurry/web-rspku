@@ -64,7 +64,8 @@ class ProgressiveThrottle
             $lockoutMinutes = $lockouts * 5; // 1st = 5m, 2nd = 10m, 3rd = 15m, etc.
             $expiryTime = time() + ($lockoutMinutes * 60);
             
-            Cache::put($expiryKey, $expiryTime, now()->addMinutes($lockoutMinutes));
+            Cache::put($expiryKey, $expiryTime, now()->addDay());
+            Cache::put($attemptsKey, 0, now()->addDay()); // Reset attempts to 0 for next round after block expires
             
             return response()->json([
                 'success' => false,
