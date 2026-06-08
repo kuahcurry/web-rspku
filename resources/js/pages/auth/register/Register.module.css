@@ -113,42 +113,59 @@
 .register-content {
   display: flex;
   flex-direction: column;
-  border-radius: 28px;
-  padding: 2.5rem 2.5rem 2rem 2.5rem;
+  background: linear-gradient(135deg, var(--primary-main) 0%, var(--primary-darker) 100%);
+  border-radius: 24px;
+  padding: 2.25rem 2.25rem 2rem 2.25rem;
   width: 100%;
   max-width: 580px;
   position: relative;
   z-index: 1;
   max-height: 88vh;
   min-height: 0;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
 }
 
 .register-form {
   flex: 1;
   min-height: 0;
-  max-height: 300px;
+  max-height: 480px;
   overflow-y: auto;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+  padding-right: 0.5rem;
 }
 
 .register-form::-webkit-scrollbar {
-  display: none;
+  display: block;
+  width: 6px;
+}
+
+.register-form::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+}
+
+.register-form::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 3px;
+}
+
+.register-form::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.4);
 }
 
 .register-header {
   position: relative;
   text-align: center;
+  margin-bottom: 1rem;
 }
 
 .register-header h1 {
   color: var(--text-inverse);
-  font-size: 4rem;
+  font-size: 2.25rem;
   font-weight: 700;
-  margin: 0 0 1rem 0;
+  margin: 0 0 0.5rem 0;
   text-align: center;
   text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
-  letter-spacing: 0.02em;
+  letter-spacing: 0.01em;
   position: relative;
 }
 
@@ -221,28 +238,29 @@
   }
 
   .register-header h1 {
-    font-size: 3.2rem;
-    margin: 0 0 2rem 0;
+    font-size: 2rem;
+    margin: 0 0 1rem 0;
   }
 
   .register-content {
-    padding: 3rem;
+    padding: 2.5rem 2rem;
     box-shadow: var(--shadow-lg);
-    background: var(--primary-main);
+    background: linear-gradient(135deg, var(--primary-main) 0%, var(--primary-darker) 100%);
     max-width: 500px;
   }
 }
 
 @media (max-width: 768px) {
   .register-content {
-    padding: 2.5rem 2rem 2rem 2rem;
-    max-width: 500px;
-    border-radius: 24px;
+    padding: 2rem 1.75rem;
+    max-width: 460px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, var(--primary-main) 0%, var(--primary-darker) 100%);
   }
 
   .register-header h1 {
-    font-size: 2.5rem;
-    margin: 0 0 2rem 0;
+    font-size: 1.85rem;
+    margin: 0 0 1rem 0;
   }
 
   .register-container :global(.form-row) {
@@ -256,16 +274,16 @@
 
 @media (max-width: 480px) {
   .register-card {
-    padding: 1.5rem 1rem;
+    padding: 1rem 0.5rem;
   }
 
   .register-content {
-    padding: 2rem 1.5rem 1.5rem 1.5rem;
-    border-radius: 20px;
+    padding: 1.75rem 1.25rem;
+    border-radius: 16px;
   }
 
   .register-header h1 {
-    font-size: 1.75rem;
-    margin: 0 0 1.5rem 0;
+    font-size: 1.5rem;
+    margin: 0 0 1rem 0;
   }
 } 

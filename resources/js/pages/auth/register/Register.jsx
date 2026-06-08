@@ -5,6 +5,7 @@ import Input from '../../../components/input/Input';
 import Button from '../../../components/button/Button';
 import { useIndonesiaRegion } from '../../../hooks/useIndonesiaRegion';
 import styles from './Register.module.css';
+import logoImg from '../../../assets/logo.webp';
 
 function Register() {
   const navigate = useNavigate();
@@ -129,7 +130,7 @@ function Register() {
         {/* Left Side Image with Logo */}
         <div className={styles['left-panel']}>
           <div className={styles['logo-container']}>
-            <img src="favicon.ico" alt="Logo Muhammadiyah" className={styles.logo} />
+            <img src={logoImg} alt="Logo Muhammadiyah" className={styles.logo} />
           </div>
           <div className={styles['building-image']}></div>
         </div>
