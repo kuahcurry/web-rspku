@@ -20,9 +20,21 @@ class ProgressiveThrottle
     {
         $ip = $request->ip();
         
-        $expiryKey = "throttle:expiry:{$ip}:{$action}";
-        $attemptsKey = "throttle:attempts:{$ip}:{$action}";
-        $lockoutCountKey = "throttle:lockouts:{$ip}:{$action}";
+        // Find identifier (NIK, Email, or NIP) to isolate users on shared networks/IPs
+        $identifier = '';
+        if ($request->has('nik')) {
+            $identifier = preg_replace('/\D/', '', $request->input('nik'));
+        } elseif ($request->has('email')) {
+            $identifier = strtolower(trim($request->input('email')));
+        } elseif ($request->has('nip')) {
+            $identifier = preg_replace('/\D/', '', $request->input('nip'));
+        }
+        
+        $keySuffix = $identifier ? md5($identifier) : $ip;
+        
+        $expiryKey = "throttle:expiry:{$keySuffix}:{$action}";
+        $attemptsKey = "throttle:attempts:{$keySuffix}:{$action}";
+        $lockoutCountKey = "throttle:lockouts:{$keySuffix}:{$action}";
 
         // 1. Check if currently locked out
         if (Cache::has($expiryKey)) {
@@ -45,9 +57,9 @@ class ProgressiveThrottle
                     'retry_after' => $secondsRemaining
                 ], 429);
             } else {
-                // Lockout expired, clear lockout cache and reset attempts to 0
+                // Lockout expired, clear lockout cache and reset attempts to 0 (expires in 15 minutes)
                 Cache::forget($expiryKey);
-                Cache::put($attemptsKey, 0, now()->addDay());
+                Cache::put($attemptsKey, 0, now()->addMinutes(15));
             }
         }
 
@@ -59,13 +71,13 @@ class ProgressiveThrottle
         if ($attempts >= $maxAttempts) {
             // Initiate new lockout
             $lockouts++;
-            Cache::put($lockoutCountKey, $lockouts, now()->addDay());
+            Cache::put($lockoutCountKey, $lockouts, now()->addHours(2)); // lockout count resets after 2 hours of inactivity
             
             $lockoutMinutes = $lockouts * 5; // 1st = 5m, 2nd = 10m, 3rd = 15m, etc.
             $expiryTime = time() + ($lockoutMinutes * 60);
             
-            Cache::put($expiryKey, $expiryTime, now()->addDay());
-            Cache::put($attemptsKey, 0, now()->addDay()); // Reset attempts to 0 for next round after block expires
+            Cache::put($expiryKey, $expiryTime, now()->addMinutes($lockoutMinutes + 1));
+            Cache::put($attemptsKey, 0, now()->addMinutes(15)); // Reset attempts to 0 for next round
             
             return response()->json([
                 'success' => false,
@@ -74,8 +86,8 @@ class ProgressiveThrottle
             ], 429);
         }
 
-        // Increment attempts before running the request
-        Cache::put($attemptsKey, $attempts + 1, now()->addDay());
+        // Increment attempts before running the request (expires in 15 minutes of inactivity)
+        Cache::put($attemptsKey, $attempts + 1, now()->addMinutes(15));
 
         $response = $next($request);
 

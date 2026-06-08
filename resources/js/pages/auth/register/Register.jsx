@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import Form from '../../../components/form/Form';
 import Input from '../../../components/input/Input';
 import Button from '../../../components/button/Button';
@@ -106,8 +106,8 @@ function Register() {
 
       if (response.ok && data.success) {
         // Registration successful
-        alert('Registrasi berhasil! Silakan login.');
-        navigate('/login');
+        alert('Registrasi berhasil! Silakan verifikasi email Anda.');
+        navigate('/verifikasi-email', { state: { email: formData.email, name: formData.name } });
       } else {
         // Handle validation errors
         if (data.errors) {
@@ -325,7 +325,7 @@ function Register() {
             </Button>
 
             <div className={styles['login-link']}>
-              <a href="/login">Sudah Punya Akun?</a>
+              <Link to="/login">Sudah Punya Akun?</Link>
             </div>
 
             <div className={styles['register-footer']}>
