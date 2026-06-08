@@ -14,3 +14,9 @@ Schedule::command('documents:check-expirations')
     ->timezone('Asia/Jakarta')
     ->emailOutputOnFailure(env('MAIL_FROM_ADDRESS'))
     ->appendOutputTo(storage_path('logs/document-expiration-checks.log'));
+
+// Schedule pending registrations cleanup to run every 15 minutes
+Schedule::command('pending-registrations:cleanup')
+    ->everyFifteenMinutes()
+    ->timezone('Asia/Jakarta')
+    ->appendOutputTo(storage_path('logs/pending-registrations-cleanup.log'));
