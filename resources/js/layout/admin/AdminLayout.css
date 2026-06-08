@@ -1,0 +1,450 @@
+/* Admin Layout */
+.admin-layout {
+  display: flex;
+  min-height: 100vh;
+  background: var(--bg-subtle);
+  --sidebar-width: 280px;
+  overflow-x: hidden;
+}
+
+/* Admin Sidebar */
+.admin-sidebar {
+  width: var(--sidebar-width);
+  background: linear-gradient(180deg, #ffffff 0%, #f7f8fb 35%, #f1f3f9 100%);
+  border-right: 1px solid var(--border-grey);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  height: 100vh;
+  overflow-y: auto;
+  z-index: 1000;
+}
+
+.admin-sidebar-header {
+  height: 91px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 1rem;
+  border-bottom: 1px solid var(--border-grey);
+}
+
+.admin-sidebar-logo {
+  width: 220px;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+  object-fit: contain;
+}
+
+.admin-sidebar-nav {
+  padding: 1rem 0;
+  flex: 1;
+}
+
+.admin-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  padding: 0.85rem 1.1rem;
+  margin: 0.5rem 0.75rem;
+  color: var(--text-main);
+  text-decoration: none;
+  transition: all 0.2s ease;
+  font-size: 0.92rem;
+  font-weight: 600;
+  border-radius: 12px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  width: calc(100% - 1.5rem);
+}
+
+.admin-nav-wrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-nav-parent {
+  justify-content: space-between;
+  text-align: left;
+}
+
+.admin-nav-arrow {
+  margin-left: auto;
+  transition: transform 0.2s ease;
+}
+
+.admin-sub-menu {
+  display: flex;
+  flex-direction: column;
+  margin-left: 1.5rem;
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
+}
+
+.admin-nav-sub-item {
+  padding: 0.7rem 1rem;
+  margin: 0.25rem 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  position: relative;
+}
+
+.admin-nav-sub-item::before {
+  content: '';
+  position: absolute;
+  left: -0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--text-main);
+  opacity: 0.4;
+  transition: all 0.2s ease;
+}
+
+.admin-nav-sub-item:hover::before {
+  background: var(--primary-main);
+  opacity: 1;
+  width: 6px;
+  height: 6px;
+}
+
+.admin-nav-sub-item.active::before {
+  background: var(--pure-white);
+  opacity: 1;
+  width: 6px;
+  height: 6px;
+}
+
+.admin-nav-item:hover {
+  background: color-mix(in srgb, var(--primary-main) 10%, transparent);
+  color: var(--primary-main);
+  transform: translateX(4px);
+}
+
+.admin-nav-item.active {
+  background: var(--primary-main);
+  color: var(--pure-white);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+  transform: translateX(4px);
+}
+
+.admin-nav-icon {
+  flex-shrink: 0;
+  color: inherit;
+}
+
+.admin-sidebar-footer {
+  padding: 1rem;
+  border-top: 1px solid var(--border-grey);
+}
+
+.admin-logout-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: var(--error-light);
+  color: var(--error-dark);
+  border: none;
+  border-radius: 12px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.admin-logout-btn:hover {
+  background: var(--error-red);
+  color: var(--pure-white);
+}
+
+/* Admin Main Content */
+.admin-main-content {
+  flex: 1;
+  margin-left: var(--sidebar-width);
+  max-width: calc(100vw - var(--sidebar-width));
+  display: flex;
+  flex-direction: column;
+}
+
+/* Admin Navbar */
+.admin-navbar {
+  height: 91px;
+  background: var(--bg-main);
+  border-bottom: 1px solid var(--border-grey);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2rem;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.admin-navbar-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.admin-navbar-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--heading-main);
+  margin: 0;
+}
+
+.admin-menu-toggle {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  color: var(--text-main);
+  border-radius: 8px;
+  transition: background 0.2s ease;
+}
+
+.admin-menu-toggle:hover {
+  background: var(--bg-hover);
+}
+
+.admin-navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* Admin User Button */
+.admin-user-profile-wrapper {
+  position: relative;
+}
+
+.admin-user-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.1rem 0.6rem 0.75rem;
+  background: transparent;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: none;
+}
+
+.admin-user-btn:hover {
+  background: transparent;
+  transform: none;
+  box-shadow: none;
+}
+
+.admin-user-btn:active {
+  transform: none;
+  box-shadow: none;
+}
+
+.admin-user-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--primary-main);
+  background: color-mix(in srgb, var(--primary-main) 12%, white);
+  border: 1px solid color-mix(in srgb, var(--primary-main) 20%, transparent);
+}
+
+.admin-user-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--heading-main);
+}
+
+.admin-dropdown-icon {
+  color: var(--text-secondary);
+  transition: transform 0.2s ease;
+}
+
+.admin-dropdown-icon.open {
+  transform: rotate(180deg);
+}
+
+.admin-user-dropdown {
+  position: absolute;
+  top: calc(100% + 1.05rem);
+  right: 0;
+  background: var(--bg-main);
+  border: 1px solid var(--border-grey);
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  min-width: 200px;
+  padding: 0.5rem;
+  z-index: 200;
+  animation: dropdownFadeIn 0.2s ease;
+}
+
+.admin-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  color: var(--text-main);
+  text-decoration: none;
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+  background: none;
+  border: none;
+  width: 100%;
+  cursor: pointer;
+  text-align: left;
+}
+
+.admin-dropdown-item:hover {
+  background: var(--bg-hover);
+  color: var(--primary-main);
+}
+
+.admin-dropdown-item.logout {
+  color: var(--error-red);
+}
+
+.admin-dropdown-item.logout:hover {
+  background: var(--error-light);
+  color: var(--error-dark);
+}
+
+.admin-dropdown-divider {
+  height: 1px;
+  background: var(--border-grey);
+  margin: 0.5rem 0;
+}
+
+/* Admin Content Container */
+.admin-content-container {
+  padding: 2rem;
+  flex: 1;
+}
+
+/* Admin Overlay */
+.admin-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--overlay);
+  z-index: 999;
+  display: none;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .admin-layout {
+    --sidebar-width: 260px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .admin-sidebar {
+    left: calc(var(--sidebar-width) * -1);
+    transition: left 0.3s ease;
+  }
+
+  .admin-sidebar.open {
+    left: 0;
+  }
+
+  .admin-main-content {
+    margin-left: 0;
+    max-width: 100vw;
+  }
+
+  .admin-menu-toggle {
+    display: flex;
+  }
+
+  .admin-overlay {
+    display: block;
+  }
+
+  .admin-content-container {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-navbar {
+    padding: 0 1rem;
+    height: 70px;
+  }
+
+  .admin-sidebar-header {
+    height: 70px;
+  }
+
+  .admin-sidebar-logo {
+    width: 170px;
+  }
+
+  .admin-navbar-title {
+    font-size: 1rem;
+  }
+
+  .admin-user-name {
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-sidebar {
+    width: min(84vw, var(--sidebar-width));
+  }
+
+  .admin-nav-item {
+    font-size: 0.88rem;
+    padding: 0.7rem 0.9rem;
+    margin: 0.35rem 0.6rem;
+  }
+
+  .admin-nav-sub-item {
+    padding: 0.6rem 0.85rem;
+  }
+
+  .admin-content-container {
+    padding: 0.75rem;
+  }
+
+  .admin-navbar-title {
+    display: none;
+  }
+
+  .admin-user-btn {
+    padding: 0.45rem 0.75rem 0.45rem 0.55rem;
+    gap: 0.4rem;
+  }
+
+  .admin-user-avatar {
+    width: 30px;
+    height: 30px;
+    font-size: 0.75rem;
+  }
+
+  .admin-user-name {
+    max-width: 90px;
+    font-size: 0.82rem;
+  }
+}

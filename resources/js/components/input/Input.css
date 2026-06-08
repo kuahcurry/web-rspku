@@ -1,0 +1,257 @@
+.input-wrapper {
+  margin-bottom: 0;
+}
+
+.input-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-main);
+  margin-bottom: 0.5rem; 
+}
+
+.required-mark {
+  color: var(--error-red);
+  margin-left: 0.25rem;
+}
+
+.input-container {
+  position: relative;
+}
+
+.input-icon {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  line-height: 1;
+}
+
+.input-icon-left {
+  left: 1rem;
+}
+
+.input-icon-right {
+  right: 1rem;
+}
+
+.input-field {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  border: 1px solid var(--input-border);
+  border-radius: var(--radius-md);
+  font-size: 0.9rem;
+  background: var(--input-bg);
+  color: var(--text-main);
+}
+
+.input-field.has-icon-left {
+  padding-left: 2.75rem;
+}
+
+.input-field.has-icon-right {
+  padding-right: 2.75rem;
+}
+
+.input-field.has-toggle {
+  padding-right: 3.25rem;
+}
+
+.input-field:focus {
+  outline: none;
+  border-color: var(--input-border-focus);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-main) 10%, transparent);
+}
+
+.input-field:disabled {
+  background: var(--bg-subtle);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.input-field:read-only {
+  background: var(--bg-soft);
+  cursor: default;
+}
+
+.input-field::placeholder {
+  color: var(--input-placeholder);
+}
+
+.input-field.input-error {
+  border-color: var(--error-red);
+}
+
+.input-field.input-error:focus {
+  box-shadow: 0 0 0 3px var(--error-light);
+}
+
+.input-field.input-success {
+  border-color: var(--success-green);
+}
+
+.input-field.input-success:focus {
+  box-shadow: 0 0 0 3px var(--success-light);
+}
+
+/* Select Styles */
+.input-field.input-select {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 20px;
+  padding-right: 2.5rem;
+}
+
+.input-field.input-select:disabled {
+  cursor: not-allowed;
+  background: var(--input-bg);
+  color: var(--text-main);
+  opacity: 1;
+}
+
+/* Textarea Styles */
+.input-field.input-textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.input-field.input-resize-none {
+  resize: none;
+}
+
+.input-field.input-resize-both {
+  resize: both;
+}
+
+.input-field.input-resize-horizontal {
+  resize: horizontal;
+}
+
+.input-field.input-resize-vertical {
+  resize: vertical;
+}
+
+/* Size Variants */
+.input-small {
+  padding: 0.625rem 0.875rem;
+  font-size: 0.8rem;
+}
+
+.input-small.has-icon-left {
+  padding-left: 2.5rem;
+}
+
+.input-small.has-icon-right {
+  padding-right: 2.5rem;
+}
+
+.input-small.input-select {
+  padding-right: 2.25rem;
+}
+
+.input-small.input-textarea {
+  min-height: 80px;
+}
+
+.input-medium {
+  padding: 0.875rem 1rem;
+  font-size: 0.9rem;
+}
+
+.input-medium.input-select {
+  padding-right: 2.5rem;
+}
+
+.input-medium.input-textarea {
+  min-height: 100px;
+}
+
+.input-large {
+  padding: 1rem 1.25rem;
+  font-size: 1rem;
+}
+
+.input-large.has-icon-left {
+  padding-left: 3rem;
+}
+
+.input-large.has-icon-right {
+  padding-right: 3rem;
+}
+
+.input-large.input-select {
+  padding-right: 2.75rem;
+}
+
+.input-large.input-textarea {
+  min-height: 120px;
+}
+
+.password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 0.75rem;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--primary-main);
+  cursor: pointer;
+  padding: 0.35rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+}
+
+.password-toggle:hover {
+  background: color-mix(in srgb, var(--primary-main) 10%, transparent);
+}
+
+/* Style Variants */
+.input-filled {
+  background: var(--bg-soft);
+  border: 1px solid transparent;
+}
+
+.input-filled:focus {
+  background: var(--input-bg);
+  border-color: var(--input-border-focus);
+}
+
+.input-outlined {
+  background: transparent;
+  border: 2px solid var(--input-border);
+}
+
+.input-outlined:focus {
+  border-color: var(--input-border-focus);
+}
+
+/* Messages */
+.error-message {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--error-red); 
+}
+
+.success-message {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--success-green); 
+}
+
+.helper-text {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--text-muted); 
+}

@@ -1,0 +1,11 @@
+node_modules
+vendor
+.env
+public
+.htaccess
+artisan
+composer.lock
+composer.lock.bak
+update_fix.tar.gz
+update.tar.gz
+.editorconfig

@@ -1,0 +1,226 @@
+.container {
+  padding: 0;
+}
+
+.pageHeader {
+  margin-bottom: 1.5rem;
+}
+
+.headerContent {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.pageTitle {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 0.25rem 0;
+}
+
+.pageSubtitle {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.mainCard {
+  background: var(--card-bg);
+  border-radius: 12px;
+}
+
+.mainCard :global(.card-body) {
+  padding: 0;
+}
+
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.searchWrapper {
+  flex: 1;
+  max-width: 460px;
+}
+
+.tableScroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.tableScroll :global(.table) {
+  min-width: 940px;
+}
+
+.loading {
+  text-align: center;
+  padding: 3rem;
+  color: var(--text-secondary);
+}
+
+.adminInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  min-width: 0;
+}
+
+.adminInfo span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.roleTable :global(.table-head),
+.roleTable :global(.table-row) {
+  grid-template-columns: 1.4fr 1.6fr 1.1fr 0.9fr 1fr 1.1fr;
+}
+
+.roleTable :global(.table-head-cell) {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+}
+
+.roleTable :global(.table-cell) {
+  font-size: 0.9rem;
+  padding: 0.85rem 0.95rem;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.actionCell {
+  overflow: visible;
+  white-space: normal;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.3rem 0.8rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.badgeSuperAdmin {
+  background: color-mix(in srgb, var(--primary-main) 15%, white);
+  color: var(--primary-main);
+  border: 1px solid color-mix(in srgb, var(--primary-main) 35%, transparent);
+}
+
+.badgeAdmin {
+  background: color-mix(in srgb, var(--success-green) 15%, white);
+  color: var(--success-green);
+  border: 1px solid color-mix(in srgb, var(--success-green) 35%, transparent);
+}
+
+.actionButtons {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.deleteWarning {
+  color: var(--error-red);
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .searchWrapper {
+    max-width: 100%;
+  }
+
+  .headerContent {
+    flex-direction: column;
+  }
+
+  .actionButtons {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .roleTable :global(.table-cell) {
+    padding: 0.65rem 0.85rem;
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .pageTitle {
+    font-size: 1.6rem;
+  }
+
+  .roleTable :global(.table-cell) {
+    font-size: 0.8rem;
+  }
+
+  .actionButtons {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .roleTable :global(.table) {
+    border: 1px solid var(--border-grey);
+    box-shadow: none;
+    background: var(--bg-main);
+  }
+
+  .roleTable :global(.table-head) {
+    display: grid;
+  }
+
+  .roleTable :global(.table-row) {
+    display: grid;
+    border-top: 1px solid var(--border-grey);
+    border-radius: 0;
+    margin-bottom: 0;
+    box-shadow: none;
+    background: transparent;
+  }
+
+  .roleTable :global(.table-cell) {
+    display: block;
+    border-top: none;
+    padding: 0.6rem 0.75rem;
+    font-size: 0.8rem;
+  }
+
+  .roleTable :global(.table-cell)::before {
+    content: none;
+  }
+
+  .roleTable :global(.table-head-cell) {
+    padding: 0.65rem 0.75rem;
+    font-size: 0.7rem;
+  }
+
+  .actionButtons {
+    width: 100%;
+  }
+
+  .actionButtons :global(.btn) {
+    padding: 0.35rem 0.6rem;
+    font-size: 0.75rem;
+  }
+}

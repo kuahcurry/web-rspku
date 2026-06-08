@@ -1,0 +1,7 @@
+.safeMarkdownListItem {
+  margin-left: 20px;
+}
+
+.safeMarkdownListItemNumbered {
+  list-style-type: decimal;
+}

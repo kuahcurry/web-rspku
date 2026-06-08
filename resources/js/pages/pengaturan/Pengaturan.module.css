@@ -1,0 +1,324 @@
+/* Page Header */
+.page-header {
+  margin-bottom: 1rem;
+}
+
+.page-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--heading-main);
+  margin: 0 0 0.5rem 0;
+  letter-spacing: -0.02em;
+}
+
+.page-subtitle {
+  font-size: 1rem;
+  color: var(--text-main);
+  margin: 0;
+}
+
+.settings-card :global(.btn) {
+  --btn-width: fit-content;
+  --btn-tablet-width: 65%;
+  --btn-mobile-width: 30%;
+}
+
+/* Tabs */
+.settings-tabs {
+  display: flex;
+  margin-bottom: 1.25rem;
+  border-bottom: 1px solid var(--border-grey);
+}
+
+.tab-button {
+  display: flex;
+  align-items: center;
+  padding: 0.85rem 1.25rem;
+  background: var(--bg-hover);
+  border: 1px solid var(--border-grey);
+  border-radius: 10px 10px 0 0;
+  color: var(--text-secondary);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: -1px;
+}
+
+.tab-button:hover {
+  background: var(--bg-active);
+}
+
+.tab-button.active {
+  background: var(--bg-main);
+  border-color: color-mix(in srgb, var(--primary-main) 35%, transparent);
+  color: var(--primary-main);
+  box-shadow: inset 0 -2px 0 var(--primary-main);
+}
+
+.tab-icon {
+  font-size: 1.25rem;
+}
+
+/* Settings Card */
+.settings-card {
+  background: var(--bg-main);
+  border-radius: var(--radius-xl);
+  padding: 2rem 1.75rem 2rem 1.75rem;
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--border-grey);
+}
+
+.settings-card-subtitle {
+  font-size: 1rem;
+  color: var(--color-gray-600);
+  margin: 0;
+}
+
+/* Settings Body */
+.settings-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.hiddenInput {
+  display: none;
+}
+
+/* Photo Section */
+.photo-section {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 2rem;
+}
+
+.photo-avatar {
+  width: 200px;
+  height: 200px;
+  border-radius: var(--radius-lg);
+  position: relative;
+  overflow: hidden;
+  background: var(--color-gray-100);
+  border: 3px solid white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.photo-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.photo-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 5rem;
+  color: var(--color-gray-400);
+}
+
+.photo-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(180deg, rgba(0,0,0,0.05), rgba(0,0,0,0.4));
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.photo-avatar:hover .photo-overlay {
+  opacity: 1;
+}
+
+.photo-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.photo-info-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin: 0;
+}
+
+.photo-info-list {
+  margin: 0;
+  padding-left: 1.25rem;
+  color: var(--color-gray-700);
+  font-size: 0.95rem;
+  line-height: 1.8;
+}
+
+/* Form Section */
+.form-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.form-section-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin: 1.5rem 0 1rem 0;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid color-mix(in srgb, var(--primary-main) 20%, transparent);
+}
+
+.form-section-title:first-child {
+  margin-top: 0;
+}
+
+.form-section-description {
+  font-size: 0.9rem;
+  color: var(--color-gray-600);
+  margin: -0.5rem 0 0.5rem 0;
+  font-style: italic;
+}
+
+.settings-form :global(.form-row) {
+  gap: 1rem;
+}
+
+/* Settings Actions */
+.settings-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  padding-top: 2rem;
+  margin-top: 1rem;
+  border-top: 2px solid var(--color-gray-100);
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .page-title {
+    font-size: 2rem;
+  }
+
+  .photo-section {
+    grid-template-columns: 180px 1fr;
+  }
+
+  .photo-avatar {
+    width: 180px;
+    height: 180px;
+  }
+}
+
+@media (max-width: 768px) {
+  .page-title {
+    font-size: 1.75rem;
+  }
+
+  .page-subtitle {
+    font-size: 0.95rem;
+  }
+
+  .settings-tabs {
+    gap: 0.25rem;
+  }
+
+  .tab-button {
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+  }
+
+  .tab-icon {
+    font-size: 1.1rem;
+  }
+
+  .settings-card {
+    padding: 1.5rem;
+  }
+
+  .settings-card-title {
+    font-size: 1.5rem;
+  }
+
+  .photo-section {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .photo-avatar {
+    width: 180px;
+    height: 180px;
+    margin: 0 auto;
+  }
+
+  .photo-info {
+    text-align: center;
+  }
+
+  .photo-info-list {
+    padding-left: 0;
+    list-style-position: inside;
+  }
+
+  .settings-actions {
+    flex-direction: column-reverse;
+  }
+
+  .settings-actions button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-title {
+    font-size: 1.5rem;
+  }
+
+  .settings-tabs {
+    flex-direction: column;
+    gap: 0;
+    border-bottom: none;
+  }
+
+  .tab-button {
+    padding: 1rem;
+    border-bottom: 1px solid var(--color-gray-200);
+    border-left: 3px solid transparent;
+    margin-bottom: 0;
+  }
+
+  .tab-button.active {
+    border-bottom-color: var(--color-gray-200);
+    border-left-color: var(--primary-main);
+    background: color-mix(in srgb, var(--primary-main) 6%, transparent);
+  }
+
+  .settings-card {
+    padding: 1rem;
+  }
+
+  .settings-card-title {
+    font-size: 1.25rem;
+  }
+
+  .photo-section {
+    padding: 1rem;
+  }
+
+  .photo-avatar {
+    width: 150px;
+    height: 150px;
+  }
+
+  .photo-placeholder {
+    font-size: 4rem;
+  }
+
+  .form-section-title {
+    font-size: 1.1rem;
+  }
+}

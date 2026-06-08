@@ -1,0 +1,264 @@
+// Authentication utility functions
+import { clearCache } from './cache';
+
+/**
+ * Get the stored JWT token (for regular users)
+ */
+export const getToken = () => {
+  return localStorage.getItem('access_token');
+};
+
+/**
+ * Get the admin JWT token
+ */
+export const getAdminToken = () => {
+  return localStorage.getItem('admin_access_token');
+};
+
+/**
+ * Get the token type (usually 'bearer')
+ */
+export const getTokenType = () => {
+  return localStorage.getItem('token_type') || 'bearer';
+};
+
+/**
+ * Get the admin token type
+ */
+export const getAdminTokenType = () => {
+  return localStorage.getItem('admin_token_type') || 'bearer';
+};
+
+/**
+ * Get the full authorization header value
+ * Checks for admin token first, then user token
+ */
+export const getAuthHeader = () => {
+  // Check for admin token first
+  const adminToken = getAdminToken();
+  if (adminToken) {
+    const adminTokenType = getAdminTokenType();
+    return `${adminTokenType} ${adminToken}`;
+  }
+  
+  // Fall back to user token
+  const token = getToken();
+  const tokenType = getTokenType();
+  return token ? `${tokenType} ${token}` : null;
+};
+
+/**
+ * Get the logged-in user data
+ * Checks for admin user first, then regular user
+ */
+export const getUser = () => {
+  // Check for admin user first
+  const adminUserStr = localStorage.getItem('admin_user');
+  if (adminUserStr) {
+    return JSON.parse(adminUserStr);
+  }
+  
+  // Fall back to regular user
+  const userStr = localStorage.getItem('user');
+  return userStr ? JSON.parse(userStr) : null;
+};
+
+/**
+ * Check if user is authenticated (admin or regular user)
+ */
+export const isAuthenticated = () => {
+  // Check admin auth first
+  const adminToken = getAdminToken();
+  const adminExpiresAt = localStorage.getItem('admin_token_expires_at');
+  
+  if (adminToken && adminExpiresAt) {
+    if (Date.now() > parseInt(adminExpiresAt)) {
+      clearAdminAuth();
+      return false;
+    } else {
+      return true;
+    }
+  }
+  
+  // Check regular user auth
+  const token = getToken();
+  const expiresAt = localStorage.getItem('token_expires_at');
+  
+  if (!token || !expiresAt) {
+    return false;
+  }
+  
+  // Check if token is expired
+  if (Date.now() > parseInt(expiresAt)) {
+    clearAuth();
+    return false;
+  }
+  
+  return true;
+};
+
+/**
+ * Check if admin is authenticated
+ */
+export const isAdminAuthenticated = () => {
+  const adminToken = getAdminToken();
+  const adminExpiresAt = localStorage.getItem('admin_token_expires_at');
+  
+  if (!adminToken || !adminExpiresAt) {
+    return false;
+  }
+  
+  // Check if token is expired
+  if (Date.now() > parseInt(adminExpiresAt)) {
+    clearAdminAuth();
+    return false;
+  }
+  
+  return true;
+};
+
+/**
+ * Clear all authentication data and cache
+ */
+export const clearAuth = () => {
+  localStorage.removeItem('access_token');
+  localStorage.removeItem('token_type');
+  localStorage.removeItem('user');
+  localStorage.removeItem('token_expires_at');
+  clearCache();
+};
+
+/**
+ * Clear admin authentication data
+ */
+export const clearAdminAuth = () => {
+  localStorage.removeItem('admin_access_token');
+  localStorage.removeItem('admin_token_type');
+  localStorage.removeItem('admin_user');
+  localStorage.removeItem('admin_token_expires_at');
+  clearCache();
+};
+
+/**
+ * Logout user
+ */
+export const logout = async () => {
+  const token = getToken();
+  
+  if (token) {
+    try {
+      // Call logout API to invalidate token on server
+      await fetch('/api/logout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': getAuthHeader(),
+        },
+      });
+    } catch (error) {
+      console.error('Logout API error:', error);
+    }
+  }
+  
+  clearAuth();
+};
+
+/**
+ * Refresh the JWT token
+ */
+export const refreshToken = async () => {
+  const token = getToken();
+  
+  if (!token) {
+    return false;
+  }
+  
+  try {
+    const response = await fetch('/api/refresh', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': getAuthHeader(),
+      },
+    });
+    
+    const data = await response.json();
+    
+    if (response.ok && data.success) {
+      localStorage.setItem('access_token', data.data.access_token);
+      localStorage.setItem('token_type', data.data.token_type);
+      localStorage.setItem('token_expires_at', Date.now() + (data.data.expires_in * 1000));
+      return true;
+    }
+    
+    clearAuth();
+    return false;
+  } catch (error) {
+    console.error('Token refresh error:', error);
+    clearAuth();
+    return false;
+  }
+};
+
+/**
+ * Make an authenticated API request
+ */
+export const authenticatedFetch = async (url, options = {}) => {
+  const authHeader = getAuthHeader();
+  
+  if (!authHeader) {
+    throw new Error('Not authenticated');
+  }
+  
+  // Check if body is FormData to avoid setting Content-Type
+  const isFormData = options.body instanceof FormData;
+  
+  const defaultHeaders = {
+    'Accept': 'application/json',
+    'Authorization': authHeader,
+  };
+  
+  // Only add Content-Type for non-FormData requests
+  if (!isFormData) {
+    defaultHeaders['Content-Type'] = 'application/json';
+  }
+  
+  const mergedOptions = {
+    ...options,
+    headers: {
+      ...defaultHeaders,
+      ...(options.headers || {}),
+    },
+  };
+  
+  try {
+    const response = await fetch(url, mergedOptions);
+    
+    // If unauthorized, check if we should try refresh
+    if (response.status === 401) {
+      const user = getUser();
+      const isAdmin = user && user.role === 'admin';
+      
+      // Don't try to refresh admin tokens (they use different guard)
+      if (!isAdmin) {
+        const refreshed = await refreshToken();
+        
+        if (refreshed) {
+          // Retry the request with new token
+          mergedOptions.headers.Authorization = getAuthHeader();
+          return fetch(url, mergedOptions);
+        }
+      }
+      
+      // Redirect to login page
+      window.location.href = '/login';
+    }
+    
+    return response;
+  } catch (error) {
+    console.error('Authenticated fetch error:', error);
+    throw error;
+  }
+};
