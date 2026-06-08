@@ -1,13 +1,11 @@
-const API_BASE_URL = 'https://emsifa.github.io/api-wilayah-indonesia/api';
-
 const capitalizeWords = (text = '') =>
-   text
-     .toString()
-     .toLowerCase()
-     .replace(/\b\w/g, (char) => char.toUpperCase());
+  text
+    .toString()
+    .toLowerCase()
+    .replace(/\b\w/g, (char) => char.toUpperCase());
 
 const mapOption = (item) => {
-  const label = capitalizeWords(item.name);
+  const label = capitalizeWords(item.nama || item.name);
   return {
     value: item.id,
     label
@@ -15,7 +13,7 @@ const mapOption = (item) => {
 };
 
 export const getProvinces = async () => {
-  const response = await fetch(`${API_BASE_URL}/provinces.json`);
+  const response = await fetch(`https://ibnux.github.io/data-indonesia/provinsi.json`);
   if (!response.ok) throw new Error('Failed to fetch provinces');
   const data = await response.json();
   return data.map(mapOption);
@@ -23,7 +21,7 @@ export const getProvinces = async () => {
 
 export const getRegencies = async (provinceId) => {
   if (!provinceId) return [];
-  const response = await fetch(`${API_BASE_URL}/regencies/${provinceId}.json`);
+  const response = await fetch(`https://ibnux.github.io/data-indonesia/kabupaten/${provinceId}.json`);
   if (!response.ok) throw new Error('Failed to fetch regencies');
   const data = await response.json();
   return data.map(mapOption);
@@ -31,7 +29,7 @@ export const getRegencies = async (provinceId) => {
 
 export const getDistricts = async (regencyId) => {
   if (!regencyId) return [];
-  const response = await fetch(`${API_BASE_URL}/districts/${regencyId}.json`);
+  const response = await fetch(`https://ibnux.github.io/data-indonesia/kecamatan/${regencyId}.json`);
   if (!response.ok) throw new Error('Failed to fetch districts');
   const data = await response.json();
   return data.map(mapOption);
@@ -39,7 +37,7 @@ export const getDistricts = async (regencyId) => {
 
 export const getVillages = async (districtId) => {
   if (!districtId) return [];
-  const response = await fetch(`${API_BASE_URL}/villages/${districtId}.json`);
+  const response = await fetch(`https://ibnux.github.io/data-indonesia/kelurahan/${districtId}.json`);
   if (!response.ok) throw new Error('Failed to fetch villages');
   const data = await response.json();
   return data.map(mapOption);
