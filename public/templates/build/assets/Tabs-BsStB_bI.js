@@ -1,0 +1,1 @@
+import{j as e}from"./main-lUK_GDvX.js";const a=({tabs:n=[],activeKey:t,onChange:c,className:i=""})=>e.jsx("div",{className:`tabs ${i}`.trim(),children:n.map(s=>e.jsxs("button",{className:`tab-button ${t===s.key?"active":""}`,onClick:()=>c?.(s.key),type:"button",children:[s.icon&&e.jsx("span",{className:"tab-icon",children:s.icon}),s.label]},s.key))});export{a as T};

@@ -1,0 +1,1 @@
+import{g as o,r as a}from"./main-lUK_GDvX.js";const s=()=>{const{executeRecaptcha:e}=o();return a.useCallback(async r=>{if(!e)return console.warn("reCAPTCHA not yet available"),null;try{return await e(r)}catch(t){return console.error("Error executing reCAPTCHA:",t),null}},[e])},l="/build/assets/logo-iGhtwQ3j.webp";export{l,s as u};

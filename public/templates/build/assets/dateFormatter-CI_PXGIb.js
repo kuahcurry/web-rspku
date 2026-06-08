@@ -1,0 +1,1 @@
+const s=r=>{if(!r)return"-";const t=["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];try{const e=new Date(r);if(isNaN(e.getTime()))return r;const o=e.getDate(),n=t[e.getMonth()],a=e.getFullYear();return`${o} ${n} ${a}`}catch(e){return console.error("Error formatting date:",e),r}};export{s as f};
