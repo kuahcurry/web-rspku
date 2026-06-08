@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Form from '../../components/form/Form';
-import Input from '../../components/input/Input';
-import Button from '../../components/button/Button';
-import { useIndonesiaRegion } from '../../hooks/useIndonesiaRegion';
+import Form from '../../../components/form/Form';
+import Input from '../../../components/input/Input';
+import Button from '../../../components/button/Button';
+import { useIndonesiaRegion } from '../../../hooks/useIndonesiaRegion';
 import styles from './Register.module.css';
 
 function Register() {

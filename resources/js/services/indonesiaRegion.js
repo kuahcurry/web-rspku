@@ -1,10 +1,10 @@
-const API_BASE_URL = 'https://www.emsifa.com/api-wilayah-indonesia/api';
+const API_BASE_URL = 'https://emsifa.github.io/api-wilayah-indonesia/api';
 
 const capitalizeWords = (text = '') =>
-  text
-    .toString()
-    .toLowerCase()
-    .replace(/\b\w/g, (char) => char.toUpperCase());
+   text
+     .toString()
+     .toLowerCase()
+     .replace(/\b\w/g, (char) => char.toUpperCase());
 
 const mapOption = (item) => {
   const label = capitalizeWords(item.name);
@@ -45,8 +45,34 @@ export const getVillages = async (districtId) => {
   return data.map(mapOption);
 };
 
+// Get province name by ID
+export const getProvinceNameById = async (provinceId) => {
+  if (!provinceId) return null;
+  try {
+    const provinces = await getProvinces();
+    const province = provinces.find(p => p.value === provinceId);
+    return province ? province.label : null;
+  } catch (error) {
+    console.error('Error fetching province:', error);
+    return null;
+  }
+};
+
+// Get regency name by ID
+export const getRegencyNameById = async (provinceId, regencyId) => {
+  if (!provinceId || !regencyId) return null;
+  try {
+    const regencies = await getRegencies(provinceId);
+    const regency = regencies.find(r => r.value === regencyId);
+    return regency ? regency.label : null;
+  } catch (error) {
+    console.error('Error fetching regency:', error);
+    return null;
+  }
+};
+
 // Get district name by ID
-export const getDistrictById = async (regencyId, districtId) => {
+export const getDistrictNameById = async (regencyId, districtId) => {
   if (!regencyId || !districtId) return null;
   try {
     const districts = await getDistricts(regencyId);
@@ -54,6 +80,19 @@ export const getDistrictById = async (regencyId, districtId) => {
     return district ? district.label : null;
   } catch (error) {
     console.error('Error fetching district:', error);
+    return null;
+  }
+};
+
+// Get village name by ID
+export const getVillageNameById = async (districtId, villageId) => {
+  if (!districtId || !villageId) return null;
+  try {
+    const villages = await getVillages(districtId);
+    const village = villages.find(v => v.value === villageId);
+    return village ? village.label : null;
+  } catch (error) {
+    console.error('Error fetching village:', error);
     return null;
   }
 };
